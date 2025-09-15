@@ -1,0 +1,72 @@
+{
+  "annotations": {
+    "changelogDate": "20250915194024"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "megrendelesTipusa",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "feladatRovidLeirasa",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "feladatReszletesLeirasa",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "megrendelesKezdete",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "megrendelesVege",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "resztvevoKollagaTipusa",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "devizanem",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dijazasTipusa",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dijOsszege",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "megrendelesDokumentumGeneralta",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "ugyfelMegrendelesId",
+      "fieldType": "Long"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Megrendelesek",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "szerzodesesJogviszonyok",
+      "relationshipName": "szerzodesesJogviszony",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "maganszemelyek",
+      "relationshipName": "maganszemely",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

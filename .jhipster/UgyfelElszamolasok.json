@@ -1,0 +1,42 @@
+{
+  "annotations": {
+    "changelogDate": "20250915194224"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "teljesitesiIdoszakKezdete",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "teljesitesiIdoszakVege",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "napokSzama",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "teljesitesIgazolasonSzereploOsszeg",
+      "fieldType": "BigDecimal"
+    },
+    {
+      "fieldName": "kapcsolodoSzamlaSorszamRogzitve",
+      "fieldType": "Boolean"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "UgyfelElszamolasok",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "megrendelesek",
+      "relationshipName": "megrendeles",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

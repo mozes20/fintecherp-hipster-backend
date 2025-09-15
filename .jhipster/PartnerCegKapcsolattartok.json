@@ -1,0 +1,36 @@
+{
+  "annotations": {
+    "changelogDate": "20250915193724"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "kapcsolattartoTitulus",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "statusz",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "PartnerCegKapcsolattartok",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "partnerCegAdatok",
+      "relationshipName": "partnerCeg",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "maganszemelyek",
+      "relationshipName": "maganszemely",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

@@ -1,0 +1,191 @@
+application {
+  config {
+    baseName fintechErp
+    applicationType monolith
+    packageName com.fintech.erp
+    authenticationType oauth2
+    prodDatabaseType postgresql
+    devDatabaseType postgresql
+    buildTool maven
+    skipClient true
+    reactive false
+    enableHibernateCache true
+    enableSwaggerCodegen false
+    testFrameworks []
+    dtoSuffix DTO
+    syncUserWithIdp true
+  }
+  entities *
+}
+
+/* Globális opciók a teljes modellre */
+dto * with mapstruct
+service * with serviceClass
+filter *
+paginate * with pagination
+
+/* ===== ENTITÁSOK ===== */
+
+entity Timesheetek {
+  datum LocalDate required
+  munkanapStatusza String
+  statusz String
+}
+
+entity Berek {
+  ervenyessegKezdete LocalDate required
+  bruttoHaviMunkaberVagyNapdij BigDecimal required
+  munkaszerzodes String
+  teljesKoltseg BigDecimal
+}
+
+entity EfoFoglalkoztatasok {
+  datum LocalDate required
+  osszeg BigDecimal
+  generaltEfoSzerzodes Boolean
+  alairtEfoSzerzodes Boolean
+}
+
+entity OsztalekfizetesiKozgyulesek {
+  kozgyulesDatum LocalDate required
+  kozgyulesiJegyzokonyvGeneralta Boolean
+  kozgyulesiJegyzokonyvAlairt Boolean
+}
+
+entity SajatCegAlapadatok {
+  cegAdminisztraciosHaviKoltseg BigDecimal
+  statusz String
+}
+
+entity CegAlapadatok {
+  cegNev String required
+  cegRovidAzonosito String
+  cegSzekhely String
+  adoszam String
+  cegjegyzekszam String
+  cegKozpontiEmail String
+  cegKozpontiTel String
+  statusz String
+}
+
+entity Bankszamlaszamok {
+  bankszamlaDevizanem String
+  bankszamlaGIRO String
+  bankszamlaIBAN String
+  statusz String
+}
+
+entity Munkavallalok {
+  foglalkoztatasTipusa String
+  foglalkoztatasKezdete LocalDate
+  foglalkoztatasVege LocalDate
+}
+
+entity SajatCegTulajdonosok {
+  bruttoOsztalek BigDecimal
+  statusz String
+}
+
+entity SajatCegKepviselok {
+  statusz String
+}
+
+entity Maganszemelyek {
+  maganszemelyNeve String required
+  szemelyiIgazolvanySzama String
+  adoAzonositoJel String
+  tbAzonosito String
+  bankszamlaszam String
+  telefonszam String
+  emailcim String
+  statusz String
+}
+
+entity PartnerCegAdatok {
+  statusz String
+}
+
+entity PartnerCegMunkavallalok {
+  statusz String
+}
+
+entity PartnerCegKapcsolattartok {
+  kapcsolattartoTitulus String
+  statusz String
+}
+
+entity SzerzodesesJogviszonyok {
+  szerzodesAzonosito String
+  jogviszonyKezdete LocalDate
+  jogviszonyLejarata LocalDate
+}
+
+entity MegrendelesDokumentumok {
+  dokumentumTipusa String
+  dokumentum String
+}
+
+entity Megrendelesek {
+  megrendelesTipusa String
+  feladatRovidLeirasa String
+  feladatReszletesLeirasa String
+  megrendelesKezdete LocalDate
+  megrendelesVege LocalDate
+  resztvevoKollagaTipusa String
+  devizanem String
+  dijazasTipusa String
+  dijOsszege BigDecimal
+  megrendelesDokumentumGeneralta Boolean
+  ugyfelMegrendelesId Long
+}
+
+entity TeljesitesIgazolasDokumentumok {
+  dokumentumTipusa String
+  dokumentum String
+}
+
+entity UgyfelElszamolasok {
+  teljesitesiIdoszakKezdete LocalDate
+  teljesitesiIdoszakVege LocalDate
+  napokSzama Integer
+  teljesitesIgazolasonSzereploOsszeg BigDecimal
+  kapcsolodoSzamlaSorszamRogzitve Boolean
+}
+
+/* ===== KAPCSOLATOK ===== */
+
+relationship ManyToOne {
+  Timesheetek{munkavallalo} to Munkavallalok,
+  Berek{munkavallalo} to Munkavallalok,
+  EfoFoglalkoztatasok{munkavallalo} to Munkavallalok,
+
+  Munkavallalok{sajatCeg} to SajatCegAlapadatok,
+  Munkavallalok{maganszemely} to Maganszemelyek,
+
+  SajatCegTulajdonosok{sajatCeg} to SajatCegAlapadatok,
+  SajatCegTulajdonosok{maganszemely} to Maganszemelyek,
+
+  SajatCegKepviselok{sajatCeg} to SajatCegAlapadatok,
+  SajatCegKepviselok{maganszemely} to Maganszemelyek,
+
+  SajatCegAlapadatok{ceg} to CegAlapadatok,
+  Bankszamlaszamok{ceg} to CegAlapadatok,
+
+  OsztalekfizetesiKozgyulesek{sajatCeg} to SajatCegAlapadatok,
+
+  PartnerCegAdatok{ceg} to CegAlapadatok,
+  PartnerCegMunkavallalok{partnerCeg} to PartnerCegAdatok,
+  PartnerCegMunkavallalok{maganszemely} to Maganszemelyek,
+  PartnerCegKapcsolattartok{partnerCeg} to PartnerCegAdatok,
+  PartnerCegKapcsolattartok{maganszemely} to Maganszemelyek,
+
+  SzerzodesesJogviszonyok{megrendeloCeg} to CegAlapadatok,
+  SzerzodesesJogviszonyok{vallalkozoCeg} to CegAlapadatok,
+
+  MegrendelesDokumentumok{megrendeles} to Megrendelesek,
+  Megrendelesek{szerzodesesJogviszony} to SzerzodesesJogviszonyok,
+  Megrendelesek{maganszemely} to Maganszemelyek,
+
+  UgyfelElszamolasok{megrendeles} to Megrendelesek,
+  TeljesitesIgazolasDokumentumok{teljesitesIgazolas} to UgyfelElszamolasok
+}

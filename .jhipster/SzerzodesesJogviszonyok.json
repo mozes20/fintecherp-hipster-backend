@@ -1,0 +1,40 @@
+{
+  "annotations": {
+    "changelogDate": "20250915193824"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "szerzodesAzonosito",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "jogviszonyKezdete",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "jogviszonyLejarata",
+      "fieldType": "LocalDate"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "SzerzodesesJogviszonyok",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "cegAlapadatok",
+      "relationshipName": "megrendeloCeg",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "cegAlapadatok",
+      "relationshipName": "vallalkozoCeg",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

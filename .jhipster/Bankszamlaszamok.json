@@ -1,0 +1,38 @@
+{
+  "annotations": {
+    "changelogDate": "20250915193024"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "bankszamlaDevizanem",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankszamlaGIRO",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankszamlaIBAN",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "statusz",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Bankszamlaszamok",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "cegAlapadatok",
+      "relationshipName": "ceg",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

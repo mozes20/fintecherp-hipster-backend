@@ -1,0 +1,48 @@
+{
+  "annotations": {
+    "changelogDate": "20250915193424"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "maganszemelyNeve",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "szemelyiIgazolvanySzama",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "adoAzonositoJel",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "tbAzonosito",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankszamlaszam",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "telefonszam",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "emailcim",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "statusz",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Maganszemelyek",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

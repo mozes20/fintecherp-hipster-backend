@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <!--
+        Added the constraints for entity SajatCegTulajdonosok.
+    -->
+    <changeSet id="20250915193224-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="sajat_ceg_id"
+                                 baseTableName="sajat_ceg_tulajdonosok"
+                                 constraintName="fk_sajat_ceg_tulajdonosok__sajat_ceg_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="sajat_ceg_alapadatok"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="maganszemely_id"
+                                 baseTableName="sajat_ceg_tulajdonosok"
+                                 constraintName="fk_sajat_ceg_tulajdonosok__maganszemely_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="maganszemelyek"
+                                 />
+    </changeSet>
+</databaseChangeLog>

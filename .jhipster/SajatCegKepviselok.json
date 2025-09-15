@@ -1,0 +1,32 @@
+{
+  "annotations": {
+    "changelogDate": "20250915193324"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "statusz",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "SajatCegKepviselok",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "sajatCegAlapadatok",
+      "relationshipName": "sajatCeg",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "maganszemelyek",
+      "relationshipName": "maganszemely",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

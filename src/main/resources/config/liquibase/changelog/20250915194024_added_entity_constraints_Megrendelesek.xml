@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <!--
+        Added the constraints for entity Megrendelesek.
+    -->
+    <changeSet id="20250915194024-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="szerzodeses_jogviszony_id"
+                                 baseTableName="megrendelesek"
+                                 constraintName="fk_megrendelesek__szerzodeses_jogviszony_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="szerzodeses_jogviszonyok"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="maganszemely_id"
+                                 baseTableName="megrendelesek"
+                                 constraintName="fk_megrendelesek__maganszemely_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="maganszemelyek"
+                                 />
+    </changeSet>
+</databaseChangeLog>

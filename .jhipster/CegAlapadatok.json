@@ -1,0 +1,48 @@
+{
+  "annotations": {
+    "changelogDate": "20250915192924"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "cegNev",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "cegRovidAzonosito",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "cegSzekhely",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "adoszam",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "cegjegyzekszam",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "cegKozpontiEmail",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "cegKozpontiTel",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "statusz",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "CegAlapadatok",
+  "pagination": "pagination",
+  "relationships": [],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

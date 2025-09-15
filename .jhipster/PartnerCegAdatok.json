@@ -1,0 +1,26 @@
+{
+  "annotations": {
+    "changelogDate": "20250915193524"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "statusz",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "PartnerCegAdatok",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "cegAlapadatok",
+      "relationshipName": "ceg",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

@@ -1,0 +1,40 @@
+{
+  "annotations": {
+    "changelogDate": "20250915193124"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "foglalkoztatasTipusa",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "foglalkoztatasKezdete",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "foglalkoztatasVege",
+      "fieldType": "LocalDate"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Munkavallalok",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "sajatCegAlapadatok",
+      "relationshipName": "sajatCeg",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "maganszemelyek",
+      "relationshipName": "maganszemely",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

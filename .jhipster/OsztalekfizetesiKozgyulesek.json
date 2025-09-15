@@ -1,0 +1,35 @@
+{
+  "annotations": {
+    "changelogDate": "20250915192724"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "kozgyulesDatum",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "kozgyulesiJegyzokonyvGeneralta",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "kozgyulesiJegyzokonyvAlairt",
+      "fieldType": "Boolean"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "OsztalekfizetesiKozgyulesek",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "sajatCegAlapadatok",
+      "relationshipName": "sajatCeg",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

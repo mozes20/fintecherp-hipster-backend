@@ -1,0 +1,30 @@
+{
+  "annotations": {
+    "changelogDate": "20250915193924"
+  },
+  "applications": ["fintechErp"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "dokumentumTipusa",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "dokumentum",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "MegrendelesDokumentumok",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "megrendelesek",
+      "relationshipName": "megrendeles",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

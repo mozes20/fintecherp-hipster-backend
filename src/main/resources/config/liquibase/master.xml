@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <property name="now" value="current_timestamp" dbms="postgresql"/>
+    <property name="floatType" value="float4" dbms="postgresql"/>
+    <property name="clobType" value="clob" dbms="postgresql"/>
+    <property name="blobType" value="blob" dbms="postgresql"/>
+    <property name="uuidType" value="uuid" dbms="postgresql"/>
+    <property name="datetimeType" value="datetime" dbms="postgresql"/>
+    <property name="timeType" value="time(6)" dbms="postgresql"/>
+
+    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192424_added_entity_Timesheetek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192524_added_entity_Berek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192624_added_entity_EfoFoglalkoztatasok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192724_added_entity_OsztalekfizetesiKozgyulesek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192824_added_entity_SajatCegAlapadatok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192924_added_entity_CegAlapadatok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193024_added_entity_Bankszamlaszamok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193124_added_entity_Munkavallalok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193224_added_entity_SajatCegTulajdonosok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193324_added_entity_SajatCegKepviselok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193424_added_entity_Maganszemelyek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193524_added_entity_PartnerCegAdatok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193624_added_entity_PartnerCegMunkavallalok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193724_added_entity_PartnerCegKapcsolattartok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193824_added_entity_SzerzodesesJogviszonyok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193924_added_entity_MegrendelesDokumentumok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915194024_added_entity_Megrendelesek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915194124_added_entity_TeljesitesIgazolasDokumentumok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915194224_added_entity_UgyfelElszamolasok.xml" relativeToChangelogFile="false"/>
+    <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
+    <include file="config/liquibase/changelog/20250915192424_added_entity_constraints_Timesheetek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192524_added_entity_constraints_Berek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192624_added_entity_constraints_EfoFoglalkoztatasok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192724_added_entity_constraints_OsztalekfizetesiKozgyulesek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915192824_added_entity_constraints_SajatCegAlapadatok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193024_added_entity_constraints_Bankszamlaszamok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193124_added_entity_constraints_Munkavallalok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193224_added_entity_constraints_SajatCegTulajdonosok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193324_added_entity_constraints_SajatCegKepviselok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193524_added_entity_constraints_PartnerCegAdatok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193624_added_entity_constraints_PartnerCegMunkavallalok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193724_added_entity_constraints_PartnerCegKapcsolattartok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193824_added_entity_constraints_SzerzodesesJogviszonyok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915193924_added_entity_constraints_MegrendelesDokumentumok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915194024_added_entity_constraints_Megrendelesek.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915194124_added_entity_constraints_TeljesitesIgazolasDokumentumok.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20250915194224_added_entity_constraints_UgyfelElszamolasok.xml" relativeToChangelogFile="false"/>
+    <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
+    <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
+</databaseChangeLog>

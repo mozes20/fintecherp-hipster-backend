@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <!--
+        Added the constraints for entity SzerzodesesJogviszonyok.
+    -->
+    <changeSet id="20250915193824-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="megrendelo_ceg_id"
+                                 baseTableName="szerzodeses_jogviszonyok"
+                                 constraintName="fk_szerzodeses_jogviszonyok__megrendelo_ceg_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="ceg_alapadatok"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="vallalkozo_ceg_id"
+                                 baseTableName="szerzodeses_jogviszonyok"
+                                 constraintName="fk_szerzodeses_jogviszonyok__vallalkozo_ceg_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="ceg_alapadatok"
+                                 />
+    </changeSet>
+</databaseChangeLog>
