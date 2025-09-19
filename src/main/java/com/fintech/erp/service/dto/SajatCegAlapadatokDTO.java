@@ -16,6 +16,8 @@ public class SajatCegAlapadatokDTO implements Serializable {
 
     private String statusz;
 
+    private Long cegId;
+
     private CegAlapadatokDTO ceg;
 
     public Long getId() {
@@ -50,6 +52,14 @@ public class SajatCegAlapadatokDTO implements Serializable {
         this.ceg = ceg;
     }
 
+    public Long getCegId() {
+        return cegId;
+    }
+
+    public void setCegId(Long cegId) {
+        this.cegId = cegId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -78,6 +88,7 @@ public class SajatCegAlapadatokDTO implements Serializable {
             "id=" + getId() +
             ", cegAdminisztraciosHaviKoltseg=" + getCegAdminisztraciosHaviKoltseg() +
             ", statusz='" + getStatusz() + "'" +
+            ", cegId=" + getCegId() +
             ", ceg=" + getCeg() +
             "}";
     }

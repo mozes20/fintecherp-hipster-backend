@@ -118,6 +118,13 @@ Desktop.ini
 /bin/
 /deploy/
 
+# Docker secrets and deploy env
+src/main/docker/secrets/
+src/main/docker/.env.deploy
+
+# Built images tarballs
+*.tar
+
 ######################
 # Logs
 ######################

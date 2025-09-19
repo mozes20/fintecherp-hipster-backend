@@ -5,7 +5,9 @@ import java.util.Objects;
 import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
-import tech.jhipster.service.filter.*;
+import tech.jhipster.service.filter.Filter;
+import tech.jhipster.service.filter.LongFilter;
+import tech.jhipster.service.filter.StringFilter;
 
 /**
  * Criteria class for the {@link com.fintech.erp.domain.PartnerCegAdatok} entity. This class is used
@@ -20,6 +22,80 @@ import tech.jhipster.service.filter.*;
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class PartnerCegAdatokCriteria implements Serializable, Criteria {
 
+    private StringFilter cegCegRovidAzonosito;
+    private StringFilter cegCegjegyzekszam;
+    private StringFilter cegKozpontiEmail;
+    private StringFilter cegKozpontiTel;
+    private StringFilter cegStatusz;
+
+    public StringFilter getCegCegRovidAzonosito() {
+        return cegCegRovidAzonosito;
+    }
+
+    public void setCegCegRovidAzonosito(StringFilter cegCegRovidAzonosito) {
+        this.cegCegRovidAzonosito = cegCegRovidAzonosito;
+    }
+
+    public StringFilter getCegCegjegyzekszam() {
+        return cegCegjegyzekszam;
+    }
+
+    public void setCegCegjegyzekszam(StringFilter cegCegjegyzekszam) {
+        this.cegCegjegyzekszam = cegCegjegyzekszam;
+    }
+
+    public StringFilter getCegKozpontiEmail() {
+        return cegKozpontiEmail;
+    }
+
+    public void setCegKozpontiEmail(StringFilter cegKozpontiEmail) {
+        this.cegKozpontiEmail = cegKozpontiEmail;
+    }
+
+    public StringFilter getCegKozpontiTel() {
+        return cegKozpontiTel;
+    }
+
+    public void setCegKozpontiTel(StringFilter cegKozpontiTel) {
+        this.cegKozpontiTel = cegKozpontiTel;
+    }
+
+    public StringFilter getCegStatusz() {
+        return cegStatusz;
+    }
+
+    public void setCegStatusz(StringFilter cegStatusz) {
+        this.cegStatusz = cegStatusz;
+    }
+
+    private StringFilter cegCegNev;
+    private StringFilter cegCegSzekhely;
+    private StringFilter cegAdoszam;
+
+    public StringFilter getCegCegNev() {
+        return cegCegNev;
+    }
+
+    public void setCegCegNev(StringFilter cegCegNev) {
+        this.cegCegNev = cegCegNev;
+    }
+
+    public StringFilter getCegCegSzekhely() {
+        return cegCegSzekhely;
+    }
+
+    public void setCegCegSzekhely(StringFilter cegCegSzekhely) {
+        this.cegCegSzekhely = cegCegSzekhely;
+    }
+
+    public StringFilter getCegAdoszam() {
+        return cegAdoszam;
+    }
+
+    public void setCegAdoszam(StringFilter cegAdoszam) {
+        this.cegAdoszam = cegAdoszam;
+    }
+
     private static final long serialVersionUID = 1L;
 
     private LongFilter id;
@@ -33,9 +109,17 @@ public class PartnerCegAdatokCriteria implements Serializable, Criteria {
     public PartnerCegAdatokCriteria() {}
 
     public PartnerCegAdatokCriteria(PartnerCegAdatokCriteria other) {
+        this.cegCegRovidAzonosito = other.getCegCegRovidAzonosito() != null ? other.getCegCegRovidAzonosito().copy() : null;
+        this.cegCegjegyzekszam = other.getCegCegjegyzekszam() != null ? other.getCegCegjegyzekszam().copy() : null;
+        this.cegKozpontiEmail = other.getCegKozpontiEmail() != null ? other.getCegKozpontiEmail().copy() : null;
+        this.cegKozpontiTel = other.getCegKozpontiTel() != null ? other.getCegKozpontiTel().copy() : null;
+        this.cegStatusz = other.getCegStatusz() != null ? other.getCegStatusz().copy() : null;
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.statusz = other.optionalStatusz().map(StringFilter::copy).orElse(null);
         this.cegId = other.optionalCegId().map(LongFilter::copy).orElse(null);
+        this.cegCegNev = other.getCegCegNev() != null ? other.getCegCegNev().copy() : null;
+        this.cegCegSzekhely = other.getCegCegSzekhely() != null ? other.getCegCegSzekhely().copy() : null;
+        this.cegAdoszam = other.getCegAdoszam() != null ? other.getCegAdoszam().copy() : null;
         this.distinct = other.distinct;
     }
 
@@ -133,13 +217,34 @@ public class PartnerCegAdatokCriteria implements Serializable, Criteria {
             Objects.equals(id, that.id) &&
             Objects.equals(statusz, that.statusz) &&
             Objects.equals(cegId, that.cegId) &&
+            Objects.equals(cegCegNev, that.cegCegNev) &&
+            Objects.equals(cegCegSzekhely, that.cegCegSzekhely) &&
+            Objects.equals(cegAdoszam, that.cegAdoszam) &&
+            Objects.equals(cegCegRovidAzonosito, that.cegCegRovidAzonosito) &&
+            Objects.equals(cegCegjegyzekszam, that.cegCegjegyzekszam) &&
+            Objects.equals(cegKozpontiEmail, that.cegKozpontiEmail) &&
+            Objects.equals(cegKozpontiTel, that.cegKozpontiTel) &&
+            Objects.equals(cegStatusz, that.cegStatusz) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, statusz, cegId, distinct);
+        return Objects.hash(
+            id,
+            statusz,
+            cegId,
+            cegCegNev,
+            cegCegSzekhely,
+            cegAdoszam,
+            cegCegRovidAzonosito,
+            cegCegjegyzekszam,
+            cegKozpontiEmail,
+            cegKozpontiTel,
+            cegStatusz,
+            distinct
+        );
     }
 
     // prettier-ignore
@@ -149,6 +254,14 @@ public class PartnerCegAdatokCriteria implements Serializable, Criteria {
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalStatusz().map(f -> "statusz=" + f + ", ").orElse("") +
             optionalCegId().map(f -> "cegId=" + f + ", ").orElse("") +
+            (cegCegNev != null ? "cegCegNev=" + cegCegNev + ", " : "") +
+            (cegCegSzekhely != null ? "cegCegSzekhely=" + cegCegSzekhely + ", " : "") +
+            (cegAdoszam != null ? "cegAdoszam=" + cegAdoszam + ", " : "") +
+            (cegCegRovidAzonosito != null ? "cegCegRovidAzonosito=" + cegCegRovidAzonosito + ", " : "") +
+            (cegCegjegyzekszam != null ? "cegCegjegyzekszam=" + cegCegjegyzekszam + ", " : "") +
+            (cegKozpontiEmail != null ? "cegKozpontiEmail=" + cegKozpontiEmail + ", " : "") +
+            (cegKozpontiTel != null ? "cegKozpontiTel=" + cegKozpontiTel + ", " : "") +
+            (cegStatusz != null ? "cegStatusz=" + cegStatusz + ", " : "") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

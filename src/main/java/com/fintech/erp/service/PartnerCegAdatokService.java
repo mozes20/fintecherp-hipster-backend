@@ -17,16 +17,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PartnerCegAdatokService {
 
+    private final com.fintech.erp.repository.CegAlapadatokRepository cegAlapadatokRepository;
+
+    public PartnerCegAdatokService(
+        PartnerCegAdatokRepository partnerCegAdatokRepository,
+        PartnerCegAdatokMapper partnerCegAdatokMapper,
+        com.fintech.erp.repository.CegAlapadatokRepository cegAlapadatokRepository
+    ) {
+        this.partnerCegAdatokRepository = partnerCegAdatokRepository;
+        this.partnerCegAdatokMapper = partnerCegAdatokMapper;
+        this.cegAlapadatokRepository = cegAlapadatokRepository;
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(PartnerCegAdatokService.class);
 
     private final PartnerCegAdatokRepository partnerCegAdatokRepository;
 
     private final PartnerCegAdatokMapper partnerCegAdatokMapper;
-
-    public PartnerCegAdatokService(PartnerCegAdatokRepository partnerCegAdatokRepository, PartnerCegAdatokMapper partnerCegAdatokMapper) {
-        this.partnerCegAdatokRepository = partnerCegAdatokRepository;
-        this.partnerCegAdatokMapper = partnerCegAdatokMapper;
-    }
 
     /**
      * Save a partnerCegAdatok.
@@ -37,6 +44,9 @@ public class PartnerCegAdatokService {
     public PartnerCegAdatokDTO save(PartnerCegAdatokDTO partnerCegAdatokDTO) {
         LOG.debug("Request to save PartnerCegAdatok : {}", partnerCegAdatokDTO);
         PartnerCegAdatok partnerCegAdatok = partnerCegAdatokMapper.toEntity(partnerCegAdatokDTO);
+        if (partnerCegAdatokDTO.getCegId() != null) {
+            partnerCegAdatok.setCeg(cegAlapadatokRepository.findById(partnerCegAdatokDTO.getCegId()).orElse(null));
+        }
         partnerCegAdatok = partnerCegAdatokRepository.save(partnerCegAdatok);
         return partnerCegAdatokMapper.toDto(partnerCegAdatok);
     }
@@ -50,6 +60,9 @@ public class PartnerCegAdatokService {
     public PartnerCegAdatokDTO update(PartnerCegAdatokDTO partnerCegAdatokDTO) {
         LOG.debug("Request to update PartnerCegAdatok : {}", partnerCegAdatokDTO);
         PartnerCegAdatok partnerCegAdatok = partnerCegAdatokMapper.toEntity(partnerCegAdatokDTO);
+        if (partnerCegAdatokDTO.getCegId() != null) {
+            partnerCegAdatok.setCeg(cegAlapadatokRepository.findById(partnerCegAdatokDTO.getCegId()).orElse(null));
+        }
         partnerCegAdatok = partnerCegAdatokRepository.save(partnerCegAdatok);
         return partnerCegAdatokMapper.toDto(partnerCegAdatok);
     }
@@ -67,7 +80,9 @@ public class PartnerCegAdatokService {
             .findById(partnerCegAdatokDTO.getId())
             .map(existingPartnerCegAdatok -> {
                 partnerCegAdatokMapper.partialUpdate(existingPartnerCegAdatok, partnerCegAdatokDTO);
-
+                if (partnerCegAdatokDTO.getCegId() != null) {
+                    existingPartnerCegAdatok.setCeg(cegAlapadatokRepository.findById(partnerCegAdatokDTO.getCegId()).orElse(null));
+                }
                 return existingPartnerCegAdatok;
             })
             .map(partnerCegAdatokRepository::save)

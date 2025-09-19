@@ -15,6 +15,8 @@ public class PartnerCegAdatokDTO implements Serializable {
 
     private CegAlapadatokDTO ceg;
 
+    private Long cegId;
+
     public Long getId() {
         return id;
     }
@@ -55,6 +57,14 @@ public class PartnerCegAdatokDTO implements Serializable {
         return Objects.equals(this.id, partnerCegAdatokDTO.id);
     }
 
+    public Long getCegId() {
+        return cegId;
+    }
+
+    public void setCegId(Long cegId) {
+        this.cegId = cegId;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(this.id);
@@ -62,11 +72,13 @@ public class PartnerCegAdatokDTO implements Serializable {
 
     // prettier-ignore
     @Override
+
     public String toString() {
         return "PartnerCegAdatokDTO{" +
             "id=" + getId() +
             ", statusz='" + getStatusz() + "'" +
             ", ceg=" + getCeg() +
+            ", cegId=" + getCegId() +
             "}";
     }
 }

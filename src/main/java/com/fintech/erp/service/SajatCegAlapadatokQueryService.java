@@ -1,13 +1,14 @@
 package com.fintech.erp.service;
 
-import com.fintech.erp.domain.*; // for static metamodels
+import com.fintech.erp.domain.CegAlapadatok_;
 import com.fintech.erp.domain.SajatCegAlapadatok;
+import com.fintech.erp.domain.SajatCegAlapadatok_;
 import com.fintech.erp.repository.SajatCegAlapadatokRepository;
 import com.fintech.erp.service.criteria.SajatCegAlapadatokCriteria;
 import com.fintech.erp.service.dto.SajatCegAlapadatokDTO;
 import com.fintech.erp.service.mapper.SajatCegAlapadatokMapper;
 import jakarta.persistence.criteria.JoinType;
-import org.slf4j.Logger;
+import org.slf4j.Logger; // for static metamodels
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -79,7 +80,63 @@ public class SajatCegAlapadatokQueryService extends QueryService<SajatCegAlapada
                 buildRangeSpecification(criteria.getId(), SajatCegAlapadatok_.id),
                 buildRangeSpecification(criteria.getCegAdminisztraciosHaviKoltseg(), SajatCegAlapadatok_.cegAdminisztraciosHaviKoltseg),
                 buildStringSpecification(criteria.getStatusz(), SajatCegAlapadatok_.statusz),
-                buildSpecification(criteria.getCegId(), root -> root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.id))
+                buildSpecification(criteria.getCegId(), root -> root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.id)),
+                criteria.getCegCegNev() != null
+                    ? (root, query, cb) ->
+                        cb.like(
+                            cb.lower(root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.cegNev)),
+                            "%" + criteria.getCegCegNev().getContains().toLowerCase() + "%"
+                        )
+                    : null,
+                criteria.getCegCegRovidAzonosito() != null
+                    ? (root, query, cb) ->
+                        cb.like(
+                            cb.lower(root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.cegRovidAzonosito)),
+                            "%" + criteria.getCegCegRovidAzonosito().getContains().toLowerCase() + "%"
+                        )
+                    : null,
+                criteria.getCegCegSzekhely() != null
+                    ? (root, query, cb) ->
+                        cb.like(
+                            cb.lower(root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.cegSzekhely)),
+                            "%" + criteria.getCegCegSzekhely().getContains().toLowerCase() + "%"
+                        )
+                    : null,
+                criteria.getCegAdoszam() != null
+                    ? (root, query, cb) ->
+                        cb.like(
+                            cb.lower(root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.adoszam)),
+                            "%" + criteria.getCegAdoszam().getContains().toLowerCase() + "%"
+                        )
+                    : null,
+                criteria.getCegCegjegyzekszam() != null
+                    ? (root, query, cb) ->
+                        cb.like(
+                            cb.lower(root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.cegjegyzekszam)),
+                            "%" + criteria.getCegCegjegyzekszam().getContains().toLowerCase() + "%"
+                        )
+                    : null,
+                criteria.getCegKozpontiEmail() != null
+                    ? (root, query, cb) ->
+                        cb.like(
+                            cb.lower(root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.cegKozpontiEmail)),
+                            "%" + criteria.getCegKozpontiEmail().getContains().toLowerCase() + "%"
+                        )
+                    : null,
+                criteria.getCegKozpontiTel() != null
+                    ? (root, query, cb) ->
+                        cb.like(
+                            cb.lower(root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.cegKozpontiTel)),
+                            "%" + criteria.getCegKozpontiTel().getContains().toLowerCase() + "%"
+                        )
+                    : null,
+                criteria.getCegStatusz() != null
+                    ? (root, query, cb) ->
+                        cb.like(
+                            cb.lower(root.join(SajatCegAlapadatok_.ceg, JoinType.LEFT).get(CegAlapadatok_.statusz)),
+                            "%" + criteria.getCegStatusz().getContains().toLowerCase() + "%"
+                        )
+                    : null
             );
         }
         return specification;

@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Application service
+  services:
+    # Application service
+    app:
+      image: intecherp:latest
+      build:
+        context: ..
+        dockerfile: ../Dockerfile
+      restart: unless-stopped
+      environment:
+        # NOTE: inlined DB credentials (not secure) — remove and use secrets later
+        - _JAVA_OPTIONS=-Xmx1024m -Xms512m
+        - SPRING_PROFILES_ACTIVE=prod,api-docs
+        - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+        - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:10080/realms/jhipster
+        - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=web_app
+        - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=web_app
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://185.65.68.120:32768/postgres
+        - SPRING_DATASOURCE_USERNAME=postgres
+        - SPRING_DATASOURCE_PASSWORD=postgresfintech!
+        - SPRING_LIQUIBASE_URL=jdbc:postgresql://185.65.68.120:32768/postgres
+        - SPRING_LIQUIBASE_USER=postgres
+        - SPRING_LIQUIBASE_PASSWORD=postgresfintech!
+      ports:
+        - '8080:8080'
+      depends_on:
+        - keycloak
+      networks:
+        - fintecherp-net
+      # NOTE: DB password inlined above (insecure). Replace with secrets later if needed.
+
+    # Keycloak (reuse dev config)
+    keycloak:
+      extends:
+        file: ./keycloak.yml
+        service: keycloak
+      networks:
+        - fintecherp-net
+  networks:
+    fintecherp-net:
+      driver: bridge
+
+  # secrets removed - credentials are inlined above (insecure). Prefer Docker secrets in production.
