@@ -19,6 +19,9 @@ logging:
     tech.jhipster: DEBUG
     org.hibernate.SQL: DEBUG
     com.fintech.erp: DEBUG
+    com.fintech.erp.web.filter: INFO
+    com.fintech.erp.security.oauth2: DEBUG
+    org.springframework.security: DEBUG
 
 spring:
   devtools:

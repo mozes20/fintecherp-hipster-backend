@@ -37,6 +37,7 @@ import org.springframework.security.web.csrf.*;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import org.springframework.http.HttpMethod;
 import tech.jhipster.config.JHipsterProperties;
 
 @Configuration
@@ -64,11 +65,13 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authz ->
                 // prettier-ignore
                 authz
+                    // Allow CORS preflight requests
                     .requestMatchers(mvc.pattern("/api/authenticate")).permitAll()
                     .requestMatchers(mvc.pattern("/api/auth-info")).permitAll()
                     .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers(mvc.pattern("/api/**")).authenticated()
-                    .requestMatchers(mvc.pattern("/v3/api-docs/**")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(mvc.pattern("/v3/api-docs/**")).permitAll()
+                    .requestMatchers(mvc.pattern("/swagger-ui/**")).permitAll()
                     .requestMatchers(mvc.pattern("/management/health")).permitAll()
                     .requestMatchers(mvc.pattern("/management/health/**")).permitAll()
                     .requestMatchers(mvc.pattern("/management/info")).permitAll()
@@ -78,6 +81,11 @@ public class SecurityConfiguration {
             .oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService())))
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
             .oauth2Client(withDefaults());
+
+        // Register request logging filter early so every request is logged
+        http.addFilterBefore(new com.fintech.erp.web.filter.RequestLoggingFilter(), org.springframework.security.web.context.SecurityContextPersistenceFilter.class);
+        // Register our logging filter after the BearerTokenAuthenticationFilter so JWT authentication has run
+        http.addFilterAfter(new com.fintech.erp.web.filter.AuthenticationLoggingFilter(), org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter.class);
         return http.build();
     }
 

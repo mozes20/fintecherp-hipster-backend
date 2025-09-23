@@ -23,11 +23,20 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 
     public OAuth2TokenValidatorResult validate(Jwt jwt) {
         List<String> audience = jwt.getAudience();
-        if (audience.stream().anyMatch(allowedAudience::contains)) {
+        if (audience != null && audience.stream().anyMatch(allowedAudience::contains)) {
             return OAuth2TokenValidatorResult.success();
-        } else {
-            LOG.warn("Invalid audience: {}", audience);
-            return OAuth2TokenValidatorResult.failure(error);
         }
+
+        // Also accept tokens where the 'azp' (authorized party / client id) matches an allowed audience
+        Object azpObj = jwt.getClaims().get("azp");
+        if (azpObj != null) {
+            String azp = azpObj.toString();
+            if (allowedAudience.contains(azp)) {
+                return OAuth2TokenValidatorResult.success();
+            }
+        }
+
+        LOG.warn("Invalid audience: {} and azp: {}", audience, azpObj);
+        return OAuth2TokenValidatorResult.failure(error);
     }
 }
