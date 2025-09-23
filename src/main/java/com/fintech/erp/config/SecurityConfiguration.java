@@ -4,7 +4,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.oauth2.core.oidc.StandardClaimNames.PREFERRED_USERNAME;
 
 import com.fintech.erp.security.*;
-import com.fintech.erp.security.SecurityUtils;
 import com.fintech.erp.security.oauth2.AudienceValidator;
 import com.fintech.erp.security.oauth2.CustomClaimConverter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,10 +15,12 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
@@ -27,6 +28,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.oidc.StandardClaimNames;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
@@ -37,7 +39,6 @@ import org.springframework.security.web.csrf.*;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
-import org.springframework.http.HttpMethod;
 import tech.jhipster.config.JHipsterProperties;
 
 @Configuration
@@ -77,15 +78,22 @@ public class SecurityConfiguration {
                     .requestMatchers(mvc.pattern("/management/info")).permitAll()
                     .requestMatchers(mvc.pattern("/management/prometheus")).permitAll()
                     .requestMatchers(mvc.pattern("/management/**")).hasAuthority(AuthoritiesConstants.ADMIN)
+                    .anyRequest().authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService())))
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter())))
+            //.oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService())))
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter())))
             .oauth2Client(withDefaults());
 
         // Register request logging filter early so every request is logged
-        http.addFilterBefore(new com.fintech.erp.web.filter.RequestLoggingFilter(), org.springframework.security.web.context.SecurityContextPersistenceFilter.class);
+        http.addFilterBefore(
+            new com.fintech.erp.web.filter.RequestLoggingFilter(),
+            org.springframework.security.web.context.SecurityContextPersistenceFilter.class
+        );
         // Register our logging filter after the BearerTokenAuthenticationFilter so JWT authentication has run
-        http.addFilterAfter(new com.fintech.erp.web.filter.AuthenticationLoggingFilter(), org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter.class);
+        http.addFilterAfter(
+            new com.fintech.erp.web.filter.AuthenticationLoggingFilter(),
+            org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationFilter.class
+        );
         return http.build();
     }
 
@@ -106,6 +114,53 @@ public class SecurityConfiguration {
         );
         jwtAuthenticationConverter.setPrincipalClaimName(PREFERRED_USERNAME);
         return jwtAuthenticationConverter;
+    }
+
+    @Bean
+    JwtAuthenticationConverter jwtAuthConverter() {
+        var conv = new JwtAuthenticationConverter();
+        conv.setJwtGrantedAuthoritiesConverter(jwt -> {
+            var out = new LinkedHashSet<GrantedAuthority>();
+
+            // realm roles
+            var realm = jwt.getClaimAsMap("realm_access");
+            if (realm != null) {
+                Object rolesObj = realm.get("roles");
+                if (rolesObj instanceof Collection<?> roles) {
+                    for (Object r : roles) {
+                        var role = String.valueOf(r);
+                        if (!role.startsWith("ROLE_")) role = "ROLE_" + role;
+                        out.add(new SimpleGrantedAuthority(role));
+                    }
+                }
+            }
+
+            // client roles (minden clientből)
+            var res = jwt.getClaimAsMap("resource_access");
+            if (res != null) {
+                for (Object v : res.values()) {
+                    if (v instanceof Map<?, ?> m) {
+                        Object rolesObj = m.get("roles");
+                        if (rolesObj instanceof Collection<?> roles) {
+                            for (Object r : roles) {
+                                var role = String.valueOf(r);
+                                if (!role.startsWith("ROLE_")) role = "ROLE_" + role;
+                                out.add(new SimpleGrantedAuthority(role));
+                            }
+                        }
+                    }
+                }
+            }
+
+            // scopes (ha használnád: SCOPE_xxx)
+            var scopes = jwt.getClaimAsString("scope");
+            if (scopes != null) {
+                for (String s : scopes.split(" ")) out.add(new SimpleGrantedAuthority("SCOPE_" + s));
+            }
+            return out;
+        });
+        conv.setPrincipalClaimName(StandardClaimNames.PREFERRED_USERNAME);
+        return conv;
     }
 
     OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {

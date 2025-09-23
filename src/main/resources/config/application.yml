@@ -95,7 +95,7 @@ spring:
     name: fintechErp
   docker:
     compose:
-      enabled: true
+      enabled: false
       lifecycle-management: start-only
       file: src/main/docker/services.yml
   profiles:
@@ -149,11 +149,11 @@ spring:
       client:
         provider:
           oidc:
-            issuer-uri: http://127.0.0.1:9080/realms/jhipster
+            issuer-uri: https://auth.mikroclouds.hu/realms/fintech-erp
         registration:
           oidc:
-            client-id: web_app
-            client-secret: QLYOsD1UMe6Y7C8dPePmJLtpm3IzbMtD
+            client-id: erp-backend
+            client-secret: MWgbih26OK5zsqWuk7RIAcB1s4qsEuxn
             scope: openid, profile, email, offline_access # last one for refresh tokens
   task:
     execution:
