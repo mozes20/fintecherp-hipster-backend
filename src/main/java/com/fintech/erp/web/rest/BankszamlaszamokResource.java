@@ -18,7 +18,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -52,6 +60,70 @@ public class BankszamlaszamokResource {
         this.bankszamlaszamokService = bankszamlaszamokService;
         this.bankszamlaszamokRepository = bankszamlaszamokRepository;
         this.bankszamlaszamokQueryService = bankszamlaszamokQueryService;
+    }
+
+    /**
+     * {@code POST  /bankszamlaszamoks/by-ceg/{cegId}} : Create a new bankszamlaszamok for a given company (cegId).
+     *
+     * @param cegId the company id to associate.
+     * @param bankszamlaszamokDTO the bankszamlaszamokDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new bankszamlaszamokDTO, or with status {@code 400 (Bad Request)} if the bankszamlaszamok has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/by-ceg/{cegId}")
+    public ResponseEntity<BankszamlaszamokDTO> createBankszamlaszamokForCeg(
+        @PathVariable("cegId") Long cegId,
+        @RequestBody BankszamlaszamokDTO bankszamlaszamokDTO
+    ) throws URISyntaxException {
+        LOG.debug("REST request to save Bankszamlaszamok for cegId {} : {}", cegId, bankszamlaszamokDTO);
+        if (bankszamlaszamokDTO.getId() != null) {
+            throw new BadRequestAlertException("A new bankszamlaszamok cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        if (bankszamlaszamokDTO.getCeg() == null) {
+            bankszamlaszamokDTO.setCeg(new com.fintech.erp.service.dto.CegAlapadatokDTO());
+        }
+        bankszamlaszamokDTO.getCeg().setId(cegId);
+        bankszamlaszamokDTO = bankszamlaszamokService.save(bankszamlaszamokDTO);
+        return ResponseEntity.created(new URI("/api/bankszamlaszamoks/" + bankszamlaszamokDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, bankszamlaszamokDTO.getId().toString()))
+            .body(bankszamlaszamokDTO);
+    }
+
+    /**
+     * {@code PUT  /bankszamlaszamoks/by-ceg/{cegId}/:id} : Updates an existing bankszamlaszamok for a given company (cegId).
+     *
+     * @param cegId the company id to associate.
+     * @param id the id of the bankszamlaszamokDTO to save.
+     * @param bankszamlaszamokDTO the bankszamlaszamokDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated bankszamlaszamokDTO,
+     * or with status {@code 400 (Bad Request)} if the bankszamlaszamokDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the bankszamlaszamokDTO couldn't be updated.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PutMapping("/by-ceg/{cegId}/{id}")
+    public ResponseEntity<BankszamlaszamokDTO> updateBankszamlaszamokForCeg(
+        @PathVariable("cegId") Long cegId,
+        @PathVariable(value = "id", required = false) final Long id,
+        @RequestBody BankszamlaszamokDTO bankszamlaszamokDTO
+    ) throws URISyntaxException {
+        LOG.debug("REST request to update Bankszamlaszamok for cegId {} : {}, {}", cegId, id, bankszamlaszamokDTO);
+        if (bankszamlaszamokDTO.getId() == null) {
+            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+        }
+        if (!Objects.equals(id, bankszamlaszamokDTO.getId())) {
+            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
+        }
+        if (!bankszamlaszamokRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        if (bankszamlaszamokDTO.getCeg() == null) {
+            bankszamlaszamokDTO.setCeg(new com.fintech.erp.service.dto.CegAlapadatokDTO());
+        }
+        bankszamlaszamokDTO.getCeg().setId(cegId);
+        bankszamlaszamokDTO = bankszamlaszamokService.update(bankszamlaszamokDTO);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, bankszamlaszamokDTO.getId().toString()))
+            .body(bankszamlaszamokDTO);
     }
 
     /**
