@@ -83,7 +83,7 @@ public class BankszamlaszamokService {
     @Transactional(readOnly = true)
     public Optional<BankszamlaszamokDTO> findOne(Long id) {
         LOG.debug("Request to get Bankszamlaszamok : {}", id);
-        return bankszamlaszamokRepository.findById(id).map(bankszamlaszamokMapper::toDto);
+        return bankszamlaszamokRepository.findWithCegById(id).map(bankszamlaszamokMapper::toDto);
     }
 
     /**
