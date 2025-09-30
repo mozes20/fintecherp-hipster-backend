@@ -46,7 +46,8 @@ public class FintechErpApp {
             activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)
         ) {
             LOG.error(
-                "You have misconfigured your application! It should not run " + "with both the 'dev' and 'prod' profiles at the same time."
+                "You have misconfigured your application! It should not run " +
+                "with both the 'dev' and 'prod' profiles at the same time.asd"
             );
         }
         if (
