@@ -1,5 +1,6 @@
 package com.fintech.erp.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -11,13 +12,32 @@ public class PartnerCegKapcsolattartokDTO implements Serializable {
 
     private Long id;
 
+    @JsonProperty("titulus")
     private String kapcsolattartoTitulus;
 
     private String statusz;
 
     private PartnerCegAdatokDTO partnerCeg;
-
     private MaganszemelyekDTO maganszemely;
+
+    private Long partnerCegId;
+    private Long maganSzemelyId;
+
+    public Long getPartnerCegId() {
+        return partnerCegId;
+    }
+
+    public void setPartnerCegId(Long partnerCegId) {
+        this.partnerCegId = partnerCegId;
+    }
+
+    public Long getMaganSzemelyId() {
+        return maganSzemelyId;
+    }
+
+    public void setMaganSzemelyId(Long maganSzemelyId) {
+        this.maganSzemelyId = maganSzemelyId;
+    }
 
     public Long getId() {
         return id;
