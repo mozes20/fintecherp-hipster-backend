@@ -22,6 +22,12 @@ public class SzerzodesesJogviszonyokDTO implements Serializable {
 
     private CegAlapadatokDTO vallalkozoCeg;
 
+    @com.fasterxml.jackson.annotation.JsonProperty("megrendeloCegId")
+    private Long megrendeloCegId;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("vallalkozoCegId")
+    private Long vallalkozoCegId;
+
     public Long getId() {
         return id;
     }
@@ -62,12 +68,28 @@ public class SzerzodesesJogviszonyokDTO implements Serializable {
         this.megrendeloCeg = megrendeloCeg;
     }
 
+    public Long getMegrendeloCegId() {
+        return megrendeloCegId;
+    }
+
+    public void setMegrendeloCegId(Long megrendeloCegId) {
+        this.megrendeloCegId = megrendeloCegId;
+    }
+
     public CegAlapadatokDTO getVallalkozoCeg() {
         return vallalkozoCeg;
     }
 
     public void setVallalkozoCeg(CegAlapadatokDTO vallalkozoCeg) {
         this.vallalkozoCeg = vallalkozoCeg;
+    }
+
+    public Long getVallalkozoCegId() {
+        return vallalkozoCegId;
+    }
+
+    public void setVallalkozoCegId(Long vallalkozoCegId) {
+        this.vallalkozoCegId = vallalkozoCegId;
     }
 
     @Override

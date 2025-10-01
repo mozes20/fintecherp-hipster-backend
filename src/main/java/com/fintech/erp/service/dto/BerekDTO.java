@@ -26,6 +26,9 @@ public class BerekDTO implements Serializable {
 
     private MunkavallalokDTO munkavallalo;
 
+    // Flat-mapped munkavallalo.maganszemely.maganszemelyNeve
+    private String maganszemelyNeve;
+
     public Long getId() {
         return id;
     }
@@ -74,6 +77,14 @@ public class BerekDTO implements Serializable {
         this.munkavallalo = munkavallalo;
     }
 
+    public String getMaganszemelyNeve() {
+        return maganszemelyNeve;
+    }
+
+    public void setMaganszemelyNeve(String maganszemelyNeve) {
+        this.maganszemelyNeve = maganszemelyNeve;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -105,6 +116,7 @@ public class BerekDTO implements Serializable {
             ", munkaszerzodes='" + getMunkaszerzodes() + "'" +
             ", teljesKoltseg=" + getTeljesKoltseg() +
             ", munkavallalo=" + getMunkavallalo() +
+            ", maganszemelyNeve='" + getMaganszemelyNeve() + "'" +
             "}";
     }
 }

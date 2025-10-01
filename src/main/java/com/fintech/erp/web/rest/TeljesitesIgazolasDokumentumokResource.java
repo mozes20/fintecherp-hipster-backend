@@ -44,14 +44,64 @@ public class TeljesitesIgazolasDokumentumokResource {
 
     private final TeljesitesIgazolasDokumentumokQueryService teljesitesIgazolasDokumentumokQueryService;
 
+    private final com.fintech.erp.repository.UgyfelElszamolasokRepository ugyfelElszamolasokRepository;
+
     public TeljesitesIgazolasDokumentumokResource(
         TeljesitesIgazolasDokumentumokService teljesitesIgazolasDokumentumokService,
         TeljesitesIgazolasDokumentumokRepository teljesitesIgazolasDokumentumokRepository,
-        TeljesitesIgazolasDokumentumokQueryService teljesitesIgazolasDokumentumokQueryService
+        TeljesitesIgazolasDokumentumokQueryService teljesitesIgazolasDokumentumokQueryService,
+        com.fintech.erp.repository.UgyfelElszamolasokRepository ugyfelElszamolasokRepository
     ) {
         this.teljesitesIgazolasDokumentumokService = teljesitesIgazolasDokumentumokService;
         this.teljesitesIgazolasDokumentumokRepository = teljesitesIgazolasDokumentumokRepository;
         this.teljesitesIgazolasDokumentumokQueryService = teljesitesIgazolasDokumentumokQueryService;
+        this.ugyfelElszamolasokRepository = ugyfelElszamolasokRepository;
+    }
+
+    /**
+     * POST /dokumentumok/upload : Upload a document file and create a new TeljesitesIgazolasDokumentumok.
+     *
+     * @param file the file to upload
+     * @param dokumentumTipusa the type of the document
+     * @param teljesitesIgazolasId the ID of the related teljesitesIgazolas
+     * @return the created TeljesitesIgazolasDokumentumokDTO
+     */
+    @PostMapping("/dokumentumok/upload")
+    public ResponseEntity<TeljesitesIgazolasDokumentumokDTO> uploadDokumentum(
+        @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+        @RequestParam("dokumentumTipusa") String dokumentumTipusa,
+        @RequestParam("teljesitesIgazolasId") Long teljesitesIgazolasId
+    ) throws Exception {
+        LOG.debug("REST request to upload Dokumentum file: {}", file.getOriginalFilename());
+
+        // Ellenőrzés: létezik-e a teljesitesIgazolasId az ugyfel_elszamolasok táblában
+        // Ellenőrzés: létezik-e a teljesitesIgazolasId az ugyfel_elszamolasok táblában
+        if (!ugyfelElszamolasokRepository.existsById(teljesitesIgazolasId)) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        // Define the upload directory (relative to project root or configurable)
+        String uploadDir = "uploads/dokumentumok";
+        java.nio.file.Files.createDirectories(java.nio.file.Paths.get(uploadDir));
+        // Generate a unique filename
+        String timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+        }
+        String storedFilename = "dokumentum_" + timestamp + extension;
+        java.nio.file.Path targetPath = java.nio.file.Paths.get(uploadDir).resolve(storedFilename).normalize();
+        java.nio.file.Files.copy(file.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        // Save only the relative path in the database
+        TeljesitesIgazolasDokumentumokDTO dto = new TeljesitesIgazolasDokumentumokDTO();
+        dto.setDokumentumTipusa(dokumentumTipusa);
+        dto.setDokumentum(uploadDir + "/" + storedFilename);
+        com.fintech.erp.service.dto.UgyfelElszamolasokDTO teljesitesIgazolas = new com.fintech.erp.service.dto.UgyfelElszamolasokDTO();
+        teljesitesIgazolas.setId(teljesitesIgazolasId);
+        dto.setTeljesitesIgazolas(teljesitesIgazolas);
+        TeljesitesIgazolasDokumentumokDTO saved = teljesitesIgazolasDokumentumokService.save(dto);
+        return ResponseEntity.ok(saved);
     }
 
     /**
@@ -216,5 +266,46 @@ public class TeljesitesIgazolasDokumentumokResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    /**
+     * DELETE /dokumentumok/sync-files : Remove files from disk that are not referenced in the database.
+     *
+     * @return the number of deleted files
+     */
+    @DeleteMapping("/dokumentumok/sync-files")
+    public ResponseEntity<Integer> syncUploadedFilesWithDatabase() throws Exception {
+        String uploadDir = "uploads/dokumentumok";
+        java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+        if (!java.nio.file.Files.exists(uploadPath)) {
+            return ResponseEntity.ok(0);
+        }
+
+        // Get all file paths in the upload directory
+        java.util.Set<String> filesOnDisk = new java.util.HashSet<>();
+        try (java.util.stream.Stream<java.nio.file.Path> paths = java.nio.file.Files.list(uploadPath)) {
+            paths.filter(java.nio.file.Files::isRegularFile).forEach(p -> filesOnDisk.add(p.getFileName().toString()));
+        }
+
+        // Get all file paths referenced in the database (relative path)
+        java.util.Set<String> referencedFiles = new java.util.HashSet<>();
+        for (com.fintech.erp.domain.TeljesitesIgazolasDokumentumok doc : teljesitesIgazolasDokumentumokRepository.findAll()) {
+            String path = doc.getDokumentum();
+            if (path != null && path.startsWith(uploadDir + "/")) {
+                referencedFiles.add(path.substring((uploadDir + "/").length()));
+            }
+        }
+
+        // Find files on disk not referenced in the database
+        filesOnDisk.removeAll(referencedFiles);
+
+        // Delete unreferenced files
+        int deleted = 0;
+        for (String filename : filesOnDisk) {
+            java.nio.file.Files.deleteIfExists(uploadPath.resolve(filename));
+            deleted++;
+        }
+
+        return ResponseEntity.ok(deleted);
     }
 }
