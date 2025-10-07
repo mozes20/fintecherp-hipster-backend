@@ -39,6 +39,37 @@ public class SzerzodesesJogviszonyokService {
      */
     public SzerzodesesJogviszonyokDTO save(SzerzodesesJogviszonyokDTO szerzodesesJogviszonyokDTO) {
         LOG.debug("Request to save SzerzodesesJogviszonyok : {}", szerzodesesJogviszonyokDTO);
+        // Auto-generate szerzodesAzonosito if not provided
+        if (szerzodesesJogviszonyokDTO.getSzerzodesAzonosito() == null || szerzodesesJogviszonyokDTO.getSzerzodesAzonosito().isBlank()) {
+            String sajatCegAzonosito = null;
+            String partnerCegAzonosito = null;
+            // Try to get both cég rövid azonosító from the related companies
+            if (
+                szerzodesesJogviszonyokDTO.getMegrendeloCeg() != null &&
+                szerzodesesJogviszonyokDTO.getMegrendeloCeg().getCegRovidAzonosito() != null
+            ) {
+                sajatCegAzonosito = szerzodesesJogviszonyokDTO.getMegrendeloCeg().getCegRovidAzonosito();
+            }
+            if (
+                szerzodesesJogviszonyokDTO.getVallalkozoCeg() != null &&
+                szerzodesesJogviszonyokDTO.getVallalkozoCeg().getCegRovidAzonosito() != null
+            ) {
+                partnerCegAzonosito = szerzodesesJogviszonyokDTO.getVallalkozoCeg().getCegRovidAzonosito();
+            }
+            // Fallback: try to get from IDs if DTOs are not present (requires repository lookup)
+            // (You may want to optimize this if you have a CegAlapadatokService)
+            // If either is still null, set to "UNKNOWN"
+            if (sajatCegAzonosito == null) sajatCegAzonosito = "UNKNOWN";
+            if (partnerCegAzonosito == null) partnerCegAzonosito = "UNKNOWN";
+            // Find the next sequence number for this pair
+            long count = szerzodesesJogviszonyokRepository.countByMegrendeloCeg_CegRovidAzonositoAndVallalkozoCeg_CegRovidAzonosito(
+                sajatCegAzonosito,
+                partnerCegAzonosito
+            );
+            String sorszam = String.format("%03d", count + 1);
+            String autoAzonosito = sajatCegAzonosito + "/" + partnerCegAzonosito + "/" + sorszam;
+            szerzodesesJogviszonyokDTO.setSzerzodesAzonosito(autoAzonosito);
+        }
         SzerzodesesJogviszonyok szerzodesesJogviszonyok = szerzodesesJogviszonyokMapper.toEntity(szerzodesesJogviszonyokDTO);
         szerzodesesJogviszonyok = szerzodesesJogviszonyokRepository.save(szerzodesesJogviszonyok);
         return szerzodesesJogviszonyokMapper.toDto(szerzodesesJogviszonyok);
