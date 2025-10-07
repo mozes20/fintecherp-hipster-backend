@@ -18,7 +18,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -82,7 +91,7 @@ public class TeljesitesIgazolasDokumentumokResource {
 
         // Define the upload directory (relative to project root or configurable)
         String uploadDir = "uploads/dokumentumok";
-        java.nio.file.Files.createDirectories(java.nio.file.Paths.get(uploadDir));
+        java.nio.file.Files.createDirectories(java.nio.file.Path.of(uploadDir));
         // Generate a unique filename
         String timestamp = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
         String originalFilename = file.getOriginalFilename();
@@ -91,7 +100,7 @@ public class TeljesitesIgazolasDokumentumokResource {
             extension = originalFilename.substring(originalFilename.lastIndexOf('.'));
         }
         String storedFilename = "dokumentum_" + timestamp + extension;
-        java.nio.file.Path targetPath = java.nio.file.Paths.get(uploadDir).resolve(storedFilename).normalize();
+        java.nio.file.Path targetPath = java.nio.file.Path.of(uploadDir, storedFilename).normalize();
         java.nio.file.Files.copy(file.getInputStream(), targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         // Save only the relative path in the database
         TeljesitesIgazolasDokumentumokDTO dto = new TeljesitesIgazolasDokumentumokDTO();
@@ -276,7 +285,7 @@ public class TeljesitesIgazolasDokumentumokResource {
     @DeleteMapping("/dokumentumok/sync-files")
     public ResponseEntity<Integer> syncUploadedFilesWithDatabase() throws Exception {
         String uploadDir = "uploads/dokumentumok";
-        java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+        java.nio.file.Path uploadPath = java.nio.file.Path.of(uploadDir);
         if (!java.nio.file.Files.exists(uploadPath)) {
             return ResponseEntity.ok(0);
         }
