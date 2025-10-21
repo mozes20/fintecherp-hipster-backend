@@ -1,5 +1,8 @@
 package com.fintech.erp.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -12,10 +15,14 @@ public class SzerzodesesJogviszonyokDTO implements Serializable {
 
     private Long id;
 
+    @JsonAlias("szerzodesesAzonosito")
+    @NotBlank
     private String szerzodesAzonosito;
 
+    @NotNull
     private LocalDate jogviszonyKezdete;
 
+    @NotNull
     private LocalDate jogviszonyLejarata;
 
     private CegAlapadatokDTO megrendeloCeg;
@@ -23,9 +30,11 @@ public class SzerzodesesJogviszonyokDTO implements Serializable {
     private CegAlapadatokDTO vallalkozoCeg;
 
     @com.fasterxml.jackson.annotation.JsonProperty("megrendeloCegId")
+    @NotNull
     private Long megrendeloCegId;
 
     @com.fasterxml.jackson.annotation.JsonProperty("vallalkozoCegId")
+    @NotNull
     private Long vallalkozoCegId;
 
     public Long getId() {
