@@ -1,5 +1,6 @@
 package com.fintech.erp.service.dto;
 
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumTipus;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -11,9 +12,13 @@ public class MegrendelesDokumentumokDTO implements Serializable {
 
     private Long id;
 
-    private String dokumentumTipusa;
+    private MegrendelesDokumentumTipus dokumentumTipusa;
 
     private String dokumentum;
+
+    private String dokumentumUrl;
+
+    private String dokumentumAzonosito;
 
     private MegrendelesekDTO megrendeles;
 
@@ -25,11 +30,11 @@ public class MegrendelesDokumentumokDTO implements Serializable {
         this.id = id;
     }
 
-    public String getDokumentumTipusa() {
+    public MegrendelesDokumentumTipus getDokumentumTipusa() {
         return dokumentumTipusa;
     }
 
-    public void setDokumentumTipusa(String dokumentumTipusa) {
+    public void setDokumentumTipusa(MegrendelesDokumentumTipus dokumentumTipusa) {
         this.dokumentumTipusa = dokumentumTipusa;
     }
 
@@ -39,6 +44,22 @@ public class MegrendelesDokumentumokDTO implements Serializable {
 
     public void setDokumentum(String dokumentum) {
         this.dokumentum = dokumentum;
+    }
+
+    public String getDokumentumUrl() {
+        return dokumentumUrl;
+    }
+
+    public void setDokumentumUrl(String dokumentumUrl) {
+        this.dokumentumUrl = dokumentumUrl;
+    }
+
+    public String getDokumentumAzonosito() {
+        return dokumentumAzonosito;
+    }
+
+    public void setDokumentumAzonosito(String dokumentumAzonosito) {
+        this.dokumentumAzonosito = dokumentumAzonosito;
     }
 
     public MegrendelesekDTO getMegrendeles() {
@@ -77,6 +98,8 @@ public class MegrendelesDokumentumokDTO implements Serializable {
             "id=" + getId() +
             ", dokumentumTipusa='" + getDokumentumTipusa() + "'" +
             ", dokumentum='" + getDokumentum() + "'" +
+            ", dokumentumUrl='" + getDokumentumUrl() + "'" +
+            ", dokumentumAzonosito='" + getDokumentumAzonosito() + "'" +
             ", megrendeles=" + getMegrendeles() +
             "}";
     }

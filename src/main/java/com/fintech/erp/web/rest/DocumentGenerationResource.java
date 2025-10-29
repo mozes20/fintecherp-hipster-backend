@@ -3,6 +3,7 @@ package com.fintech.erp.web.rest;
 import com.fintech.erp.service.document.DocumentFormat;
 import com.fintech.erp.service.document.DocumentGenerationService;
 import com.fintech.erp.service.document.GeneratedDocumentResult;
+import com.fintech.erp.service.dto.SzerzodesesJogviszonyDokumentumDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
 import com.fintech.erp.web.rest.vm.DocumentGenerationRequest;
 import jakarta.validation.Valid;
@@ -47,7 +48,7 @@ public class DocumentGenerationResource {
     ) throws IOException {
         LOG.debug("REST request to generate document for jogviszony {} using template {}", jogviszonyId, request.getTemplateId());
         try {
-            GeneratedDocumentResult result = documentGenerationService.generateFromTemplate(
+            GeneratedDocumentResult<SzerzodesesJogviszonyDokumentumDTO> result = documentGenerationService.generateFromTemplate(
                 request.getTemplateId(),
                 jogviszonyId,
                 request.getPlaceholders(),

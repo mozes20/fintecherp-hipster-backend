@@ -1,13 +1,14 @@
 package com.fintech.erp.service;
 
-import com.fintech.erp.domain.*; // for static metamodels
 import com.fintech.erp.domain.MegrendelesDokumentumok;
+import com.fintech.erp.domain.MegrendelesDokumentumok_;
+import com.fintech.erp.domain.Megrendelesek_;
 import com.fintech.erp.repository.MegrendelesDokumentumokRepository;
 import com.fintech.erp.service.criteria.MegrendelesDokumentumokCriteria;
 import com.fintech.erp.service.dto.MegrendelesDokumentumokDTO;
 import com.fintech.erp.service.mapper.MegrendelesDokumentumokMapper;
 import jakarta.persistence.criteria.JoinType;
-import org.slf4j.Logger;
+import org.slf4j.Logger; // for static metamodels
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,8 +78,10 @@ public class MegrendelesDokumentumokQueryService extends QueryService<Megrendele
             specification = Specification.allOf(
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), MegrendelesDokumentumok_.id),
-                buildStringSpecification(criteria.getDokumentumTipusa(), MegrendelesDokumentumok_.dokumentumTipusa),
+                buildSpecification(criteria.getDokumentumTipusa(), MegrendelesDokumentumok_.dokumentumTipusa),
                 buildStringSpecification(criteria.getDokumentum(), MegrendelesDokumentumok_.dokumentum),
+                buildStringSpecification(criteria.getDokumentumUrl(), MegrendelesDokumentumok_.dokumentumUrl),
+                buildStringSpecification(criteria.getDokumentumAzonosito(), MegrendelesDokumentumok_.dokumentumAzonosito),
                 buildSpecification(criteria.getMegrendelesId(), root ->
                     root.join(MegrendelesDokumentumok_.megrendeles, JoinType.LEFT).get(Megrendelesek_.id)
                 )

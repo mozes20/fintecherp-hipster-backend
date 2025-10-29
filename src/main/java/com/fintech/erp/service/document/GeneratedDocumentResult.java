@@ -1,15 +1,13 @@
 package com.fintech.erp.service.document;
 
-import com.fintech.erp.service.dto.SzerzodesesJogviszonyDokumentumDTO;
-
-public class GeneratedDocumentResult {
+public class GeneratedDocumentResult<T> {
 
     private final byte[] data;
     private final String fileName;
     private final String contentType;
-    private final SzerzodesesJogviszonyDokumentumDTO persistedDocument;
+    private final T persistedDocument;
 
-    public GeneratedDocumentResult(byte[] data, String fileName, String contentType, SzerzodesesJogviszonyDokumentumDTO persistedDocument) {
+    public GeneratedDocumentResult(byte[] data, String fileName, String contentType, T persistedDocument) {
         this.data = data;
         this.fileName = fileName;
         this.contentType = contentType;
@@ -28,7 +26,7 @@ public class GeneratedDocumentResult {
         return contentType;
     }
 
-    public SzerzodesesJogviszonyDokumentumDTO getPersistedDocument() {
+    public T getPersistedDocument() {
         return persistedDocument;
     }
 }

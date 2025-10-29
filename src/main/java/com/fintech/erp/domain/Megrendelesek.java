@@ -1,7 +1,25 @@
 package com.fintech.erp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+import com.fintech.erp.domain.enumeration.Devizanem;
+import com.fintech.erp.domain.enumeration.DijazasTipusa;
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
+import com.fintech.erp.domain.enumeration.MegrendelesForras;
+import com.fintech.erp.domain.enumeration.MegrendelesStatusz;
+import com.fintech.erp.domain.enumeration.MegrendelesTipus;
+import com.fintech.erp.domain.enumeration.ResztvevoKollagaTipus;
+import com.fintech.erp.domain.enumeration.ResztvevoTipus;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,8 +43,9 @@ public class Megrendelesek implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "megrendeles_tipusa")
-    private String megrendelesTipusa;
+    private MegrendelesTipus megrendelesTipusa;
 
     @Column(name = "feladat_rovid_leirasa")
     private String feladatRovidLeirasa;
@@ -40,23 +59,48 @@ public class Megrendelesek implements Serializable {
     @Column(name = "megrendeles_vege")
     private LocalDate megrendelesVege;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "resztvevo_kollaga_tipusa")
-    private String resztvevoKollagaTipusa;
+    private ResztvevoKollagaTipus resztvevoKollagaTipusa;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "resztvevo_tipus")
+    private ResztvevoTipus resztvevoTipus;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "devizanem")
-    private String devizanem;
+    private Devizanem devizanem;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "dijazas_tipusa")
-    private String dijazasTipusa;
+    private DijazasTipusa dijazasTipusa;
 
     @Column(name = "dij_osszege", precision = 21, scale = 2)
     private BigDecimal dijOsszege;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "megrendeles_dokumentum_generalta")
-    private Boolean megrendelesDokumentumGeneralta;
+    private MegrendelesDokumentumEredet megrendelesDokumentumGeneralta;
 
     @Column(name = "ugyfel_megrendeles_id")
     private Long ugyfelMegrendelesId;
+
+    @Column(name = "megrendeles_szam", unique = true)
+    private String megrendelesSzam;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "megrendeles_statusz")
+    private MegrendelesStatusz megrendelesStatusz;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "megrendeles_forrasa")
+    private MegrendelesForras megrendelesForrasa;
+
+    @Column(name = "peldanyok_szama")
+    private Integer peldanyokSzama;
+
+    @Column(name = "szamlazando")
+    private Boolean szamlazando;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "megrendeloCeg", "vallalkozoCeg" }, allowSetters = true)
@@ -80,16 +124,16 @@ public class Megrendelesek implements Serializable {
         this.id = id;
     }
 
-    public String getMegrendelesTipusa() {
+    public MegrendelesTipus getMegrendelesTipusa() {
         return this.megrendelesTipusa;
     }
 
-    public Megrendelesek megrendelesTipusa(String megrendelesTipusa) {
+    public Megrendelesek megrendelesTipusa(MegrendelesTipus megrendelesTipusa) {
         this.setMegrendelesTipusa(megrendelesTipusa);
         return this;
     }
 
-    public void setMegrendelesTipusa(String megrendelesTipusa) {
+    public void setMegrendelesTipusa(MegrendelesTipus megrendelesTipusa) {
         this.megrendelesTipusa = megrendelesTipusa;
     }
 
@@ -145,42 +189,55 @@ public class Megrendelesek implements Serializable {
         this.megrendelesVege = megrendelesVege;
     }
 
-    public String getResztvevoKollagaTipusa() {
+    public ResztvevoKollagaTipus getResztvevoKollagaTipusa() {
         return this.resztvevoKollagaTipusa;
     }
 
-    public Megrendelesek resztvevoKollagaTipusa(String resztvevoKollagaTipusa) {
+    public Megrendelesek resztvevoKollagaTipusa(ResztvevoKollagaTipus resztvevoKollagaTipusa) {
         this.setResztvevoKollagaTipusa(resztvevoKollagaTipusa);
         return this;
     }
 
-    public void setResztvevoKollagaTipusa(String resztvevoKollagaTipusa) {
+    public void setResztvevoKollagaTipusa(ResztvevoKollagaTipus resztvevoKollagaTipusa) {
         this.resztvevoKollagaTipusa = resztvevoKollagaTipusa;
     }
 
-    public String getDevizanem() {
+    public ResztvevoTipus getResztvevoTipus() {
+        return this.resztvevoTipus;
+    }
+
+    public Megrendelesek resztvevoTipus(ResztvevoTipus resztvevoTipus) {
+        this.setResztvevoTipus(resztvevoTipus);
+        return this;
+    }
+
+    public void setResztvevoTipus(ResztvevoTipus resztvevoTipus) {
+        this.resztvevoTipus = resztvevoTipus;
+    }
+
+    public Devizanem getDevizanem() {
         return this.devizanem;
     }
 
-    public Megrendelesek devizanem(String devizanem) {
+    public Megrendelesek devizanem(Devizanem devizanem) {
         this.setDevizanem(devizanem);
         return this;
     }
 
-    public void setDevizanem(String devizanem) {
+    public void setDevizanem(Devizanem devizanem) {
         this.devizanem = devizanem;
     }
 
-    public String getDijazasTipusa() {
+    public DijazasTipusa getDijazasTipusa() {
         return this.dijazasTipusa;
     }
 
-    public Megrendelesek dijazasTipusa(String dijazasTipusa) {
+    public Megrendelesek dijazasTipusa(DijazasTipusa dijazasTipusa) {
         this.setDijazasTipusa(dijazasTipusa);
         return this;
     }
 
-    public void setDijazasTipusa(String dijazasTipusa) {
+    public void setDijazasTipusa(DijazasTipusa dijazasTipusa) {
         this.dijazasTipusa = dijazasTipusa;
     }
 
@@ -197,16 +254,16 @@ public class Megrendelesek implements Serializable {
         this.dijOsszege = dijOsszege;
     }
 
-    public Boolean getMegrendelesDokumentumGeneralta() {
+    public MegrendelesDokumentumEredet getMegrendelesDokumentumGeneralta() {
         return this.megrendelesDokumentumGeneralta;
     }
 
-    public Megrendelesek megrendelesDokumentumGeneralta(Boolean megrendelesDokumentumGeneralta) {
+    public Megrendelesek megrendelesDokumentumGeneralta(MegrendelesDokumentumEredet megrendelesDokumentumGeneralta) {
         this.setMegrendelesDokumentumGeneralta(megrendelesDokumentumGeneralta);
         return this;
     }
 
-    public void setMegrendelesDokumentumGeneralta(Boolean megrendelesDokumentumGeneralta) {
+    public void setMegrendelesDokumentumGeneralta(MegrendelesDokumentumEredet megrendelesDokumentumGeneralta) {
         this.megrendelesDokumentumGeneralta = megrendelesDokumentumGeneralta;
     }
 
@@ -221,6 +278,71 @@ public class Megrendelesek implements Serializable {
 
     public void setUgyfelMegrendelesId(Long ugyfelMegrendelesId) {
         this.ugyfelMegrendelesId = ugyfelMegrendelesId;
+    }
+
+    public String getMegrendelesSzam() {
+        return this.megrendelesSzam;
+    }
+
+    public Megrendelesek megrendelesSzam(String megrendelesSzam) {
+        this.setMegrendelesSzam(megrendelesSzam);
+        return this;
+    }
+
+    public void setMegrendelesSzam(String megrendelesSzam) {
+        this.megrendelesSzam = megrendelesSzam;
+    }
+
+    public MegrendelesStatusz getMegrendelesStatusz() {
+        return this.megrendelesStatusz;
+    }
+
+    public Megrendelesek megrendelesStatusz(MegrendelesStatusz megrendelesStatusz) {
+        this.setMegrendelesStatusz(megrendelesStatusz);
+        return this;
+    }
+
+    public void setMegrendelesStatusz(MegrendelesStatusz megrendelesStatusz) {
+        this.megrendelesStatusz = megrendelesStatusz;
+    }
+
+    public MegrendelesForras getMegrendelesForrasa() {
+        return this.megrendelesForrasa;
+    }
+
+    public Megrendelesek megrendelesForrasa(MegrendelesForras megrendelesForrasa) {
+        this.setMegrendelesForrasa(megrendelesForrasa);
+        return this;
+    }
+
+    public void setMegrendelesForrasa(MegrendelesForras megrendelesForrasa) {
+        this.megrendelesForrasa = megrendelesForrasa;
+    }
+
+    public Integer getPeldanyokSzama() {
+        return this.peldanyokSzama;
+    }
+
+    public Megrendelesek peldanyokSzama(Integer peldanyokSzama) {
+        this.setPeldanyokSzama(peldanyokSzama);
+        return this;
+    }
+
+    public void setPeldanyokSzama(Integer peldanyokSzama) {
+        this.peldanyokSzama = peldanyokSzama;
+    }
+
+    public Boolean getSzamlazando() {
+        return this.szamlazando;
+    }
+
+    public Megrendelesek szamlazando(Boolean szamlazando) {
+        this.setSzamlazando(szamlazando);
+        return this;
+    }
+
+    public void setSzamlazando(Boolean szamlazando) {
+        this.szamlazando = szamlazando;
     }
 
     public SzerzodesesJogviszonyok getSzerzodesesJogviszony() {
@@ -279,11 +401,17 @@ public class Megrendelesek implements Serializable {
             ", megrendelesKezdete='" + getMegrendelesKezdete() + "'" +
             ", megrendelesVege='" + getMegrendelesVege() + "'" +
             ", resztvevoKollagaTipusa='" + getResztvevoKollagaTipusa() + "'" +
+            ", resztvevoTipus='" + getResztvevoTipus() + "'" +
             ", devizanem='" + getDevizanem() + "'" +
             ", dijazasTipusa='" + getDijazasTipusa() + "'" +
             ", dijOsszege=" + getDijOsszege() +
             ", megrendelesDokumentumGeneralta='" + getMegrendelesDokumentumGeneralta() + "'" +
             ", ugyfelMegrendelesId=" + getUgyfelMegrendelesId() +
+            ", megrendelesSzam='" + getMegrendelesSzam() + "'" +
+            ", megrendelesStatusz='" + getMegrendelesStatusz() + "'" +
+            ", megrendelesForrasa='" + getMegrendelesForrasa() + "'" +
+            ", peldanyokSzama=" + getPeldanyokSzama() +
+            ", szamlazando='" + getSzamlazando() + "'" +
             "}";
     }
 }

@@ -40,7 +40,7 @@ public class DocumentGenerationService {
         this.docxTemplateEngine = docxTemplateEngine;
     }
 
-    public GeneratedDocumentResult generateFromTemplate(
+    public GeneratedDocumentResult<SzerzodesesJogviszonyDokumentumDTO> generateFromTemplate(
         Long templateId,
         Long szerzodesesJogviszonyId,
         Map<String, String> placeholders,
@@ -79,7 +79,7 @@ public class DocumentGenerationService {
             persisted = persistGeneratedDocument(outputBytes, effectiveFormat, szerzodesesJogviszonyId, fileName, replacements, tipusId);
         }
 
-        return new GeneratedDocumentResult(outputBytes, fileName, effectiveFormat.getContentType(), persisted);
+        return new GeneratedDocumentResult<>(outputBytes, fileName, effectiveFormat.getContentType(), persisted);
     }
 
     private SzerzodesesJogviszonyDokumentumDTO persistGeneratedDocument(

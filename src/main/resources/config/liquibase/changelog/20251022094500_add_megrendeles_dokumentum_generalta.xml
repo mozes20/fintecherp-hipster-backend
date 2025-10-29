@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Add the document origin enum column for megrendelesek.
+    -->
+    <changeSet id="20251022094500-1" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <columnExists tableName="megrendelesek" columnName="megrendeles_dokumentum_generalta" />
+            </not>
+        </preConditions>
+
+        <addColumn tableName="megrendelesek">
+            <column name="megrendeles_dokumentum_generalta" type="varchar(30)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <update tableName="megrendelesek">
+            <column name="megrendeles_dokumentum_generalta" value="KEZI" />
+            <where>megrendeles_dokumentum_generalta IS NULL</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>
