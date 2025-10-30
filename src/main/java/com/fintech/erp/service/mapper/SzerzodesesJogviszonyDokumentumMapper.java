@@ -1,12 +1,14 @@
 package com.fintech.erp.service.mapper;
 
-import com.fintech.erp.domain.SzerzodesDokumentumTipus;
 import com.fintech.erp.domain.SzerzodesesJogviszonyDokumentum;
 import com.fintech.erp.domain.SzerzodesesJogviszonyok;
-import com.fintech.erp.service.dto.SzerzodesDokumentumTipusDTO;
 import com.fintech.erp.service.dto.SzerzodesesJogviszonyDokumentumDTO;
 import com.fintech.erp.service.dto.SzerzodesesJogviszonyokDTO;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 
 /**
  * Mapper for the entity {@link SzerzodesesJogviszonyDokumentum} and its DTO {@link SzerzodesesJogviszonyDokumentumDTO}.
@@ -15,14 +17,11 @@ import org.mapstruct.*;
 public interface SzerzodesesJogviszonyDokumentumMapper
     extends EntityMapper<SzerzodesesJogviszonyDokumentumDTO, SzerzodesesJogviszonyDokumentum> {
     @Override
-    @Mapping(target = "dokumentumTipus", source = "dokumentumTipus", qualifiedByName = "szerzodesDokumentumTipusId")
-    @Mapping(target = "dokumentumTipusId", source = "dokumentumTipus.id")
     @Mapping(target = "szerzodesesJogviszony", source = "szerzodesesJogviszony", qualifiedByName = "szerzodesesJogviszonyokForDocument")
     @Mapping(target = "szerzodesesJogviszonyId", source = "szerzodesesJogviszony.id")
     SzerzodesesJogviszonyDokumentumDTO toDto(SzerzodesesJogviszonyDokumentum entity);
 
     @Override
-    @Mapping(target = "dokumentumTipus", source = "dokumentumTipusId", qualifiedByName = "szerzodesDokumentumTipusFromId")
     @Mapping(target = "szerzodesesJogviszony", source = "szerzodesesJogviszonyId", qualifiedByName = "szerzodesesJogviszonyFromId")
     SzerzodesesJogviszonyDokumentum toEntity(SzerzodesesJogviszonyDokumentumDTO dto);
 
@@ -34,25 +33,9 @@ public interface SzerzodesesJogviszonyDokumentumMapper
     @Mapping(target = "fajlUtvonal", source = "fajlUtvonal")
     @Mapping(target = "contentType", source = "contentType")
     @Mapping(target = "feltoltesIdeje", source = "feltoltesIdeje")
-    @Mapping(target = "dokumentumTipus", source = "dokumentumTipusId", qualifiedByName = "szerzodesDokumentumTipusFromId")
+    @Mapping(target = "dokumentumTipus", source = "dokumentumTipus")
     @Mapping(target = "szerzodesesJogviszony", source = "szerzodesesJogviszonyId", qualifiedByName = "szerzodesesJogviszonyFromId")
     void partialUpdate(@MappingTarget SzerzodesesJogviszonyDokumentum entity, SzerzodesesJogviszonyDokumentumDTO dto);
-
-    @Named("szerzodesDokumentumTipusId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "nev", source = "nev")
-    SzerzodesDokumentumTipusDTO toDtoSzerzodesDokumentumTipusId(SzerzodesDokumentumTipus dokumentumTipus);
-
-    @Named("szerzodesDokumentumTipusFromId")
-    default SzerzodesDokumentumTipus mapToSzerzodesDokumentumTipus(Long id) {
-        if (id == null) {
-            return null;
-        }
-        SzerzodesDokumentumTipus dokumentumTipus = new SzerzodesDokumentumTipus();
-        dokumentumTipus.setId(id);
-        return dokumentumTipus;
-    }
 
     @Named("szerzodesesJogviszonyokForDocument")
     @BeanMapping(ignoreByDefault = true)

@@ -1,5 +1,6 @@
 package com.fintech.erp.web.rest;
 
+import com.fintech.erp.repository.SzerzodesesJogviszonyokRepository;
 import com.fintech.erp.service.document.DocumentFormat;
 import com.fintech.erp.service.document.DocumentGenerationService;
 import com.fintech.erp.service.document.GeneratedDocumentResult;
@@ -36,9 +37,14 @@ public class DocumentGenerationResource {
     private String applicationName;
 
     private final DocumentGenerationService documentGenerationService;
+    private final SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository;
 
-    public DocumentGenerationResource(DocumentGenerationService documentGenerationService) {
+    public DocumentGenerationResource(
+        DocumentGenerationService documentGenerationService,
+        SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository
+    ) {
         this.documentGenerationService = documentGenerationService;
+        this.szerzodesesJogviszonyokRepository = szerzodesesJogviszonyokRepository;
     }
 
     @PostMapping("/{jogviszonyId}/generate")
@@ -47,6 +53,9 @@ public class DocumentGenerationResource {
         @Valid @RequestBody DocumentGenerationRequest request
     ) throws IOException {
         LOG.debug("REST request to generate document for jogviszony {} using template {}", jogviszonyId, request.getTemplateId());
+        if (jogviszonyId == null || !szerzodesesJogviszonyokRepository.existsById(jogviszonyId)) {
+            throw new BadRequestAlertException("A megadott szerződéses jogviszony nem található", ENTITY_NAME, "jogviszonynotfound");
+        }
         try {
             GeneratedDocumentResult<SzerzodesesJogviszonyDokumentumDTO> result = documentGenerationService.generateFromTemplate(
                 request.getTemplateId(),
@@ -55,7 +64,7 @@ public class DocumentGenerationResource {
                 Optional.ofNullable(request.getFormat()).orElse(DocumentFormat.DOCX),
                 request.isPersist(),
                 request.getDokumentumNev(),
-                request.getDokumentumTipusId()
+                request.getDokumentumTipus()
             );
             ByteArrayResource resource = new ByteArrayResource(result.getData());
             HttpHeaders headers = new HttpHeaders();

@@ -7,6 +7,7 @@ import static com.fintech.erp.web.rest.TestUtil.createUpdateProxyForBean;
 import static com.fintech.erp.web.rest.TestUtil.sameNumber;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -21,16 +22,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintech.erp.IntegrationTest;
 import com.fintech.erp.domain.CegAlapadatok;
 import com.fintech.erp.domain.Maganszemelyek;
+import com.fintech.erp.domain.MegrendelesDokumentumok;
 import com.fintech.erp.domain.Megrendelesek;
 import com.fintech.erp.domain.SzerzodesesJogviszonyok;
 import com.fintech.erp.domain.enumeration.Devizanem;
 import com.fintech.erp.domain.enumeration.DijazasTipusa;
 import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumTipus;
 import com.fintech.erp.domain.enumeration.MegrendelesForras;
 import com.fintech.erp.domain.enumeration.MegrendelesStatusz;
 import com.fintech.erp.domain.enumeration.MegrendelesTipus;
 import com.fintech.erp.domain.enumeration.ResztvevoKollagaTipus;
 import com.fintech.erp.domain.enumeration.ResztvevoTipus;
+import com.fintech.erp.repository.MegrendelesDokumentumokRepository;
 import com.fintech.erp.repository.MegrendelesekRepository;
 import com.fintech.erp.service.dto.MegrendelesekDTO;
 import com.fintech.erp.service.mapper.MegrendelesekMapper;
@@ -127,6 +131,9 @@ class MegrendelesekResourceIT {
     private MegrendelesekRepository megrendelesekRepository;
 
     @Autowired
+    private MegrendelesDokumentumokRepository megrendelesDokumentumokRepository;
+
+    @Autowired
     private MegrendelesekMapper megrendelesekMapper;
 
     @Autowired
@@ -138,6 +145,8 @@ class MegrendelesekResourceIT {
     private Megrendelesek megrendelesek;
 
     private Megrendelesek insertedMegrendelesek;
+
+    private MegrendelesDokumentumok insertedMegrendelesDokumentum;
 
     /**
      * Create an entity for this test.
@@ -200,6 +209,10 @@ class MegrendelesekResourceIT {
 
     @AfterEach
     void cleanup() {
+        if (insertedMegrendelesDokumentum != null) {
+            megrendelesDokumentumokRepository.delete(insertedMegrendelesDokumentum);
+            insertedMegrendelesDokumentum = null;
+        }
         if (insertedMegrendelesek != null) {
             megrendelesekRepository.delete(insertedMegrendelesek);
             insertedMegrendelesek = null;
@@ -402,6 +415,28 @@ class MegrendelesekResourceIT {
 
         // Get all the megrendelesekList where feladatRovidLeirasa is not null
         defaultMegrendelesekFiltering("feladatRovidLeirasa.specified=true", "feladatRovidLeirasa.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getDocumentsForMegrendelesReturnsAssignedDocuments() throws Exception {
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        MegrendelesDokumentumok dokumentum = new MegrendelesDokumentumok()
+            .dokumentumTipusa(MegrendelesDokumentumTipus.KEZI_WORD)
+            .dokumentum("uploads/megrendelesek/" + insertedMegrendelesek.getId() + "/test.docx")
+            .dokumentumAzonosito("001")
+            .megrendeles(insertedMegrendelesek);
+        insertedMegrendelesDokumentum = megrendelesDokumentumokRepository.saveAndFlush(dokumentum);
+
+        restMegrendelesekMockMvc
+            .perform(get(ENTITY_API_URL_ID + "/dokumentumok", insertedMegrendelesek.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$.[0].id").value(insertedMegrendelesDokumentum.getId().intValue()))
+            .andExpect(jsonPath("$.[0].dokumentumTipusa").value(MegrendelesDokumentumTipus.KEZI_WORD.toString()))
+            .andExpect(jsonPath("$.[0].megrendeles.id").value(insertedMegrendelesek.getId().intValue()));
     }
 
     @Test

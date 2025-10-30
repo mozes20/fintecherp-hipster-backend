@@ -1,9 +1,11 @@
 package com.fintech.erp.web.rest;
 
 import com.fintech.erp.repository.SzerzodesesJogviszonyokRepository;
+import com.fintech.erp.service.SzerzodesesJogviszonyDokumentumService;
 import com.fintech.erp.service.SzerzodesesJogviszonyokQueryService;
 import com.fintech.erp.service.SzerzodesesJogviszonyokService;
 import com.fintech.erp.service.criteria.SzerzodesesJogviszonyokCriteria;
+import com.fintech.erp.service.dto.SzerzodesesJogviszonyDokumentumDTO;
 import com.fintech.erp.service.dto.SzerzodesesJogviszonyokDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -19,7 +21,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -45,14 +55,18 @@ public class SzerzodesesJogviszonyokResource {
 
     private final SzerzodesesJogviszonyokQueryService szerzodesesJogviszonyokQueryService;
 
+    private final SzerzodesesJogviszonyDokumentumService szerzodesesJogviszonyDokumentumService;
+
     public SzerzodesesJogviszonyokResource(
         SzerzodesesJogviszonyokService szerzodesesJogviszonyokService,
         SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository,
-        SzerzodesesJogviszonyokQueryService szerzodesesJogviszonyokQueryService
+        SzerzodesesJogviszonyokQueryService szerzodesesJogviszonyokQueryService,
+        SzerzodesesJogviszonyDokumentumService szerzodesesJogviszonyDokumentumService
     ) {
         this.szerzodesesJogviszonyokService = szerzodesesJogviszonyokService;
         this.szerzodesesJogviszonyokRepository = szerzodesesJogviszonyokRepository;
         this.szerzodesesJogviszonyokQueryService = szerzodesesJogviszonyokQueryService;
+        this.szerzodesesJogviszonyDokumentumService = szerzodesesJogviszonyDokumentumService;
     }
 
     /**
@@ -176,6 +190,16 @@ public class SzerzodesesJogviszonyokResource {
         Page<SzerzodesesJogviszonyokDTO> page = szerzodesesJogviszonyokQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/{id}/dokumentumok")
+    public ResponseEntity<List<SzerzodesesJogviszonyDokumentumDTO>> getDocumentsForJogviszony(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get documents for SzerzodesesJogviszonyok : {}", id);
+        if (!szerzodesesJogviszonyokRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        List<SzerzodesesJogviszonyDokumentumDTO> documents = szerzodesesJogviszonyDokumentumService.findAllBySzerzodesesJogviszony(id);
+        return ResponseEntity.ok(documents);
     }
 
     /**

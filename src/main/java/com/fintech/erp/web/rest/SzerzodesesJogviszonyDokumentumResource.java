@@ -2,8 +2,10 @@ package com.fintech.erp.web.rest;
 
 import com.fintech.erp.repository.SzerzodesesJogviszonyokRepository;
 import com.fintech.erp.service.SzerzodesesJogviszonyDokumentumService;
+import com.fintech.erp.service.document.SzerzodesesJogviszonyTemplatePlaceholderService;
 import com.fintech.erp.service.dto.SzerzodesesJogviszonyDokumentumDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
+import com.fintech.erp.web.rest.vm.TemplatePlaceholderResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
@@ -27,7 +29,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -54,18 +65,22 @@ public class SzerzodesesJogviszonyDokumentumResource {
 
     private final SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository;
 
+    private final SzerzodesesJogviszonyTemplatePlaceholderService placeholderService;
+
     public SzerzodesesJogviszonyDokumentumResource(
         SzerzodesesJogviszonyDokumentumService dokumentumService,
-        SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository
+        SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository,
+        SzerzodesesJogviszonyTemplatePlaceholderService placeholderService
     ) {
         this.dokumentumService = dokumentumService;
         this.szerzodesesJogviszonyokRepository = szerzodesesJogviszonyokRepository;
+        this.placeholderService = placeholderService;
     }
 
     @PostMapping("/upload")
     public ResponseEntity<SzerzodesesJogviszonyDokumentumDTO> uploadDokumentum(
         @RequestParam("file") MultipartFile file,
-        @RequestParam("dokumentumTipusId") Long dokumentumTipusId,
+        @RequestParam("dokumentumTipus") String dokumentumTipus,
         @RequestParam("szerzodesesJogviszonyId") Long szerzodesesJogviszonyId,
         @RequestParam(value = "dokumentumNev", required = false) String dokumentumNev,
         @RequestParam(value = "leiras", required = false) String leiras
@@ -77,6 +92,9 @@ public class SzerzodesesJogviszonyDokumentumResource {
         if (file.isEmpty()) {
             throw new BadRequestAlertException("A feltöltött fájl üres", ENTITY_NAME, "emptyfile");
         }
+        if (dokumentumTipus == null || dokumentumTipus.isBlank()) {
+            throw new BadRequestAlertException("A dokumentumtípus megadása kötelező", ENTITY_NAME, "dokumentumtipusmissing");
+        }
         Path uploadDir = getDocumentUploadDir(szerzodesesJogviszonyId);
         Files.createDirectories(uploadDir);
         String extension = getExtension(file.getOriginalFilename());
@@ -85,7 +103,7 @@ public class SzerzodesesJogviszonyDokumentumResource {
         Files.copy(file.getInputStream(), target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
         SzerzodesesJogviszonyDokumentumDTO dto = new SzerzodesesJogviszonyDokumentumDTO();
-        dto.setDokumentumTipusId(dokumentumTipusId);
+        dto.setDokumentumTipus(dokumentumTipus.trim());
         dto.setSzerzodesesJogviszonyId(szerzodesesJogviszonyId);
         dto.setDokumentumNev(dokumentumNev != null && !dokumentumNev.isBlank() ? dokumentumNev : file.getOriginalFilename());
         dto.setLeiras(leiras);
@@ -102,6 +120,22 @@ public class SzerzodesesJogviszonyDokumentumResource {
         LOG.debug("REST request to get documents for jogviszony : {}", jogviszonyId);
         List<SzerzodesesJogviszonyDokumentumDTO> result = dokumentumService.findAllBySzerzodesesJogviszony(jogviszonyId);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/jogviszony/{jogviszonyId}/placeholders")
+    public ResponseEntity<TemplatePlaceholderResponse> getTemplatePlaceholders(@PathVariable("jogviszonyId") Long jogviszonyId) {
+        LOG.debug("REST request to get template placeholders for jogviszony : {}", jogviszonyId);
+        if (jogviszonyId == null) {
+            throw new BadRequestAlertException("A jogviszony azonosító megadása kötelező", ENTITY_NAME, "jogviszonyidnull");
+        }
+        if (!szerzodesesJogviszonyokRepository.existsById(jogviszonyId)) {
+            throw new BadRequestAlertException("A megadott szerződéses jogviszony nem található", ENTITY_NAME, "jogviszonynotfound");
+        }
+        TemplatePlaceholderResponse response = new TemplatePlaceholderResponse()
+            .withEntityId(jogviszonyId)
+            .withValues(placeholderService.build(jogviszonyId))
+            .withDefinitions(placeholderService.getDefinitions());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/download")
@@ -215,7 +249,7 @@ public class SzerzodesesJogviszonyDokumentumResource {
     }
 
     private String getRelativePath(Path baseDir, Path filePath) {
-        return baseDir.relativize(filePath).toString();
+        return baseDir.relativize(filePath).toString().replace("\\", "/");
     }
 
     private String getExtension(String filename) {

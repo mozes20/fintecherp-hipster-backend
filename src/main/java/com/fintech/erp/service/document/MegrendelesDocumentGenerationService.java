@@ -1,6 +1,7 @@
 package com.fintech.erp.service.document;
 
 import com.fintech.erp.domain.MegrendelesDokumentumTemplate;
+import com.fintech.erp.domain.Megrendelesek;
 import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
 import com.fintech.erp.domain.enumeration.MegrendelesDokumentumTipus;
 import com.fintech.erp.repository.MegrendelesDokumentumTemplateRepository;
@@ -15,7 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,17 +34,20 @@ public class MegrendelesDocumentGenerationService {
     private final MegrendelesDokumentumokService dokumentumokService;
     private final MegrendelesekRepository megrendelesekRepository;
     private final DocxTemplateEngine docxTemplateEngine;
+    private final MegrendelesTemplatePlaceholderService placeholderService;
 
     public MegrendelesDocumentGenerationService(
         MegrendelesDokumentumTemplateRepository templateRepository,
         MegrendelesDokumentumokService dokumentumokService,
         MegrendelesekRepository megrendelesekRepository,
-        DocxTemplateEngine docxTemplateEngine
+        DocxTemplateEngine docxTemplateEngine,
+        MegrendelesTemplatePlaceholderService placeholderService
     ) {
         this.templateRepository = templateRepository;
         this.dokumentumokService = dokumentumokService;
         this.megrendelesekRepository = megrendelesekRepository;
         this.docxTemplateEngine = docxTemplateEngine;
+        this.placeholderService = placeholderService;
     }
 
     public GeneratedDocumentResult<MegrendelesDokumentumokDTO> generateFromTemplate(
@@ -64,7 +68,17 @@ public class MegrendelesDocumentGenerationService {
             throw new IOException("A sablon fájl nem található: " + templatePath);
         }
 
-        Map<String, String> replacements = placeholders != null ? placeholders : Collections.emptyMap();
+        Megrendelesek megrendeles = null;
+        if (megrendelesId != null) {
+            megrendeles = megrendelesekRepository
+                .findById(megrendelesId)
+                .orElseThrow(() -> new IllegalArgumentException("A megadott megrendeles nem talalhato"));
+        }
+
+        Map<String, String> replacements = new LinkedHashMap<>(placeholderService.build(megrendeles));
+        if (placeholders != null && !placeholders.isEmpty()) {
+            replacements.putAll(placeholders);
+        }
         byte[] filledDocx = docxTemplateEngine.populateTemplate(templatePath, replacements);
 
         DocumentFormat effectiveFormat = format != null ? format : DocumentFormat.DOCX;
@@ -76,7 +90,7 @@ public class MegrendelesDocumentGenerationService {
         MegrendelesDokumentumokDTO persisted = null;
         if (persist) {
             persisted = persistGeneratedDocument(outputBytes, effectiveFormat, megrendelesId);
-            markOrderAsGenerated(megrendelesId);
+            markOrderAsGenerated(megrendeles);
         }
 
         return new GeneratedDocumentResult<>(outputBytes, fileName, effectiveFormat.getContentType(), persisted);
@@ -105,16 +119,12 @@ public class MegrendelesDocumentGenerationService {
         return dokumentumokService.save(dto);
     }
 
-    private void markOrderAsGenerated(Long megrendelesId) {
-        if (megrendelesId == null) {
+    private void markOrderAsGenerated(Megrendelesek megrendeles) {
+        if (megrendeles == null || megrendeles.getId() == null) {
             return;
         }
-        megrendelesekRepository
-            .findById(megrendelesId)
-            .ifPresent(order -> {
-                order.setMegrendelesDokumentumGeneralta(MegrendelesDokumentumEredet.GENERALTA);
-                megrendelesekRepository.save(order);
-            });
+        megrendeles.setMegrendelesDokumentumGeneralta(MegrendelesDokumentumEredet.GENERALTA);
+        megrendelesekRepository.save(megrendeles);
     }
 
     private Path getTemplateBaseDir() {

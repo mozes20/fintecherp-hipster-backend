@@ -1,7 +1,12 @@
 package com.fintech.erp.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.Instant;
@@ -39,9 +44,9 @@ public class SzerzodesesJogviszonyDokumentumTemplate implements Serializable {
     @Column(name = "utolso_modositas")
     private Instant utolsoModositas = Instant.now();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "templatek", "dokumentumok" }, allowSetters = true)
-    private SzerzodesDokumentumTipus dokumentumTipus;
+    @NotBlank
+    @Column(name = "dokumentum_tipus", nullable = false)
+    private String dokumentumTipus;
 
     public Long getId() {
         return this.id;
@@ -108,15 +113,15 @@ public class SzerzodesesJogviszonyDokumentumTemplate implements Serializable {
         return this;
     }
 
-    public SzerzodesDokumentumTipus getDokumentumTipus() {
+    public String getDokumentumTipus() {
         return this.dokumentumTipus;
     }
 
-    public void setDokumentumTipus(SzerzodesDokumentumTipus dokumentumTipus) {
+    public void setDokumentumTipus(String dokumentumTipus) {
         this.dokumentumTipus = dokumentumTipus;
     }
 
-    public SzerzodesesJogviszonyDokumentumTemplate dokumentumTipus(SzerzodesDokumentumTipus dokumentumTipus) {
+    public SzerzodesesJogviszonyDokumentumTemplate dokumentumTipus(String dokumentumTipus) {
         this.setDokumentumTipus(dokumentumTipus);
         return this;
     }

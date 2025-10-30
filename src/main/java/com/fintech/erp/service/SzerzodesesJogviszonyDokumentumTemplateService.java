@@ -73,6 +73,15 @@ public class SzerzodesesJogviszonyDokumentumTemplateService {
         return templateRepository.findById(id).map(templateMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    public Optional<SzerzodesesJogviszonyDokumentumTemplate> findLatestForDokumentumTipus(String dokumentumTipus) {
+        LOG.debug("Request to get latest template for dokumentumTipus : {}", dokumentumTipus);
+        if (dokumentumTipus == null || dokumentumTipus.isBlank()) {
+            return Optional.empty();
+        }
+        return templateRepository.findFirstByDokumentumTipusOrderByUtolsoModositasDesc(dokumentumTipus.trim());
+    }
+
     public void delete(Long id) {
         LOG.debug("Request to delete SzerzodesesJogviszonyDokumentumTemplate : {}", id);
         templateRepository.deleteById(id);

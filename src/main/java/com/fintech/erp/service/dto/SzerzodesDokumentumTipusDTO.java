@@ -5,8 +5,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * A DTO for the {@link com.fintech.erp.domain.SzerzodesDokumentumTipus} entity.
+ * @deprecated Legacy DTO retained for compatibility with removed dokumentum tipus endpoints.
  */
+@Deprecated
 public class SzerzodesDokumentumTipusDTO implements Serializable {
 
     private Long id;

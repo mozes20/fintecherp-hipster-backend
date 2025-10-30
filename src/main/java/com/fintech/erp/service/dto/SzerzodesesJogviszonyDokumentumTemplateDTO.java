@@ -1,7 +1,6 @@
 package com.fintech.erp.service.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
@@ -23,10 +22,8 @@ public class SzerzodesesJogviszonyDokumentumTemplateDTO implements Serializable 
 
     private Instant utolsoModositas;
 
-    private SzerzodesDokumentumTipusDTO dokumentumTipus;
-
-    @NotNull
-    private Long dokumentumTipusId;
+    @NotBlank
+    private String dokumentumTipus;
 
     public Long getId() {
         return id;
@@ -68,20 +65,12 @@ public class SzerzodesesJogviszonyDokumentumTemplateDTO implements Serializable 
         this.utolsoModositas = utolsoModositas;
     }
 
-    public SzerzodesDokumentumTipusDTO getDokumentumTipus() {
+    public String getDokumentumTipus() {
         return dokumentumTipus;
     }
 
-    public void setDokumentumTipus(SzerzodesDokumentumTipusDTO dokumentumTipus) {
+    public void setDokumentumTipus(String dokumentumTipus) {
         this.dokumentumTipus = dokumentumTipus;
-    }
-
-    public Long getDokumentumTipusId() {
-        return dokumentumTipusId;
-    }
-
-    public void setDokumentumTipusId(Long dokumentumTipusId) {
-        this.dokumentumTipusId = dokumentumTipusId;
     }
 
     @Override
@@ -116,8 +105,9 @@ public class SzerzodesesJogviszonyDokumentumTemplateDTO implements Serializable 
             ", fajlUtvonal='" +
             fajlUtvonal +
             '\'' +
-            ", dokumentumTipusId=" +
-            dokumentumTipusId +
+            ", dokumentumTipus='" +
+            dokumentumTipus +
+            '\'' +
             '}'
         );
     }

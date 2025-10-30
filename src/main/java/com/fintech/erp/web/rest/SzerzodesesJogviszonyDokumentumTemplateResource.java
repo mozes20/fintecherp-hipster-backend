@@ -25,7 +25,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -57,12 +66,15 @@ public class SzerzodesesJogviszonyDokumentumTemplateResource {
     @PostMapping("/upload")
     public ResponseEntity<SzerzodesesJogviszonyDokumentumTemplateDTO> uploadTemplate(
         @RequestParam("file") MultipartFile file,
-        @RequestParam("dokumentumTipusId") Long dokumentumTipusId,
+        @RequestParam("dokumentumTipus") String dokumentumTipus,
         @RequestParam("templateNev") String templateNev,
         @RequestParam(value = "templateLeiras", required = false) String templateLeiras
     ) throws IOException {
         LOG.debug("REST request to upload template file: {}", file.getOriginalFilename());
         validateDocx(file);
+        if (dokumentumTipus == null || dokumentumTipus.isBlank()) {
+            throw new BadRequestAlertException("A dokumentumtípus megadása kötelező", ENTITY_NAME, "dokumentumtipusmissing");
+        }
         Path uploadDir = getTemplateUploadDir();
         Files.createDirectories(uploadDir);
         String extension = getExtension(file.getOriginalFilename());
@@ -73,7 +85,7 @@ public class SzerzodesesJogviszonyDokumentumTemplateResource {
         SzerzodesesJogviszonyDokumentumTemplateDTO dto = new SzerzodesesJogviszonyDokumentumTemplateDTO();
         dto.setTemplateNev(templateNev);
         dto.setTemplateLeiras(templateLeiras);
-        dto.setDokumentumTipusId(dokumentumTipusId);
+        dto.setDokumentumTipus(dokumentumTipus.trim());
         dto.setFajlUtvonal(uploadDir.relativize(target).toString());
         dto.setUtolsoModositas(java.time.Instant.now());
 

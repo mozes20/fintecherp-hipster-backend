@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20251029100000-1" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="szerzodeses_jogviszony_dokumentum_template" columnName="dokumentum_tipus"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="szerzodeses_jogviszony_dokumentum_template">
+            <column name="dokumentum_tipus" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20251029100000-2" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <columnExists tableName="szerzodeses_jogviszony_dokumentum_template" columnName="dokumentum_tipus"/>
+                <columnExists tableName="szerzodeses_jogviszony_dokumentum_template" columnName="dokumentum_tipus_id"/>
+                <tableExists tableName="szerzodes_dokumentum_tipus"/>
+            </and>
+        </preConditions>
+        <sql>
+            UPDATE szerzodeses_jogviszony_dokumentum_template s
+            SET dokumentum_tipus = (
+                SELECT sd.nev
+                FROM szerzodes_dokumentum_tipus sd
+                WHERE sd.id = s.dokumentum_tipus_id
+            )
+            WHERE s.dokumentum_tipus IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20251029100000-3" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <columnExists tableName="szerzodeses_jogviszony_dokumentum_template" columnName="dokumentum_tipus"/>
+                <sqlCheck expectedResult="1">
+                    SELECT CASE WHEN EXISTS(
+                        SELECT 1 FROM szerzodeses_jogviszony_dokumentum_template WHERE dokumentum_tipus IS NULL
+                    ) THEN 1 ELSE 0 END
+                </sqlCheck>
+            </and>
+        </preConditions>
+        <sql>
+            UPDATE szerzodeses_jogviszony_dokumentum_template
+            SET dokumentum_tipus = 'UNKNOWN'
+            WHERE dokumentum_tipus IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20251029100000-4" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="szerzodeses_jogviszony_dokumentum_template" columnName="dokumentum_tipus"/>
+        </preConditions>
+        <addNotNullConstraint tableName="szerzodeses_jogviszony_dokumentum_template" columnName="dokumentum_tipus" columnDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="20251029100000-5" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="szerzodeses_jogviszony_dokumentum_template" columnName="dokumentum_tipus_id"/>
+        </preConditions>
+        <dropColumn tableName="szerzodeses_jogviszony_dokumentum_template" columnName="dokumentum_tipus_id"/>
+    </changeSet>
+
+    <changeSet id="20251029100000-6" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="szerzodeses_jogviszony_dokumentum" columnName="dokumentum_tipus"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="szerzodeses_jogviszony_dokumentum">
+            <column name="dokumentum_tipus" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20251029100000-7" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <columnExists tableName="szerzodeses_jogviszony_dokumentum" columnName="dokumentum_tipus"/>
+                <columnExists tableName="szerzodeses_jogviszony_dokumentum" columnName="dokumentum_tipus_id"/>
+                <tableExists tableName="szerzodes_dokumentum_tipus"/>
+            </and>
+        </preConditions>
+        <sql>
+            UPDATE szerzodeses_jogviszony_dokumentum s
+            SET dokumentum_tipus = (
+                SELECT sd.nev
+                FROM szerzodes_dokumentum_tipus sd
+                WHERE sd.id = s.dokumentum_tipus_id
+            )
+            WHERE s.dokumentum_tipus IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20251029100000-8" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <and>
+                <columnExists tableName="szerzodeses_jogviszony_dokumentum" columnName="dokumentum_tipus"/>
+                <sqlCheck expectedResult="1">
+                    SELECT CASE WHEN EXISTS(
+                        SELECT 1 FROM szerzodeses_jogviszony_dokumentum WHERE dokumentum_tipus IS NULL
+                    ) THEN 1 ELSE 0 END
+                </sqlCheck>
+            </and>
+        </preConditions>
+        <sql>
+            UPDATE szerzodeses_jogviszony_dokumentum
+            SET dokumentum_tipus = 'UNKNOWN'
+            WHERE dokumentum_tipus IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20251029100000-9" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="szerzodeses_jogviszony_dokumentum" columnName="dokumentum_tipus"/>
+        </preConditions>
+        <addNotNullConstraint tableName="szerzodeses_jogviszony_dokumentum" columnName="dokumentum_tipus" columnDataType="varchar(255)"/>
+    </changeSet>
+
+    <changeSet id="20251029100000-10" author="copilot">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="szerzodeses_jogviszony_dokumentum" columnName="dokumentum_tipus_id"/>
+        </preConditions>
+        <dropColumn tableName="szerzodeses_jogviszony_dokumentum" columnName="dokumentum_tipus_id"/>
+    </changeSet>
+</databaseChangeLog>
