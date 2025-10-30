@@ -4,6 +4,7 @@ import com.fintech.erp.domain.SzerzodesesJogviszonyDokumentumTemplate;
 import com.fintech.erp.repository.SzerzodesesJogviszonyDokumentumTemplateRepository;
 import com.fintech.erp.service.SzerzodesesJogviszonyDokumentumService;
 import com.fintech.erp.service.dto.SzerzodesesJogviszonyDokumentumDTO;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -12,7 +13,7 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,15 +30,18 @@ public class DocumentGenerationService {
     private final SzerzodesesJogviszonyDokumentumTemplateRepository templateRepository;
     private final SzerzodesesJogviszonyDokumentumService dokumentumService;
     private final DocxTemplateEngine docxTemplateEngine;
+    private final SzerzodesesJogviszonyTemplatePlaceholderService placeholderService;
 
     public DocumentGenerationService(
         SzerzodesesJogviszonyDokumentumTemplateRepository templateRepository,
         SzerzodesesJogviszonyDokumentumService dokumentumService,
-        DocxTemplateEngine docxTemplateEngine
+        DocxTemplateEngine docxTemplateEngine,
+        SzerzodesesJogviszonyTemplatePlaceholderService placeholderService
     ) {
         this.templateRepository = templateRepository;
         this.dokumentumService = dokumentumService;
         this.docxTemplateEngine = docxTemplateEngine;
+        this.placeholderService = placeholderService;
     }
 
     public GeneratedDocumentResult<SzerzodesesJogviszonyDokumentumDTO> generateFromTemplate(
@@ -47,7 +51,7 @@ public class DocumentGenerationService {
         DocumentFormat format,
         boolean persist,
         String dokumentumNev,
-        Long dokumentumTipusId
+        String dokumentumTipus
     ) throws IOException {
         LOG.debug("Generating document from template {} for jogviszony {}", templateId, szerzodesesJogviszonyId);
         SzerzodesesJogviszonyDokumentumTemplate template = templateRepository
@@ -59,7 +63,17 @@ public class DocumentGenerationService {
             throw new IOException("A sablon fájl nem található: " + templatePath);
         }
 
-        Map<String, String> replacements = placeholders != null ? placeholders : Collections.emptyMap();
+        Map<String, String> replacements = new LinkedHashMap<>();
+        if (szerzodesesJogviszonyId != null) {
+            try {
+                replacements.putAll(placeholderService.build(szerzodesesJogviszonyId));
+            } catch (EntityNotFoundException ex) {
+                throw new IllegalArgumentException("A megadott szerződéses jogviszony nem található", ex);
+            }
+        }
+        if (placeholders != null && !placeholders.isEmpty()) {
+            replacements.putAll(placeholders);
+        }
         byte[] filledDocx = docxTemplateEngine.populateTemplate(templatePath, replacements);
 
         DocumentFormat effectiveFormat = format != null ? format : DocumentFormat.DOCX;
@@ -70,13 +84,14 @@ public class DocumentGenerationService {
         SzerzodesesJogviszonyDokumentumDTO persisted = null;
 
         if (persist) {
-            Long tipusId = dokumentumTipusId != null
-                ? dokumentumTipusId
-                : (template.getDokumentumTipus() != null ? template.getDokumentumTipus().getId() : null);
-            if (tipusId == null) {
-                throw new IllegalArgumentException("Dokumentumtípus azonosító megadása kötelező a mentéshez");
+            if (szerzodesesJogviszonyId == null) {
+                throw new IllegalArgumentException("A szerződéses jogviszony azonosító megadása kötelező a mentéshez");
             }
-            persisted = persistGeneratedDocument(outputBytes, effectiveFormat, szerzodesesJogviszonyId, fileName, replacements, tipusId);
+            String tipusKod = dokumentumTipus != null && !dokumentumTipus.isBlank() ? dokumentumTipus : template.getDokumentumTipus();
+            if (tipusKod == null || tipusKod.isBlank()) {
+                throw new IllegalArgumentException("Dokumentumtípus megadása kötelező a mentéshez");
+            }
+            persisted = persistGeneratedDocument(outputBytes, effectiveFormat, szerzodesesJogviszonyId, fileName, replacements, tipusKod);
         }
 
         return new GeneratedDocumentResult<>(outputBytes, fileName, effectiveFormat.getContentType(), persisted);
@@ -88,7 +103,7 @@ public class DocumentGenerationService {
         Long jogviszonyId,
         String fileName,
         Map<String, String> placeholders,
-        Long dokumentumTipusId
+        String dokumentumTipus
     ) throws IOException {
         Path dir = getDocumentBaseDir(jogviszonyId);
         Files.createDirectories(dir);
@@ -103,7 +118,7 @@ public class DocumentGenerationService {
         dto.setContentType(format.getContentType());
         dto.setFeltoltesIdeje(Instant.now());
         dto.setSzerzodesesJogviszonyId(jogviszonyId);
-        dto.setDokumentumTipusId(dokumentumTipusId);
+        dto.setDokumentumTipus(dokumentumTipus);
         return dokumentumService.save(dto);
     }
 
@@ -116,7 +131,7 @@ public class DocumentGenerationService {
     }
 
     private String getRelativePath(Path base, Path target) {
-        return base.relativize(target).toString();
+        return base.relativize(target).toString().replace("\\", "/");
     }
 
     private String sanitizeFileName(String input) {

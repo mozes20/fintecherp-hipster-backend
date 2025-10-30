@@ -1,7 +1,15 @@
 package com.fintech.erp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.Instant;
@@ -42,9 +50,9 @@ public class SzerzodesesJogviszonyDokumentum implements Serializable {
     @Column(name = "feltoltes_ideje", nullable = false)
     private Instant feltoltesIdeje = Instant.now();
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JsonIgnoreProperties(value = { "templatek", "dokumentumok" }, allowSetters = true)
-    private SzerzodesDokumentumTipus dokumentumTipus;
+    @NotBlank
+    @Column(name = "dokumentum_tipus", nullable = false)
+    private String dokumentumTipus;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JsonIgnoreProperties(value = { "megrendeloCeg", "vallalkozoCeg" }, allowSetters = true)
@@ -128,15 +136,15 @@ public class SzerzodesesJogviszonyDokumentum implements Serializable {
         return this;
     }
 
-    public SzerzodesDokumentumTipus getDokumentumTipus() {
+    public String getDokumentumTipus() {
         return this.dokumentumTipus;
     }
 
-    public void setDokumentumTipus(SzerzodesDokumentumTipus dokumentumTipus) {
+    public void setDokumentumTipus(String dokumentumTipus) {
         this.dokumentumTipus = dokumentumTipus;
     }
 
-    public SzerzodesesJogviszonyDokumentum dokumentumTipus(SzerzodesDokumentumTipus dokumentumTipus) {
+    public SzerzodesesJogviszonyDokumentum dokumentumTipus(String dokumentumTipus) {
         this.setDokumentumTipus(dokumentumTipus);
         return this;
     }

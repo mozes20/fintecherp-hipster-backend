@@ -17,7 +17,7 @@ public class DocumentGenerationRequest {
 
     private String dokumentumNev;
 
-    private Long dokumentumTipusId;
+    private String dokumentumTipus;
 
     public Long getTemplateId() {
         return templateId;
@@ -59,11 +59,11 @@ public class DocumentGenerationRequest {
         this.dokumentumNev = dokumentumNev;
     }
 
-    public Long getDokumentumTipusId() {
-        return dokumentumTipusId;
+    public String getDokumentumTipus() {
+        return dokumentumTipus;
     }
 
-    public void setDokumentumTipusId(Long dokumentumTipusId) {
-        this.dokumentumTipusId = dokumentumTipusId;
+    public void setDokumentumTipus(String dokumentumTipus) {
+        this.dokumentumTipus = dokumentumTipus;
     }
 }

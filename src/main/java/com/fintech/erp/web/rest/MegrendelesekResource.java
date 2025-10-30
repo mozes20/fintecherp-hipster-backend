@@ -1,9 +1,11 @@
 package com.fintech.erp.web.rest;
 
 import com.fintech.erp.repository.MegrendelesekRepository;
+import com.fintech.erp.service.MegrendelesDokumentumokService;
 import com.fintech.erp.service.MegrendelesekQueryService;
 import com.fintech.erp.service.MegrendelesekService;
 import com.fintech.erp.service.criteria.MegrendelesekCriteria;
+import com.fintech.erp.service.dto.MegrendelesDokumentumokDTO;
 import com.fintech.erp.service.dto.MegrendelesekDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
@@ -52,14 +54,18 @@ public class MegrendelesekResource {
 
     private final MegrendelesekQueryService megrendelesekQueryService;
 
+    private final MegrendelesDokumentumokService megrendelesDokumentumokService;
+
     public MegrendelesekResource(
         MegrendelesekService megrendelesekService,
         MegrendelesekRepository megrendelesekRepository,
-        MegrendelesekQueryService megrendelesekQueryService
+        MegrendelesekQueryService megrendelesekQueryService,
+        MegrendelesDokumentumokService megrendelesDokumentumokService
     ) {
         this.megrendelesekService = megrendelesekService;
         this.megrendelesekRepository = megrendelesekRepository;
         this.megrendelesekQueryService = megrendelesekQueryService;
+        this.megrendelesDokumentumokService = megrendelesDokumentumokService;
     }
 
     /**
@@ -169,6 +175,16 @@ public class MegrendelesekResource {
         Page<MegrendelesekDTO> page = megrendelesekQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @GetMapping("/{id}/dokumentumok")
+    public ResponseEntity<List<MegrendelesDokumentumokDTO>> getDocumentsForMegrendeles(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get documents for Megrendeles : {}", id);
+        if (!megrendelesekRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+        List<MegrendelesDokumentumokDTO> documents = megrendelesDokumentumokService.findAllByMegrendeles(id);
+        return ResponseEntity.ok(documents);
     }
 
     /**

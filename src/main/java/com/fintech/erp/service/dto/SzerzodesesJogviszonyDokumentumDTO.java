@@ -25,10 +25,8 @@ public class SzerzodesesJogviszonyDokumentumDTO implements Serializable {
 
     private Instant feltoltesIdeje;
 
-    private SzerzodesDokumentumTipusDTO dokumentumTipus;
-
-    @NotNull
-    private Long dokumentumTipusId;
+    @NotBlank
+    private String dokumentumTipus;
 
     private SzerzodesesJogviszonyokDTO szerzodesesJogviszony;
 
@@ -83,20 +81,12 @@ public class SzerzodesesJogviszonyDokumentumDTO implements Serializable {
         this.feltoltesIdeje = feltoltesIdeje;
     }
 
-    public SzerzodesDokumentumTipusDTO getDokumentumTipus() {
+    public String getDokumentumTipus() {
         return dokumentumTipus;
     }
 
-    public void setDokumentumTipus(SzerzodesDokumentumTipusDTO dokumentumTipus) {
+    public void setDokumentumTipus(String dokumentumTipus) {
         this.dokumentumTipus = dokumentumTipus;
-    }
-
-    public Long getDokumentumTipusId() {
-        return dokumentumTipusId;
-    }
-
-    public void setDokumentumTipusId(Long dokumentumTipusId) {
-        this.dokumentumTipusId = dokumentumTipusId;
     }
 
     public SzerzodesesJogviszonyokDTO getSzerzodesesJogviszony() {
@@ -147,8 +137,9 @@ public class SzerzodesesJogviszonyDokumentumDTO implements Serializable {
             ", fajlUtvonal='" +
             fajlUtvonal +
             '\'' +
-            ", dokumentumTipusId=" +
-            dokumentumTipusId +
+            ", dokumentumTipus='" +
+            dokumentumTipus +
+            '\'' +
             ", szerzodesesJogviszonyId=" +
             szerzodesesJogviszonyId +
             '}'

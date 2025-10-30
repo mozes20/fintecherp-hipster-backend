@@ -9,10 +9,12 @@ import com.fintech.erp.service.criteria.MegrendelesDokumentumokCriteria;
 import com.fintech.erp.service.document.DocumentFormat;
 import com.fintech.erp.service.document.GeneratedDocumentResult;
 import com.fintech.erp.service.document.MegrendelesDocumentGenerationService;
+import com.fintech.erp.service.document.MegrendelesTemplatePlaceholderService;
 import com.fintech.erp.service.dto.MegrendelesDokumentumokDTO;
 import com.fintech.erp.service.dto.MegrendelesekDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
 import com.fintech.erp.web.rest.vm.MegrendelesDocumentGenerationRequest;
+import com.fintech.erp.web.rest.vm.TemplatePlaceholderResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.net.URI;
@@ -77,19 +79,22 @@ public class MegrendelesDokumentumokResource {
     private final MegrendelesekRepository megrendelesekRepository;
 
     private final MegrendelesDocumentGenerationService documentGenerationService;
+    private final MegrendelesTemplatePlaceholderService placeholderService;
 
     public MegrendelesDokumentumokResource(
         MegrendelesDokumentumokService megrendelesDokumentumokService,
         MegrendelesDokumentumokRepository megrendelesDokumentumokRepository,
         MegrendelesDokumentumokQueryService megrendelesDokumentumokQueryService,
         MegrendelesekRepository megrendelesekRepository,
-        MegrendelesDocumentGenerationService documentGenerationService
+        MegrendelesDocumentGenerationService documentGenerationService,
+        MegrendelesTemplatePlaceholderService placeholderService
     ) {
         this.megrendelesDokumentumokService = megrendelesDokumentumokService;
         this.megrendelesDokumentumokRepository = megrendelesDokumentumokRepository;
         this.megrendelesDokumentumokQueryService = megrendelesDokumentumokQueryService;
         this.megrendelesekRepository = megrendelesekRepository;
         this.documentGenerationService = documentGenerationService;
+        this.placeholderService = placeholderService;
     }
 
     @PostMapping("/{megrendelesId}/generate")
@@ -131,6 +136,22 @@ public class MegrendelesDokumentumokResource {
         } catch (IllegalArgumentException ex) {
             throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "validationerror");
         }
+    }
+
+    @GetMapping("/{megrendelesId}/placeholders")
+    public ResponseEntity<TemplatePlaceholderResponse> getTemplatePlaceholders(@PathVariable("megrendelesId") Long megrendelesId) {
+        LOG.debug("REST request to get template placeholders for megrendeles : {}", megrendelesId);
+        if (megrendelesId == null) {
+            throw new BadRequestAlertException("A megrendeles azonosito kotelezo", ENTITY_NAME, "megrendelesidnull");
+        }
+        if (!megrendelesekRepository.existsById(megrendelesId)) {
+            throw new BadRequestAlertException("A megadott megrendeles nem talalhato", ENTITY_NAME, "megrendelesnotfound");
+        }
+        TemplatePlaceholderResponse response = new TemplatePlaceholderResponse()
+            .withEntityId(megrendelesId)
+            .withValues(placeholderService.build(megrendelesId))
+            .withDefinitions(placeholderService.getDefinitions());
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/upload")
