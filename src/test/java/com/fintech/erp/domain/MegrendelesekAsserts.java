@@ -63,6 +63,7 @@ public class MegrendelesekAsserts {
             .satisfies(a ->
                 assertThat(a.getResztvevoKollagaTipusa()).as("check resztvevoKollagaTipusa").isEqualTo(expected.getResztvevoKollagaTipusa())
             )
+            .satisfies(a -> assertThat(a.getResztvevoTipus()).as("check resztvevoTipus").isEqualTo(expected.getResztvevoTipus()))
             .satisfies(a -> assertThat(a.getDevizanem()).as("check devizanem").isEqualTo(expected.getDevizanem()))
             .satisfies(a -> assertThat(a.getDijazasTipusa()).as("check dijazasTipusa").isEqualTo(expected.getDijazasTipusa()))
             .satisfies(a ->
@@ -78,7 +79,14 @@ public class MegrendelesekAsserts {
             )
             .satisfies(a ->
                 assertThat(a.getUgyfelMegrendelesId()).as("check ugyfelMegrendelesId").isEqualTo(expected.getUgyfelMegrendelesId())
-            );
+            )
+            .satisfies(a -> assertThat(a.getMegrendelesSzam()).as("check megrendelesSzam").isEqualTo(expected.getMegrendelesSzam()))
+            .satisfies(a -> assertThat(a.getMegrendelesStatusz()).as("check megrendelesStatusz").isEqualTo(expected.getMegrendelesStatusz())
+            )
+            .satisfies(a -> assertThat(a.getMegrendelesForrasa()).as("check megrendelesForrasa").isEqualTo(expected.getMegrendelesForrasa())
+            )
+            .satisfies(a -> assertThat(a.getPeldanyokSzama()).as("check peldanyokSzama").isEqualTo(expected.getPeldanyokSzama()))
+            .satisfies(a -> assertThat(a.getSzamlazando()).as("check szamlazando").isEqualTo(expected.getSzamlazando()));
     }
 
     /**

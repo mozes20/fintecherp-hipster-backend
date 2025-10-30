@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Extend Megrendelesek with numbering and status metadata.
+    -->
+    <changeSet id="20251021131500-1" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <columnExists tableName="megrendelesek" columnName="megrendeles_szam" />
+            </not>
+        </preConditions>
+
+        <addColumn tableName="megrendelesek">
+            <column name="megrendeles_szam" type="varchar(64)">
+                <constraints nullable="true" />
+            </column>
+            <column name="resztvevo_tipus" type="varchar(30)">
+                <constraints nullable="true" />
+            </column>
+            <column name="megrendeles_statusz" type="varchar(30)">
+                <constraints nullable="true" />
+            </column>
+            <column name="megrendeles_forrasa" type="varchar(30)">
+                <constraints nullable="true" />
+            </column>
+            <column name="peldanyok_szama" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="szamlazando" type="boolean">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <addUniqueConstraint
+            tableName="megrendelesek"
+            columnNames="megrendeles_szam"
+            constraintName="ux_megrendelesek_megrendeles_szam" />
+
+        <update tableName="megrendelesek">
+            <column name="megrendeles_statusz" value="DRAFT" />
+            <where>megrendeles_statusz IS NULL</where>
+        </update>
+
+        <update tableName="megrendelesek">
+            <column name="peldanyok_szama" valueNumeric="1" />
+            <where>peldanyok_szama IS NULL</where>
+        </update>
+
+        <update tableName="megrendelesek">
+            <column name="szamlazando" valueBoolean="false" />
+            <where>szamlazando IS NULL</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>

@@ -6,6 +6,7 @@ import com.fintech.erp.service.SzerzodesesJogviszonyokService;
 import com.fintech.erp.service.criteria.SzerzodesesJogviszonyokCriteria;
 import com.fintech.erp.service.dto.SzerzodesesJogviszonyokDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -63,13 +64,17 @@ public class SzerzodesesJogviszonyokResource {
      */
     @PostMapping("")
     public ResponseEntity<SzerzodesesJogviszonyokDTO> createSzerzodesesJogviszonyok(
-        @RequestBody SzerzodesesJogviszonyokDTO szerzodesesJogviszonyokDTO
+        @Valid @RequestBody SzerzodesesJogviszonyokDTO szerzodesesJogviszonyokDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to save SzerzodesesJogviszonyok : {}", szerzodesesJogviszonyokDTO);
         if (szerzodesesJogviszonyokDTO.getId() != null) {
             throw new BadRequestAlertException("A new szerzodesesJogviszonyok cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        szerzodesesJogviszonyokDTO = szerzodesesJogviszonyokService.save(szerzodesesJogviszonyokDTO);
+        try {
+            szerzodesesJogviszonyokDTO = szerzodesesJogviszonyokService.save(szerzodesesJogviszonyokDTO);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invaliddates");
+        }
         return ResponseEntity.created(new URI("/api/szerzodeses-jogviszonyoks/" + szerzodesesJogviszonyokDTO.getId()))
             .headers(
                 HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, szerzodesesJogviszonyokDTO.getId().toString())
@@ -90,7 +95,7 @@ public class SzerzodesesJogviszonyokResource {
     @PutMapping("/{id}")
     public ResponseEntity<SzerzodesesJogviszonyokDTO> updateSzerzodesesJogviszonyok(
         @PathVariable(value = "id", required = false) final Long id,
-        @RequestBody SzerzodesesJogviszonyokDTO szerzodesesJogviszonyokDTO
+        @Valid @RequestBody SzerzodesesJogviszonyokDTO szerzodesesJogviszonyokDTO
     ) throws URISyntaxException {
         LOG.debug("REST request to update SzerzodesesJogviszonyok : {}, {}", id, szerzodesesJogviszonyokDTO);
         if (szerzodesesJogviszonyokDTO.getId() == null) {
@@ -103,8 +108,11 @@ public class SzerzodesesJogviszonyokResource {
         if (!szerzodesesJogviszonyokRepository.existsById(id)) {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
-
-        szerzodesesJogviszonyokDTO = szerzodesesJogviszonyokService.update(szerzodesesJogviszonyokDTO);
+        try {
+            szerzodesesJogviszonyokDTO = szerzodesesJogviszonyokService.update(szerzodesesJogviszonyokDTO);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invaliddates");
+        }
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, szerzodesesJogviszonyokDTO.getId().toString()))
             .body(szerzodesesJogviszonyokDTO);
@@ -138,7 +146,12 @@ public class SzerzodesesJogviszonyokResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<SzerzodesesJogviszonyokDTO> result = szerzodesesJogviszonyokService.partialUpdate(szerzodesesJogviszonyokDTO);
+        Optional<SzerzodesesJogviszonyokDTO> result;
+        try {
+            result = szerzodesesJogviszonyokService.partialUpdate(szerzodesesJogviszonyokDTO);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invaliddates");
+        }
 
         return ResponseUtil.wrapOrNotFound(
             result,

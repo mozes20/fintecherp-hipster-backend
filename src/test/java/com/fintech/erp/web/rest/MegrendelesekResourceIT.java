@@ -1,19 +1,36 @@
 package com.fintech.erp.web.rest;
 
-import static com.fintech.erp.domain.MegrendelesekAsserts.*;
+import static com.fintech.erp.domain.MegrendelesekAsserts.assertMegrendelesekAllPropertiesEquals;
+import static com.fintech.erp.domain.MegrendelesekAsserts.assertMegrendelesekAllUpdatablePropertiesEquals;
+import static com.fintech.erp.domain.MegrendelesekAsserts.assertMegrendelesekUpdatableFieldsEquals;
 import static com.fintech.erp.web.rest.TestUtil.createUpdateProxyForBean;
 import static com.fintech.erp.web.rest.TestUtil.sameNumber;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintech.erp.IntegrationTest;
+import com.fintech.erp.domain.CegAlapadatok;
 import com.fintech.erp.domain.Maganszemelyek;
 import com.fintech.erp.domain.Megrendelesek;
 import com.fintech.erp.domain.SzerzodesesJogviszonyok;
+import com.fintech.erp.domain.enumeration.Devizanem;
+import com.fintech.erp.domain.enumeration.DijazasTipusa;
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
+import com.fintech.erp.domain.enumeration.MegrendelesForras;
+import com.fintech.erp.domain.enumeration.MegrendelesStatusz;
+import com.fintech.erp.domain.enumeration.MegrendelesTipus;
+import com.fintech.erp.domain.enumeration.ResztvevoKollagaTipus;
+import com.fintech.erp.domain.enumeration.ResztvevoTipus;
 import com.fintech.erp.repository.MegrendelesekRepository;
 import com.fintech.erp.service.dto.MegrendelesekDTO;
 import com.fintech.erp.service.mapper.MegrendelesekMapper;
@@ -41,8 +58,8 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class MegrendelesekResourceIT {
 
-    private static final String DEFAULT_MEGRENDELES_TIPUSA = "AAAAAAAAAA";
-    private static final String UPDATED_MEGRENDELES_TIPUSA = "BBBBBBBBBB";
+    private static final MegrendelesTipus DEFAULT_MEGRENDELES_TIPUSA = MegrendelesTipus.FOLYAMATOS_TELESTITES;
+    private static final MegrendelesTipus UPDATED_MEGRENDELES_TIPUSA = MegrendelesTipus.EGYSZERI;
 
     private static final String DEFAULT_FELADAT_ROVID_LEIRASA = "AAAAAAAAAA";
     private static final String UPDATED_FELADAT_ROVID_LEIRASA = "BBBBBBBBBB";
@@ -58,25 +75,44 @@ class MegrendelesekResourceIT {
     private static final LocalDate UPDATED_MEGRENDELES_VEGE = LocalDate.now(ZoneId.systemDefault());
     private static final LocalDate SMALLER_MEGRENDELES_VEGE = LocalDate.ofEpochDay(-1L);
 
-    private static final String DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA = "AAAAAAAAAA";
-    private static final String UPDATED_RESZTVEVO_KOLLAGA_TIPUSA = "BBBBBBBBBB";
+    private static final ResztvevoKollagaTipus DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA = ResztvevoKollagaTipus.MUNKAVALLALO;
+    private static final ResztvevoKollagaTipus UPDATED_RESZTVEVO_KOLLAGA_TIPUSA = ResztvevoKollagaTipus.ALVALLALKOZO;
 
-    private static final String DEFAULT_DEVIZANEM = "AAAAAAAAAA";
-    private static final String UPDATED_DEVIZANEM = "BBBBBBBBBB";
+    private static final Devizanem DEFAULT_DEVIZANEM = Devizanem.HUF;
+    private static final Devizanem UPDATED_DEVIZANEM = Devizanem.EUR;
 
-    private static final String DEFAULT_DIJAZAS_TIPUSA = "AAAAAAAAAA";
-    private static final String UPDATED_DIJAZAS_TIPUSA = "BBBBBBBBBB";
+    private static final DijazasTipusa DEFAULT_DIJAZAS_TIPUSA = DijazasTipusa.NAPIDIJ;
+    private static final DijazasTipusa UPDATED_DIJAZAS_TIPUSA = DijazasTipusa.EGYSZERI;
 
     private static final BigDecimal DEFAULT_DIJ_OSSZEGE = new BigDecimal(1);
     private static final BigDecimal UPDATED_DIJ_OSSZEGE = new BigDecimal(2);
     private static final BigDecimal SMALLER_DIJ_OSSZEGE = new BigDecimal(1 - 1);
 
-    private static final Boolean DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA = false;
-    private static final Boolean UPDATED_MEGRENDELES_DOKUMENTUM_GENERALTA = true;
+    private static final MegrendelesDokumentumEredet DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA = MegrendelesDokumentumEredet.KEZI;
+    private static final MegrendelesDokumentumEredet UPDATED_MEGRENDELES_DOKUMENTUM_GENERALTA = MegrendelesDokumentumEredet.GENERALTA;
 
     private static final Long DEFAULT_UGYFEL_MEGRENDELES_ID = 1L;
     private static final Long UPDATED_UGYFEL_MEGRENDELES_ID = 2L;
     private static final Long SMALLER_UGYFEL_MEGRENDELES_ID = 1L - 1L;
+
+    private static final ResztvevoTipus DEFAULT_RESZTVEVO_TIPUS = ResztvevoTipus.CEG;
+    private static final ResztvevoTipus UPDATED_RESZTVEVO_TIPUS = ResztvevoTipus.ALVALLALKOZO;
+
+    private static final String DEFAULT_MEGRENDELES_SZAM = "MEGR-TEST-00001";
+    private static final String UPDATED_MEGRENDELES_SZAM = "MEGR-TEST-00002";
+
+    private static final MegrendelesStatusz DEFAULT_MEGRENDELES_STATUSZ = MegrendelesStatusz.DRAFT;
+    private static final MegrendelesStatusz UPDATED_MEGRENDELES_STATUSZ = MegrendelesStatusz.SIGNED;
+
+    private static final MegrendelesForras DEFAULT_MEGRENDELES_FORRASA = MegrendelesForras.UGYFEL;
+    private static final MegrendelesForras UPDATED_MEGRENDELES_FORRASA = MegrendelesForras.SAJAT;
+
+    private static final Integer DEFAULT_PELDANYOK_SZAMA = 1;
+    private static final Integer UPDATED_PELDANYOK_SZAMA = 5;
+    private static final Integer SMALLER_PELDANYOK_SZAMA = 0;
+
+    private static final Boolean DEFAULT_SZAMLAZANDO = false;
+    private static final Boolean UPDATED_SZAMLAZANDO = true;
 
     private static final String ENTITY_API_URL = "/api/megrendeleseks";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
@@ -117,11 +153,17 @@ class MegrendelesekResourceIT {
             .megrendelesKezdete(DEFAULT_MEGRENDELES_KEZDETE)
             .megrendelesVege(DEFAULT_MEGRENDELES_VEGE)
             .resztvevoKollagaTipusa(DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA)
+            .resztvevoTipus(DEFAULT_RESZTVEVO_TIPUS)
             .devizanem(DEFAULT_DEVIZANEM)
             .dijazasTipusa(DEFAULT_DIJAZAS_TIPUSA)
             .dijOsszege(DEFAULT_DIJ_OSSZEGE)
             .megrendelesDokumentumGeneralta(DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA)
-            .ugyfelMegrendelesId(DEFAULT_UGYFEL_MEGRENDELES_ID);
+            .ugyfelMegrendelesId(DEFAULT_UGYFEL_MEGRENDELES_ID)
+            .megrendelesSzam(DEFAULT_MEGRENDELES_SZAM)
+            .megrendelesStatusz(DEFAULT_MEGRENDELES_STATUSZ)
+            .megrendelesForrasa(DEFAULT_MEGRENDELES_FORRASA)
+            .peldanyokSzama(DEFAULT_PELDANYOK_SZAMA)
+            .szamlazando(DEFAULT_SZAMLAZANDO);
     }
 
     /**
@@ -138,11 +180,17 @@ class MegrendelesekResourceIT {
             .megrendelesKezdete(UPDATED_MEGRENDELES_KEZDETE)
             .megrendelesVege(UPDATED_MEGRENDELES_VEGE)
             .resztvevoKollagaTipusa(UPDATED_RESZTVEVO_KOLLAGA_TIPUSA)
+            .resztvevoTipus(UPDATED_RESZTVEVO_TIPUS)
             .devizanem(UPDATED_DEVIZANEM)
             .dijazasTipusa(UPDATED_DIJAZAS_TIPUSA)
             .dijOsszege(UPDATED_DIJ_OSSZEGE)
             .megrendelesDokumentumGeneralta(UPDATED_MEGRENDELES_DOKUMENTUM_GENERALTA)
-            .ugyfelMegrendelesId(UPDATED_UGYFEL_MEGRENDELES_ID);
+            .ugyfelMegrendelesId(UPDATED_UGYFEL_MEGRENDELES_ID)
+            .megrendelesSzam(UPDATED_MEGRENDELES_SZAM)
+            .megrendelesStatusz(UPDATED_MEGRENDELES_STATUSZ)
+            .megrendelesForrasa(UPDATED_MEGRENDELES_FORRASA)
+            .peldanyokSzama(UPDATED_PELDANYOK_SZAMA)
+            .szamlazando(UPDATED_SZAMLAZANDO);
     }
 
     @BeforeEach
@@ -219,17 +267,23 @@ class MegrendelesekResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(megrendelesek.getId().intValue())))
-            .andExpect(jsonPath("$.[*].megrendelesTipusa").value(hasItem(DEFAULT_MEGRENDELES_TIPUSA)))
+            .andExpect(jsonPath("$.[*].megrendelesTipusa").value(hasItem(DEFAULT_MEGRENDELES_TIPUSA.toString())))
             .andExpect(jsonPath("$.[*].feladatRovidLeirasa").value(hasItem(DEFAULT_FELADAT_ROVID_LEIRASA)))
             .andExpect(jsonPath("$.[*].feladatReszletesLeirasa").value(hasItem(DEFAULT_FELADAT_RESZLETES_LEIRASA)))
             .andExpect(jsonPath("$.[*].megrendelesKezdete").value(hasItem(DEFAULT_MEGRENDELES_KEZDETE.toString())))
             .andExpect(jsonPath("$.[*].megrendelesVege").value(hasItem(DEFAULT_MEGRENDELES_VEGE.toString())))
-            .andExpect(jsonPath("$.[*].resztvevoKollagaTipusa").value(hasItem(DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA)))
-            .andExpect(jsonPath("$.[*].devizanem").value(hasItem(DEFAULT_DEVIZANEM)))
-            .andExpect(jsonPath("$.[*].dijazasTipusa").value(hasItem(DEFAULT_DIJAZAS_TIPUSA)))
+            .andExpect(jsonPath("$.[*].resztvevoKollagaTipusa").value(hasItem(DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA.toString())))
+            .andExpect(jsonPath("$.[*].resztvevoTipus").value(hasItem(DEFAULT_RESZTVEVO_TIPUS.toString())))
+            .andExpect(jsonPath("$.[*].devizanem").value(hasItem(DEFAULT_DEVIZANEM.toString())))
+            .andExpect(jsonPath("$.[*].dijazasTipusa").value(hasItem(DEFAULT_DIJAZAS_TIPUSA.toString())))
             .andExpect(jsonPath("$.[*].dijOsszege").value(hasItem(sameNumber(DEFAULT_DIJ_OSSZEGE))))
-            .andExpect(jsonPath("$.[*].megrendelesDokumentumGeneralta").value(hasItem(DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA)))
-            .andExpect(jsonPath("$.[*].ugyfelMegrendelesId").value(hasItem(DEFAULT_UGYFEL_MEGRENDELES_ID.intValue())));
+            .andExpect(jsonPath("$.[*].megrendelesDokumentumGeneralta").value(hasItem(DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA.toString())))
+            .andExpect(jsonPath("$.[*].ugyfelMegrendelesId").value(hasItem(DEFAULT_UGYFEL_MEGRENDELES_ID.intValue())))
+            .andExpect(jsonPath("$.[*].megrendelesSzam").value(hasItem(DEFAULT_MEGRENDELES_SZAM)))
+            .andExpect(jsonPath("$.[*].megrendelesStatusz").value(hasItem(DEFAULT_MEGRENDELES_STATUSZ.toString())))
+            .andExpect(jsonPath("$.[*].megrendelesForrasa").value(hasItem(DEFAULT_MEGRENDELES_FORRASA.toString())))
+            .andExpect(jsonPath("$.[*].peldanyokSzama").value(hasItem(DEFAULT_PELDANYOK_SZAMA)))
+            .andExpect(jsonPath("$.[*].szamlazando").value(hasItem(DEFAULT_SZAMLAZANDO)));
     }
 
     @Test
@@ -244,17 +298,23 @@ class MegrendelesekResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(megrendelesek.getId().intValue()))
-            .andExpect(jsonPath("$.megrendelesTipusa").value(DEFAULT_MEGRENDELES_TIPUSA))
+            .andExpect(jsonPath("$.megrendelesTipusa").value(DEFAULT_MEGRENDELES_TIPUSA.toString()))
             .andExpect(jsonPath("$.feladatRovidLeirasa").value(DEFAULT_FELADAT_ROVID_LEIRASA))
             .andExpect(jsonPath("$.feladatReszletesLeirasa").value(DEFAULT_FELADAT_RESZLETES_LEIRASA))
             .andExpect(jsonPath("$.megrendelesKezdete").value(DEFAULT_MEGRENDELES_KEZDETE.toString()))
             .andExpect(jsonPath("$.megrendelesVege").value(DEFAULT_MEGRENDELES_VEGE.toString()))
-            .andExpect(jsonPath("$.resztvevoKollagaTipusa").value(DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA))
-            .andExpect(jsonPath("$.devizanem").value(DEFAULT_DEVIZANEM))
-            .andExpect(jsonPath("$.dijazasTipusa").value(DEFAULT_DIJAZAS_TIPUSA))
+            .andExpect(jsonPath("$.resztvevoKollagaTipusa").value(DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA.toString()))
+            .andExpect(jsonPath("$.resztvevoTipus").value(DEFAULT_RESZTVEVO_TIPUS.toString()))
+            .andExpect(jsonPath("$.devizanem").value(DEFAULT_DEVIZANEM.toString()))
+            .andExpect(jsonPath("$.dijazasTipusa").value(DEFAULT_DIJAZAS_TIPUSA.toString()))
             .andExpect(jsonPath("$.dijOsszege").value(sameNumber(DEFAULT_DIJ_OSSZEGE)))
-            .andExpect(jsonPath("$.megrendelesDokumentumGeneralta").value(DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA))
-            .andExpect(jsonPath("$.ugyfelMegrendelesId").value(DEFAULT_UGYFEL_MEGRENDELES_ID.intValue()));
+            .andExpect(jsonPath("$.megrendelesDokumentumGeneralta").value(DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA.toString()))
+            .andExpect(jsonPath("$.ugyfelMegrendelesId").value(DEFAULT_UGYFEL_MEGRENDELES_ID.intValue()))
+            .andExpect(jsonPath("$.megrendelesSzam").value(DEFAULT_MEGRENDELES_SZAM))
+            .andExpect(jsonPath("$.megrendelesStatusz").value(DEFAULT_MEGRENDELES_STATUSZ.toString()))
+            .andExpect(jsonPath("$.megrendelesForrasa").value(DEFAULT_MEGRENDELES_FORRASA.toString()))
+            .andExpect(jsonPath("$.peldanyokSzama").value(DEFAULT_PELDANYOK_SZAMA))
+            .andExpect(jsonPath("$.szamlazando").value(DEFAULT_SZAMLAZANDO));
     }
 
     @Test
@@ -306,32 +366,6 @@ class MegrendelesekResourceIT {
 
         // Get all the megrendelesekList where megrendelesTipusa is not null
         defaultMegrendelesekFiltering("megrendelesTipusa.specified=true", "megrendelesTipusa.specified=false");
-    }
-
-    @Test
-    @Transactional
-    void getAllMegrendeleseksByMegrendelesTipusaContainsSomething() throws Exception {
-        // Initialize the database
-        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
-
-        // Get all the megrendelesekList where megrendelesTipusa contains
-        defaultMegrendelesekFiltering(
-            "megrendelesTipusa.contains=" + DEFAULT_MEGRENDELES_TIPUSA,
-            "megrendelesTipusa.contains=" + UPDATED_MEGRENDELES_TIPUSA
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllMegrendeleseksByMegrendelesTipusaNotContainsSomething() throws Exception {
-        // Initialize the database
-        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
-
-        // Get all the megrendelesekList where megrendelesTipusa does not contain
-        defaultMegrendelesekFiltering(
-            "megrendelesTipusa.doesNotContain=" + UPDATED_MEGRENDELES_TIPUSA,
-            "megrendelesTipusa.doesNotContain=" + DEFAULT_MEGRENDELES_TIPUSA
-        );
     }
 
     @Test
@@ -698,6 +732,42 @@ class MegrendelesekResourceIT {
 
     @Test
     @Transactional
+    void getAllMegrendeleseksByResztvevoTipusIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where resztvevoTipus equals to
+        defaultMegrendelesekFiltering(
+            "resztvevoTipus.equals=" + DEFAULT_RESZTVEVO_TIPUS,
+            "resztvevoTipus.equals=" + UPDATED_RESZTVEVO_TIPUS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByResztvevoTipusIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where resztvevoTipus in
+        defaultMegrendelesekFiltering(
+            "resztvevoTipus.in=" + DEFAULT_RESZTVEVO_TIPUS + "," + UPDATED_RESZTVEVO_TIPUS,
+            "resztvevoTipus.in=" + UPDATED_RESZTVEVO_TIPUS
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByResztvevoTipusIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where resztvevoTipus is not null
+        defaultMegrendelesekFiltering("resztvevoTipus.specified=true", "resztvevoTipus.specified=false");
+    }
+
+    @Test
+    @Transactional
     void getAllMegrendeleseksByDevizanemIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
@@ -925,6 +995,261 @@ class MegrendelesekResourceIT {
 
     @Test
     @Transactional
+    void getAllMegrendeleseksByMegrendelesSzamIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesSzam equals to
+        defaultMegrendelesekFiltering(
+            "megrendelesSzam.equals=" + DEFAULT_MEGRENDELES_SZAM,
+            "megrendelesSzam.equals=" + UPDATED_MEGRENDELES_SZAM
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesSzamIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesSzam in
+        defaultMegrendelesekFiltering(
+            "megrendelesSzam.in=" + DEFAULT_MEGRENDELES_SZAM + "," + UPDATED_MEGRENDELES_SZAM,
+            "megrendelesSzam.in=" + UPDATED_MEGRENDELES_SZAM
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesSzamIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesSzam is not null
+        defaultMegrendelesekFiltering("megrendelesSzam.specified=true", "megrendelesSzam.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesSzamContainsSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesSzam contains
+        defaultMegrendelesekFiltering(
+            "megrendelesSzam.contains=" + DEFAULT_MEGRENDELES_SZAM,
+            "megrendelesSzam.contains=" + UPDATED_MEGRENDELES_SZAM
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesSzamNotContainsSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesSzam does not contain
+        defaultMegrendelesekFiltering(
+            "megrendelesSzam.doesNotContain=" + UPDATED_MEGRENDELES_SZAM,
+            "megrendelesSzam.doesNotContain=" + DEFAULT_MEGRENDELES_SZAM
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesStatuszIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesStatusz equals to
+        defaultMegrendelesekFiltering(
+            "megrendelesStatusz.equals=" + DEFAULT_MEGRENDELES_STATUSZ,
+            "megrendelesStatusz.equals=" + UPDATED_MEGRENDELES_STATUSZ
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesStatuszIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesStatusz in
+        defaultMegrendelesekFiltering(
+            "megrendelesStatusz.in=" + DEFAULT_MEGRENDELES_STATUSZ + "," + UPDATED_MEGRENDELES_STATUSZ,
+            "megrendelesStatusz.in=" + UPDATED_MEGRENDELES_STATUSZ
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesStatuszIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesStatusz is not null
+        defaultMegrendelesekFiltering("megrendelesStatusz.specified=true", "megrendelesStatusz.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesForrasaIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesForrasa equals to
+        defaultMegrendelesekFiltering(
+            "megrendelesForrasa.equals=" + DEFAULT_MEGRENDELES_FORRASA,
+            "megrendelesForrasa.equals=" + UPDATED_MEGRENDELES_FORRASA
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesForrasaIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesForrasa in
+        defaultMegrendelesekFiltering(
+            "megrendelesForrasa.in=" + DEFAULT_MEGRENDELES_FORRASA + "," + UPDATED_MEGRENDELES_FORRASA,
+            "megrendelesForrasa.in=" + UPDATED_MEGRENDELES_FORRASA
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByMegrendelesForrasaIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where megrendelesForrasa is not null
+        defaultMegrendelesekFiltering("megrendelesForrasa.specified=true", "megrendelesForrasa.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByPeldanyokSzamaIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where peldanyokSzama equals to
+        defaultMegrendelesekFiltering(
+            "peldanyokSzama.equals=" + DEFAULT_PELDANYOK_SZAMA,
+            "peldanyokSzama.equals=" + UPDATED_PELDANYOK_SZAMA
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByPeldanyokSzamaIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where peldanyokSzama in
+        defaultMegrendelesekFiltering(
+            "peldanyokSzama.in=" + DEFAULT_PELDANYOK_SZAMA + "," + UPDATED_PELDANYOK_SZAMA,
+            "peldanyokSzama.in=" + UPDATED_PELDANYOK_SZAMA
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByPeldanyokSzamaIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where peldanyokSzama is not null
+        defaultMegrendelesekFiltering("peldanyokSzama.specified=true", "peldanyokSzama.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByPeldanyokSzamaIsGreaterThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where peldanyokSzama is greater than or equal to
+        defaultMegrendelesekFiltering(
+            "peldanyokSzama.greaterThanOrEqual=" + DEFAULT_PELDANYOK_SZAMA,
+            "peldanyokSzama.greaterThanOrEqual=" + UPDATED_PELDANYOK_SZAMA
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByPeldanyokSzamaIsLessThanOrEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where peldanyokSzama is less than or equal to
+        defaultMegrendelesekFiltering(
+            "peldanyokSzama.lessThanOrEqual=" + DEFAULT_PELDANYOK_SZAMA,
+            "peldanyokSzama.lessThanOrEqual=" + SMALLER_PELDANYOK_SZAMA
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByPeldanyokSzamaIsLessThanSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where peldanyokSzama is less than
+        defaultMegrendelesekFiltering(
+            "peldanyokSzama.lessThan=" + UPDATED_PELDANYOK_SZAMA,
+            "peldanyokSzama.lessThan=" + DEFAULT_PELDANYOK_SZAMA
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksByPeldanyokSzamaIsGreaterThanSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where peldanyokSzama is greater than
+        defaultMegrendelesekFiltering(
+            "peldanyokSzama.greaterThan=" + SMALLER_PELDANYOK_SZAMA,
+            "peldanyokSzama.greaterThan=" + DEFAULT_PELDANYOK_SZAMA
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksBySzamlazandoIsEqualToSomething() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where szamlazando equals to
+        defaultMegrendelesekFiltering("szamlazando.equals=" + DEFAULT_SZAMLAZANDO, "szamlazando.equals=" + UPDATED_SZAMLAZANDO);
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksBySzamlazandoIsInShouldWork() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where szamlazando in
+        defaultMegrendelesekFiltering(
+            "szamlazando.in=" + DEFAULT_SZAMLAZANDO + "," + UPDATED_SZAMLAZANDO,
+            "szamlazando.in=" + UPDATED_SZAMLAZANDO
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendeleseksBySzamlazandoIsNullOrNotNull() throws Exception {
+        // Initialize the database
+        insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
+
+        // Get all the megrendelesekList where szamlazando is not null
+        defaultMegrendelesekFiltering("szamlazando.specified=true", "szamlazando.specified=false");
+    }
+
+    @Test
+    @Transactional
     void getAllMegrendeleseksByUgyfelMegrendelesIdIsEqualToSomething() throws Exception {
         // Initialize the database
         insertedMegrendelesek = megrendelesekRepository.saveAndFlush(megrendelesek);
@@ -1014,13 +1339,14 @@ class MegrendelesekResourceIT {
     @Test
     @Transactional
     void getAllMegrendeleseksBySzerzodesesJogviszonyIsEqualToSomething() throws Exception {
-        SzerzodesesJogviszonyok szerzodesesJogviszony;
-        if (TestUtil.findAll(em, SzerzodesesJogviszonyok.class).isEmpty()) {
-            megrendelesekRepository.saveAndFlush(megrendelesek);
-            szerzodesesJogviszony = SzerzodesesJogviszonyokResourceIT.createEntity();
-        } else {
-            szerzodesesJogviszony = TestUtil.findAll(em, SzerzodesesJogviszonyok.class).get(0);
-        }
+        megrendelesekRepository.saveAndFlush(megrendelesek);
+        SzerzodesesJogviszonyok szerzodesesJogviszony = SzerzodesesJogviszonyokResourceIT.createEntity();
+        CegAlapadatok megrendeloCeg = CegAlapadatokResourceIT.createEntity();
+        em.persist(megrendeloCeg);
+        CegAlapadatok vallalkozoCeg = CegAlapadatokResourceIT.createUpdatedEntity();
+        em.persist(vallalkozoCeg);
+        szerzodesesJogviszony.megrendeloCeg(megrendeloCeg);
+        szerzodesesJogviszony.vallalkozoCeg(vallalkozoCeg);
         em.persist(szerzodesesJogviszony);
         em.flush();
         megrendelesek.setSzerzodesesJogviszony(szerzodesesJogviszony);
@@ -1069,17 +1395,23 @@ class MegrendelesekResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(megrendelesek.getId().intValue())))
-            .andExpect(jsonPath("$.[*].megrendelesTipusa").value(hasItem(DEFAULT_MEGRENDELES_TIPUSA)))
+            .andExpect(jsonPath("$.[*].megrendelesTipusa").value(hasItem(DEFAULT_MEGRENDELES_TIPUSA.toString())))
             .andExpect(jsonPath("$.[*].feladatRovidLeirasa").value(hasItem(DEFAULT_FELADAT_ROVID_LEIRASA)))
             .andExpect(jsonPath("$.[*].feladatReszletesLeirasa").value(hasItem(DEFAULT_FELADAT_RESZLETES_LEIRASA)))
             .andExpect(jsonPath("$.[*].megrendelesKezdete").value(hasItem(DEFAULT_MEGRENDELES_KEZDETE.toString())))
             .andExpect(jsonPath("$.[*].megrendelesVege").value(hasItem(DEFAULT_MEGRENDELES_VEGE.toString())))
-            .andExpect(jsonPath("$.[*].resztvevoKollagaTipusa").value(hasItem(DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA)))
-            .andExpect(jsonPath("$.[*].devizanem").value(hasItem(DEFAULT_DEVIZANEM)))
-            .andExpect(jsonPath("$.[*].dijazasTipusa").value(hasItem(DEFAULT_DIJAZAS_TIPUSA)))
+            .andExpect(jsonPath("$.[*].resztvevoKollagaTipusa").value(hasItem(DEFAULT_RESZTVEVO_KOLLAGA_TIPUSA.toString())))
+            .andExpect(jsonPath("$.[*].resztvevoTipus").value(hasItem(DEFAULT_RESZTVEVO_TIPUS.toString())))
+            .andExpect(jsonPath("$.[*].devizanem").value(hasItem(DEFAULT_DEVIZANEM.toString())))
+            .andExpect(jsonPath("$.[*].dijazasTipusa").value(hasItem(DEFAULT_DIJAZAS_TIPUSA.toString())))
             .andExpect(jsonPath("$.[*].dijOsszege").value(hasItem(sameNumber(DEFAULT_DIJ_OSSZEGE))))
-            .andExpect(jsonPath("$.[*].megrendelesDokumentumGeneralta").value(hasItem(DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA)))
-            .andExpect(jsonPath("$.[*].ugyfelMegrendelesId").value(hasItem(DEFAULT_UGYFEL_MEGRENDELES_ID.intValue())));
+            .andExpect(jsonPath("$.[*].megrendelesDokumentumGeneralta").value(hasItem(DEFAULT_MEGRENDELES_DOKUMENTUM_GENERALTA.toString())))
+            .andExpect(jsonPath("$.[*].ugyfelMegrendelesId").value(hasItem(DEFAULT_UGYFEL_MEGRENDELES_ID.intValue())))
+            .andExpect(jsonPath("$.[*].megrendelesSzam").value(hasItem(DEFAULT_MEGRENDELES_SZAM)))
+            .andExpect(jsonPath("$.[*].megrendelesStatusz").value(hasItem(DEFAULT_MEGRENDELES_STATUSZ.toString())))
+            .andExpect(jsonPath("$.[*].megrendelesForrasa").value(hasItem(DEFAULT_MEGRENDELES_FORRASA.toString())))
+            .andExpect(jsonPath("$.[*].peldanyokSzama").value(hasItem(DEFAULT_PELDANYOK_SZAMA)))
+            .andExpect(jsonPath("$.[*].szamlazando").value(hasItem(DEFAULT_SZAMLAZANDO)));
 
         // Check, that the count call also returns 1
         restMegrendelesekMockMvc
@@ -1134,11 +1466,17 @@ class MegrendelesekResourceIT {
             .megrendelesKezdete(UPDATED_MEGRENDELES_KEZDETE)
             .megrendelesVege(UPDATED_MEGRENDELES_VEGE)
             .resztvevoKollagaTipusa(UPDATED_RESZTVEVO_KOLLAGA_TIPUSA)
+            .resztvevoTipus(UPDATED_RESZTVEVO_TIPUS)
             .devizanem(UPDATED_DEVIZANEM)
             .dijazasTipusa(UPDATED_DIJAZAS_TIPUSA)
             .dijOsszege(UPDATED_DIJ_OSSZEGE)
             .megrendelesDokumentumGeneralta(UPDATED_MEGRENDELES_DOKUMENTUM_GENERALTA)
-            .ugyfelMegrendelesId(UPDATED_UGYFEL_MEGRENDELES_ID);
+            .ugyfelMegrendelesId(UPDATED_UGYFEL_MEGRENDELES_ID)
+            .megrendelesSzam(UPDATED_MEGRENDELES_SZAM)
+            .megrendelesStatusz(UPDATED_MEGRENDELES_STATUSZ)
+            .megrendelesForrasa(UPDATED_MEGRENDELES_FORRASA)
+            .peldanyokSzama(UPDATED_PELDANYOK_SZAMA)
+            .szamlazando(UPDATED_SZAMLAZANDO);
         MegrendelesekDTO megrendelesekDTO = megrendelesekMapper.toDto(updatedMegrendelesek);
 
         restMegrendelesekMockMvc
@@ -1236,6 +1574,7 @@ class MegrendelesekResourceIT {
         partialUpdatedMegrendelesek
             .feladatRovidLeirasa(UPDATED_FELADAT_ROVID_LEIRASA)
             .megrendelesKezdete(UPDATED_MEGRENDELES_KEZDETE)
+            .megrendelesVege(UPDATED_MEGRENDELES_VEGE)
             .resztvevoKollagaTipusa(UPDATED_RESZTVEVO_KOLLAGA_TIPUSA)
             .dijOsszege(UPDATED_DIJ_OSSZEGE)
             .megrendelesDokumentumGeneralta(UPDATED_MEGRENDELES_DOKUMENTUM_GENERALTA);
@@ -1277,11 +1616,17 @@ class MegrendelesekResourceIT {
             .megrendelesKezdete(UPDATED_MEGRENDELES_KEZDETE)
             .megrendelesVege(UPDATED_MEGRENDELES_VEGE)
             .resztvevoKollagaTipusa(UPDATED_RESZTVEVO_KOLLAGA_TIPUSA)
+            .resztvevoTipus(UPDATED_RESZTVEVO_TIPUS)
             .devizanem(UPDATED_DEVIZANEM)
             .dijazasTipusa(UPDATED_DIJAZAS_TIPUSA)
             .dijOsszege(UPDATED_DIJ_OSSZEGE)
             .megrendelesDokumentumGeneralta(UPDATED_MEGRENDELES_DOKUMENTUM_GENERALTA)
-            .ugyfelMegrendelesId(UPDATED_UGYFEL_MEGRENDELES_ID);
+            .ugyfelMegrendelesId(UPDATED_UGYFEL_MEGRENDELES_ID)
+            .megrendelesSzam(UPDATED_MEGRENDELES_SZAM)
+            .megrendelesStatusz(UPDATED_MEGRENDELES_STATUSZ)
+            .megrendelesForrasa(UPDATED_MEGRENDELES_FORRASA)
+            .peldanyokSzama(UPDATED_PELDANYOK_SZAMA)
+            .szamlazando(UPDATED_SZAMLAZANDO);
 
         restMegrendelesekMockMvc
             .perform(

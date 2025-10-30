@@ -159,3 +159,9 @@ src/main/docker/.env.deploy
 ######################
 coverage/
 .nyc_output/
+
+*.docx
+*.xlsx
+*.pptx
+*.pdf
+*.odt

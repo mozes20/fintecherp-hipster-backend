@@ -1,5 +1,13 @@
 package com.fintech.erp.service.dto;
 
+import com.fintech.erp.domain.enumeration.Devizanem;
+import com.fintech.erp.domain.enumeration.DijazasTipusa;
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
+import com.fintech.erp.domain.enumeration.MegrendelesForras;
+import com.fintech.erp.domain.enumeration.MegrendelesStatusz;
+import com.fintech.erp.domain.enumeration.MegrendelesTipus;
+import com.fintech.erp.domain.enumeration.ResztvevoKollagaTipus;
+import com.fintech.erp.domain.enumeration.ResztvevoTipus;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,7 +21,7 @@ public class MegrendelesekDTO implements Serializable {
 
     private Long id;
 
-    private String megrendelesTipusa;
+    private MegrendelesTipus megrendelesTipusa;
 
     private String feladatRovidLeirasa;
 
@@ -23,17 +31,29 @@ public class MegrendelesekDTO implements Serializable {
 
     private LocalDate megrendelesVege;
 
-    private String resztvevoKollagaTipusa;
+    private ResztvevoKollagaTipus resztvevoKollagaTipusa;
 
-    private String devizanem;
+    private ResztvevoTipus resztvevoTipus;
 
-    private String dijazasTipusa;
+    private Devizanem devizanem;
+
+    private DijazasTipusa dijazasTipusa;
 
     private BigDecimal dijOsszege;
 
-    private Boolean megrendelesDokumentumGeneralta;
+    private MegrendelesDokumentumEredet megrendelesDokumentumGeneralta;
 
     private Long ugyfelMegrendelesId;
+
+    private String megrendelesSzam;
+
+    private MegrendelesStatusz megrendelesStatusz;
+
+    private MegrendelesForras megrendelesForrasa;
+
+    private Integer peldanyokSzama;
+
+    private Boolean szamlazando;
 
     private SzerzodesesJogviszonyokDTO szerzodesesJogviszony;
 
@@ -47,11 +67,11 @@ public class MegrendelesekDTO implements Serializable {
         this.id = id;
     }
 
-    public String getMegrendelesTipusa() {
+    public MegrendelesTipus getMegrendelesTipusa() {
         return megrendelesTipusa;
     }
 
-    public void setMegrendelesTipusa(String megrendelesTipusa) {
+    public void setMegrendelesTipusa(MegrendelesTipus megrendelesTipusa) {
         this.megrendelesTipusa = megrendelesTipusa;
     }
 
@@ -87,27 +107,35 @@ public class MegrendelesekDTO implements Serializable {
         this.megrendelesVege = megrendelesVege;
     }
 
-    public String getResztvevoKollagaTipusa() {
+    public ResztvevoKollagaTipus getResztvevoKollagaTipusa() {
         return resztvevoKollagaTipusa;
     }
 
-    public void setResztvevoKollagaTipusa(String resztvevoKollagaTipusa) {
+    public void setResztvevoKollagaTipusa(ResztvevoKollagaTipus resztvevoKollagaTipusa) {
         this.resztvevoKollagaTipusa = resztvevoKollagaTipusa;
     }
 
-    public String getDevizanem() {
+    public ResztvevoTipus getResztvevoTipus() {
+        return resztvevoTipus;
+    }
+
+    public void setResztvevoTipus(ResztvevoTipus resztvevoTipus) {
+        this.resztvevoTipus = resztvevoTipus;
+    }
+
+    public Devizanem getDevizanem() {
         return devizanem;
     }
 
-    public void setDevizanem(String devizanem) {
+    public void setDevizanem(Devizanem devizanem) {
         this.devizanem = devizanem;
     }
 
-    public String getDijazasTipusa() {
+    public DijazasTipusa getDijazasTipusa() {
         return dijazasTipusa;
     }
 
-    public void setDijazasTipusa(String dijazasTipusa) {
+    public void setDijazasTipusa(DijazasTipusa dijazasTipusa) {
         this.dijazasTipusa = dijazasTipusa;
     }
 
@@ -119,11 +147,11 @@ public class MegrendelesekDTO implements Serializable {
         this.dijOsszege = dijOsszege;
     }
 
-    public Boolean getMegrendelesDokumentumGeneralta() {
+    public MegrendelesDokumentumEredet getMegrendelesDokumentumGeneralta() {
         return megrendelesDokumentumGeneralta;
     }
 
-    public void setMegrendelesDokumentumGeneralta(Boolean megrendelesDokumentumGeneralta) {
+    public void setMegrendelesDokumentumGeneralta(MegrendelesDokumentumEredet megrendelesDokumentumGeneralta) {
         this.megrendelesDokumentumGeneralta = megrendelesDokumentumGeneralta;
     }
 
@@ -133,6 +161,46 @@ public class MegrendelesekDTO implements Serializable {
 
     public void setUgyfelMegrendelesId(Long ugyfelMegrendelesId) {
         this.ugyfelMegrendelesId = ugyfelMegrendelesId;
+    }
+
+    public String getMegrendelesSzam() {
+        return megrendelesSzam;
+    }
+
+    public void setMegrendelesSzam(String megrendelesSzam) {
+        this.megrendelesSzam = megrendelesSzam;
+    }
+
+    public MegrendelesStatusz getMegrendelesStatusz() {
+        return megrendelesStatusz;
+    }
+
+    public void setMegrendelesStatusz(MegrendelesStatusz megrendelesStatusz) {
+        this.megrendelesStatusz = megrendelesStatusz;
+    }
+
+    public MegrendelesForras getMegrendelesForrasa() {
+        return megrendelesForrasa;
+    }
+
+    public void setMegrendelesForrasa(MegrendelesForras megrendelesForrasa) {
+        this.megrendelesForrasa = megrendelesForrasa;
+    }
+
+    public Integer getPeldanyokSzama() {
+        return peldanyokSzama;
+    }
+
+    public void setPeldanyokSzama(Integer peldanyokSzama) {
+        this.peldanyokSzama = peldanyokSzama;
+    }
+
+    public Boolean getSzamlazando() {
+        return szamlazando;
+    }
+
+    public void setSzamlazando(Boolean szamlazando) {
+        this.szamlazando = szamlazando;
     }
 
     public SzerzodesesJogviszonyokDTO getSzerzodesesJogviszony() {
@@ -183,11 +251,17 @@ public class MegrendelesekDTO implements Serializable {
             ", megrendelesKezdete='" + getMegrendelesKezdete() + "'" +
             ", megrendelesVege='" + getMegrendelesVege() + "'" +
             ", resztvevoKollagaTipusa='" + getResztvevoKollagaTipusa() + "'" +
+            ", resztvevoTipus='" + getResztvevoTipus() + "'" +
             ", devizanem='" + getDevizanem() + "'" +
             ", dijazasTipusa='" + getDijazasTipusa() + "'" +
             ", dijOsszege=" + getDijOsszege() +
             ", megrendelesDokumentumGeneralta='" + getMegrendelesDokumentumGeneralta() + "'" +
             ", ugyfelMegrendelesId=" + getUgyfelMegrendelesId() +
+            ", megrendelesSzam='" + getMegrendelesSzam() + "'" +
+            ", megrendelesStatusz='" + getMegrendelesStatusz() + "'" +
+            ", megrendelesForrasa='" + getMegrendelesForrasa() + "'" +
+            ", peldanyokSzama=" + getPeldanyokSzama() +
+            ", szamlazando='" + getSzamlazando() + "'" +
             ", szerzodesesJogviszony=" + getSzerzodesesJogviszony() +
             ", maganszemely=" + getMaganszemely() +
             "}";

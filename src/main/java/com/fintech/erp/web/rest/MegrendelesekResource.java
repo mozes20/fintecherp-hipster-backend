@@ -18,7 +18,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -90,7 +98,8 @@ public class MegrendelesekResource {
     ) throws URISyntaxException {
         LOG.debug("REST request to update Megrendelesek : {}, {}", id, megrendelesekDTO);
         if (megrendelesekDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            LOG.debug("Body id hiányzik, beállítjuk a path paraméter alapján: {}", id);
+            megrendelesekDTO.setId(id);
         }
         if (!Objects.equals(id, megrendelesekDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
@@ -124,7 +133,8 @@ public class MegrendelesekResource {
     ) throws URISyntaxException {
         LOG.debug("REST request to partial update Megrendelesek partially : {}, {}", id, megrendelesekDTO);
         if (megrendelesekDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            LOG.debug("Body id hiányzik részleges frissítésnél, beállítjuk path param szerint: {}", id);
+            megrendelesekDTO.setId(id);
         }
         if (!Objects.equals(id, megrendelesekDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");

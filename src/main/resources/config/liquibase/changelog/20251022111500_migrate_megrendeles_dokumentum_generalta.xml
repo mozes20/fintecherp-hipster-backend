@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Convert the historical boolean values of megrendeles_dokumentum_generalta to the new enum representation.
+    -->
+    <changeSet id="20251022111500-1" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <and>
+                <tableExists tableName="megrendelesek" />
+                <columnExists tableName="megrendelesek" columnName="megrendeles_dokumentum_generalta" />
+            </and>
+        </preConditions>
+
+        <addColumn tableName="megrendelesek">
+            <column name="megrendeles_dokumentum_generalta_tmp" type="varchar(30)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+
+        <sql splitStatements="true" endDelimiter=";">
+            UPDATE megrendelesek
+            SET megrendeles_dokumentum_generalta_tmp = CASE
+                WHEN CAST(megrendeles_dokumentum_generalta AS VARCHAR(30)) IN ('GENERALTA', 'KEZI') THEN CAST(megrendeles_dokumentum_generalta AS VARCHAR(30))
+                WHEN CAST(megrendeles_dokumentum_generalta AS VARCHAR(30)) IN ('T', 't', 'TRUE', 'true', '1', 'Y', 'y') THEN 'GENERALTA'
+                WHEN CAST(megrendeles_dokumentum_generalta AS VARCHAR(30)) IN ('F', 'f', 'FALSE', 'false', '0', 'N', 'n') THEN 'KEZI'
+                WHEN megrendeles_dokumentum_generalta IS NULL THEN NULL
+                ELSE 'KEZI'
+            END;
+        </sql>
+
+        <dropColumn tableName="megrendelesek" columnName="megrendeles_dokumentum_generalta" />
+
+        <renameColumn
+            tableName="megrendelesek"
+            oldColumnName="megrendeles_dokumentum_generalta_tmp"
+            newColumnName="megrendeles_dokumentum_generalta"
+            columnDataType="varchar(30)" />
+
+        <update tableName="megrendelesek">
+            <column name="megrendeles_dokumentum_generalta" value="KEZI" />
+            <where>megrendeles_dokumentum_generalta IS NULL OR TRIM(megrendeles_dokumentum_generalta) = ''</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>
