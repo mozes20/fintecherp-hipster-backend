@@ -235,4 +235,10 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  gotenberg:
+    enabled: false
+    base-url:
+    api-key:
+    connect-timeout: 5s
+    read-timeout: 60s

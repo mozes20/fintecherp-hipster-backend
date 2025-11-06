@@ -92,4 +92,10 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  gotenberg:
+    enabled: ${APPLICATION_GOTENBERG_ENABLED:true}
+    base-url: ${APPLICATION_GOTENBERG_BASEURL:http://localhost:3000}
+    api-key: ${APPLICATION_GOTENBERG_APIKEY:}
+    connect-timeout: ${APPLICATION_GOTENBERG_CONNECTTIMEOUT:3s}
+    read-timeout: ${APPLICATION_GOTENBERG_READTIMEOUT:60s}

@@ -3,11 +3,8 @@ package com.fintech.erp.service.dto;
 import com.fintech.erp.domain.enumeration.Devizanem;
 import com.fintech.erp.domain.enumeration.DijazasTipusa;
 import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
-import com.fintech.erp.domain.enumeration.MegrendelesForras;
-import com.fintech.erp.domain.enumeration.MegrendelesStatusz;
 import com.fintech.erp.domain.enumeration.MegrendelesTipus;
 import com.fintech.erp.domain.enumeration.ResztvevoKollagaTipus;
-import com.fintech.erp.domain.enumeration.ResztvevoTipus;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,13 +24,15 @@ public class MegrendelesekDTO implements Serializable {
 
     private String feladatReszletesLeirasa;
 
+    private String szallitasraKeruloTetelek;
+
     private LocalDate megrendelesKezdete;
 
     private LocalDate megrendelesVege;
 
-    private ResztvevoKollagaTipus resztvevoKollagaTipusa;
+    private LocalDate megrendelesDatuma;
 
-    private ResztvevoTipus resztvevoTipus;
+    private ResztvevoKollagaTipus resztvevoKollagaTipusa;
 
     private Devizanem devizanem;
 
@@ -47,13 +46,9 @@ public class MegrendelesekDTO implements Serializable {
 
     private String megrendelesSzam;
 
-    private MegrendelesStatusz megrendelesStatusz;
+    private MunkakorokDTO munkakor;
 
-    private MegrendelesForras megrendelesForrasa;
-
-    private Integer peldanyokSzama;
-
-    private Boolean szamlazando;
+    private Long munkakorId;
 
     private SzerzodesesJogviszonyokDTO szerzodesesJogviszony;
 
@@ -91,6 +86,14 @@ public class MegrendelesekDTO implements Serializable {
         this.feladatReszletesLeirasa = feladatReszletesLeirasa;
     }
 
+    public String getSzallitasraKeruloTetelek() {
+        return szallitasraKeruloTetelek;
+    }
+
+    public void setSzallitasraKeruloTetelek(String szallitasraKeruloTetelek) {
+        this.szallitasraKeruloTetelek = szallitasraKeruloTetelek;
+    }
+
     public LocalDate getMegrendelesKezdete() {
         return megrendelesKezdete;
     }
@@ -107,20 +110,20 @@ public class MegrendelesekDTO implements Serializable {
         this.megrendelesVege = megrendelesVege;
     }
 
+    public LocalDate getMegrendelesDatuma() {
+        return megrendelesDatuma;
+    }
+
+    public void setMegrendelesDatuma(LocalDate megrendelesDatuma) {
+        this.megrendelesDatuma = megrendelesDatuma;
+    }
+
     public ResztvevoKollagaTipus getResztvevoKollagaTipusa() {
         return resztvevoKollagaTipusa;
     }
 
     public void setResztvevoKollagaTipusa(ResztvevoKollagaTipus resztvevoKollagaTipusa) {
         this.resztvevoKollagaTipusa = resztvevoKollagaTipusa;
-    }
-
-    public ResztvevoTipus getResztvevoTipus() {
-        return resztvevoTipus;
-    }
-
-    public void setResztvevoTipus(ResztvevoTipus resztvevoTipus) {
-        this.resztvevoTipus = resztvevoTipus;
     }
 
     public Devizanem getDevizanem() {
@@ -171,36 +174,20 @@ public class MegrendelesekDTO implements Serializable {
         this.megrendelesSzam = megrendelesSzam;
     }
 
-    public MegrendelesStatusz getMegrendelesStatusz() {
-        return megrendelesStatusz;
+    public Long getMunkakorId() {
+        return munkakorId;
     }
 
-    public void setMegrendelesStatusz(MegrendelesStatusz megrendelesStatusz) {
-        this.megrendelesStatusz = megrendelesStatusz;
+    public void setMunkakorId(Long munkakorId) {
+        this.munkakorId = munkakorId;
     }
 
-    public MegrendelesForras getMegrendelesForrasa() {
-        return megrendelesForrasa;
+    public MunkakorokDTO getMunkakor() {
+        return munkakor;
     }
 
-    public void setMegrendelesForrasa(MegrendelesForras megrendelesForrasa) {
-        this.megrendelesForrasa = megrendelesForrasa;
-    }
-
-    public Integer getPeldanyokSzama() {
-        return peldanyokSzama;
-    }
-
-    public void setPeldanyokSzama(Integer peldanyokSzama) {
-        this.peldanyokSzama = peldanyokSzama;
-    }
-
-    public Boolean getSzamlazando() {
-        return szamlazando;
-    }
-
-    public void setSzamlazando(Boolean szamlazando) {
-        this.szamlazando = szamlazando;
+    public void setMunkakor(MunkakorokDTO munkakor) {
+        this.munkakor = munkakor;
     }
 
     public SzerzodesesJogviszonyokDTO getSzerzodesesJogviszony() {
@@ -248,20 +235,19 @@ public class MegrendelesekDTO implements Serializable {
             ", megrendelesTipusa='" + getMegrendelesTipusa() + "'" +
             ", feladatRovidLeirasa='" + getFeladatRovidLeirasa() + "'" +
             ", feladatReszletesLeirasa='" + getFeladatReszletesLeirasa() + "'" +
+            ", szallitasraKeruloTetelek='" + getSzallitasraKeruloTetelek() + "'" +
             ", megrendelesKezdete='" + getMegrendelesKezdete() + "'" +
             ", megrendelesVege='" + getMegrendelesVege() + "'" +
+            ", megrendelesDatuma='" + getMegrendelesDatuma() + "'" +
             ", resztvevoKollagaTipusa='" + getResztvevoKollagaTipusa() + "'" +
-            ", resztvevoTipus='" + getResztvevoTipus() + "'" +
             ", devizanem='" + getDevizanem() + "'" +
             ", dijazasTipusa='" + getDijazasTipusa() + "'" +
             ", dijOsszege=" + getDijOsszege() +
             ", megrendelesDokumentumGeneralta='" + getMegrendelesDokumentumGeneralta() + "'" +
             ", ugyfelMegrendelesId=" + getUgyfelMegrendelesId() +
             ", megrendelesSzam='" + getMegrendelesSzam() + "'" +
-            ", megrendelesStatusz='" + getMegrendelesStatusz() + "'" +
-            ", megrendelesForrasa='" + getMegrendelesForrasa() + "'" +
-            ", peldanyokSzama=" + getPeldanyokSzama() +
-            ", szamlazando='" + getSzamlazando() + "'" +
+            ", munkakorId=" + getMunkakorId() +
+            ", munkakor=" + getMunkakor() +
             ", szerzodesesJogviszony=" + getSzerzodesesJogviszony() +
             ", maganszemely=" + getMaganszemely() +
             "}";

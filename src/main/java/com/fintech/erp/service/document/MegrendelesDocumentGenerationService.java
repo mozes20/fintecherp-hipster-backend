@@ -34,6 +34,7 @@ public class MegrendelesDocumentGenerationService {
     private final MegrendelesDokumentumokService dokumentumokService;
     private final MegrendelesekRepository megrendelesekRepository;
     private final DocxTemplateEngine docxTemplateEngine;
+    private final PdfConversionService pdfConversionService;
     private final MegrendelesTemplatePlaceholderService placeholderService;
 
     public MegrendelesDocumentGenerationService(
@@ -41,12 +42,14 @@ public class MegrendelesDocumentGenerationService {
         MegrendelesDokumentumokService dokumentumokService,
         MegrendelesekRepository megrendelesekRepository,
         DocxTemplateEngine docxTemplateEngine,
+        PdfConversionService pdfConversionService,
         MegrendelesTemplatePlaceholderService placeholderService
     ) {
         this.templateRepository = templateRepository;
         this.dokumentumokService = dokumentumokService;
         this.megrendelesekRepository = megrendelesekRepository;
         this.docxTemplateEngine = docxTemplateEngine;
+        this.pdfConversionService = pdfConversionService;
         this.placeholderService = placeholderService;
     }
 
@@ -79,12 +82,17 @@ public class MegrendelesDocumentGenerationService {
         if (placeholders != null && !placeholders.isEmpty()) {
             replacements.putAll(placeholders);
         }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Template replacements for megrendeles {}: {}", megrendelesId, replacements);
+        }
         byte[] filledDocx = docxTemplateEngine.populateTemplate(templatePath, replacements);
 
-        DocumentFormat effectiveFormat = format != null ? format : DocumentFormat.DOCX;
-        byte[] outputBytes = effectiveFormat == DocumentFormat.PDF ? docxTemplateEngine.convertToPdf(filledDocx) : filledDocx;
-
         String baseFileName = sanitizeFileName(dokumentumNev != null ? dokumentumNev : template.getTemplateNev());
+        DocumentFormat effectiveFormat = format != null ? format : DocumentFormat.DOCX;
+        byte[] outputBytes = effectiveFormat == DocumentFormat.PDF
+            ? pdfConversionService.convertDocxToPdf(filledDocx, baseFileName)
+            : filledDocx;
+
         String fileName = baseFileName + effectiveFormat.getExtension();
 
         MegrendelesDokumentumokDTO persisted = null;

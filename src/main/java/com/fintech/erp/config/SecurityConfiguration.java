@@ -38,6 +38,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.*;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.util.StringUtils;
+import org.springframework.web.cors.CorsUtils;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
 import tech.jhipster.config.JHipsterProperties;
 
@@ -64,21 +65,33 @@ public class SecurityConfiguration {
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
             )
             .authorizeHttpRequests(authz ->
-                // prettier-ignore
                 authz
-                    // Allow CORS preflight requests
-                    .requestMatchers(mvc.pattern("/api/authenticate")).permitAll()
-                    .requestMatchers(mvc.pattern("/api/auth-info")).permitAll()
-                    .requestMatchers(mvc.pattern("/api/admin/**")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers(mvc.pattern("/api/**")).authenticated()
-                    .requestMatchers(mvc.pattern("/v3/api-docs/**")).permitAll()
-                    .requestMatchers(mvc.pattern("/swagger-ui/**")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/health")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/health/**")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/info")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/prometheus")).permitAll()
-                    .requestMatchers(mvc.pattern("/management/**")).hasAuthority(AuthoritiesConstants.ADMIN)
-                    .anyRequest().authenticated()
+                    .requestMatchers(CorsUtils::isPreFlightRequest)
+                    .permitAll() // <— ajánlott, minden OPTIONS preflightot enged
+                    .requestMatchers(mvc.pattern("/api/authenticate"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/api/auth-info"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/api/admin/**"))
+                    .hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(mvc.pattern("/api/**"))
+                    .authenticated()
+                    .requestMatchers(mvc.pattern("/v3/api-docs/**"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/swagger-ui/**"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/management/health"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/management/health/**"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/management/info"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/management/prometheus"))
+                    .permitAll()
+                    .requestMatchers(mvc.pattern("/management/**"))
+                    .hasAuthority(AuthoritiesConstants.ADMIN)
+                    .anyRequest()
+                    .authenticated()
             )
             //.oauth2Login(oauth2 -> oauth2.loginPage("/").userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService())))
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter())))

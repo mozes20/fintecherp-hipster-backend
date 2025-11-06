@@ -13,9 +13,10 @@ import com.fintech.erp.domain.Megrendelesek;
 import com.fintech.erp.domain.SzerzodesesJogviszonyok;
 import com.fintech.erp.domain.enumeration.Devizanem;
 import com.fintech.erp.domain.enumeration.DijazasTipusa;
-import com.fintech.erp.domain.enumeration.MegrendelesStatusz;
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
 import com.fintech.erp.domain.enumeration.MegrendelesTipus;
 import com.fintech.erp.repository.MegrendelesekRepository;
+import com.fintech.erp.repository.MunkakorokRepository;
 import com.fintech.erp.repository.SzerzodesesJogviszonyokRepository;
 import com.fintech.erp.service.dto.MegrendelesekDTO;
 import com.fintech.erp.service.dto.SzerzodesesJogviszonyokDTO;
@@ -43,6 +44,9 @@ class MegrendelesekServiceTest {
     @Mock
     private SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository;
 
+    @Mock
+    private MunkakorokRepository munkakorokRepository;
+
     private MegrendelesekMapper megrendelesekMapper;
 
     private MegrendelesekService megrendelesekService;
@@ -50,12 +54,20 @@ class MegrendelesekServiceTest {
     @BeforeEach
     void setUp() {
         megrendelesekMapper = new MegrendelesekMapperImpl();
-        megrendelesekService = new MegrendelesekService(megrendelesekRepository, megrendelesekMapper, szerzodesesJogviszonyokRepository);
+        megrendelesekService = new MegrendelesekService(
+            megrendelesekRepository,
+            megrendelesekMapper,
+            szerzodesesJogviszonyokRepository,
+            munkakorokRepository
+        );
     }
 
     @Test
     void saveShouldGenerateOrderNumberWhenMissing() {
         MegrendelesekDTO dto = createValidMegrendelesDto(LocalDate.of(2025, 1, 10), LocalDate.of(2025, 2, 28));
+        dto.setMegrendelesDatuma(null);
+
+        when(munkakorokRepository.existsById(5L)).thenReturn(true);
 
         when(
             megrendelesekRepository.findFirstBySzerzodesesJogviszony_IdAndMegrendelesSzamStartingWithOrderByMegrendelesSzamDesc(
@@ -69,17 +81,20 @@ class MegrendelesekServiceTest {
             return entity;
         });
 
+        LocalDate today = LocalDate.now();
         MegrendelesekDTO result = megrendelesekService.save(dto);
 
         assertThat(result.getMegrendelesSzam()).isEqualTo("SZERZ-001/2025/001");
-        assertThat(result.getMegrendelesStatusz()).isEqualTo(MegrendelesStatusz.DRAFT);
-        assertThat(result.getPeldanyokSzama()).isEqualTo(1);
+        assertThat(result.getMegrendelesDatuma()).isEqualTo(today);
+        assertThat(result.getMegrendelesDokumentumGeneralta()).isEqualTo(MegrendelesDokumentumEredet.KEZI);
         verify(szerzodesesJogviszonyokRepository, never()).findById(anyLong());
     }
 
     @Test
     void saveShouldIncrementSequenceBasedOnExistingOrders() {
         MegrendelesekDTO dto = createValidMegrendelesDto(LocalDate.of(2025, 6, 1), LocalDate.of(2025, 6, 30));
+
+        when(munkakorokRepository.existsById(5L)).thenReturn(true);
 
         Megrendelesek existing = new Megrendelesek();
         existing.setMegrendelesSzam("SZERZ-001/2025/009");
@@ -140,6 +155,8 @@ class MegrendelesekServiceTest {
         MegrendelesekDTO dto = createValidMegrendelesDto(LocalDate.of(2025, 8, 1), LocalDate.of(2025, 8, 20));
         dto.getSzerzodesesJogviszony().setSzerzodesAzonosito(null);
 
+        when(munkakorokRepository.existsById(5L)).thenReturn(true);
+
         SzerzodesesJogviszonyok persisted = new SzerzodesesJogviszonyok();
         persisted.setId(JOGVISZONY_ID);
         persisted.setSzerzodesAzonosito(SZERZODES_AZONOSITO);
@@ -159,17 +176,30 @@ class MegrendelesekServiceTest {
         verify(szerzodesesJogviszonyokRepository).findById(JOGVISZONY_ID);
     }
 
+    @Test
+    void saveShouldRejectWhenReferencedMunkakorMissing() {
+        MegrendelesekDTO dto = createValidMegrendelesDto(LocalDate.of(2025, 9, 1), LocalDate.of(2025, 9, 30));
+        when(munkakorokRepository.existsById(5L)).thenReturn(false);
+
+        assertThatThrownBy(() -> megrendelesekService.save(dto))
+            .isInstanceOf(BadRequestAlertException.class)
+            .hasMessageContaining("munkakör");
+
+        verify(megrendelesekRepository, never()).save(any(Megrendelesek.class));
+    }
+
     private MegrendelesekDTO createValidMegrendelesDto(LocalDate start, LocalDate end) {
         MegrendelesekDTO dto = new MegrendelesekDTO();
         dto.setMegrendelesTipusa(MegrendelesTipus.EGYSZERI);
         dto.setMegrendelesKezdete(start);
         dto.setMegrendelesVege(end);
+        dto.setSzallitasraKeruloTetelek("Laptop, monitor");
         dto.setDevizanem(Devizanem.HUF);
         dto.setDijazasTipusa(DijazasTipusa.EGYSZERI);
         dto.setDijOsszege(BigDecimal.valueOf(150_000));
-        dto.setSzamlazando(Boolean.TRUE);
-        dto.setPeldanyokSzama(null);
         dto.setMegrendelesDokumentumGeneralta(null);
+        dto.setMegrendelesDatuma(LocalDate.of(2025, 1, 5));
+        dto.setMunkakorId(5L);
         dto.setSzerzodesesJogviszony(createValidJogviszonyDto());
         return dto;
     }

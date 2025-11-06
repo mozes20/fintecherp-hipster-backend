@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Align Megrendelesek schema with reduced domain fields.
+    -->
+    <changeSet id="20251105193000-1" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <columnExists tableName="megrendelesek" columnName="szallitasra_kerulo_tetelek" />
+            </not>
+        </preConditions>
+        <addColumn tableName="megrendelesek">
+            <column name="szallitasra_kerulo_tetelek" type="text">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20251105193000-2" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <columnExists tableName="megrendelesek" columnName="megrendeles_datuma" />
+            </not>
+        </preConditions>
+        <addColumn tableName="megrendelesek">
+            <column name="megrendeles_datuma" type="date">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20251105193000-3" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <not>
+                <columnExists tableName="megrendelesek" columnName="munkakor_id" />
+            </not>
+        </preConditions>
+        <addColumn tableName="megrendelesek">
+            <column name="munkakor_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20251105193000-4" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <columnExists tableName="megrendelesek" columnName="resztvevo_tipus" />
+        </preConditions>
+        <dropColumn tableName="megrendelesek" columnName="resztvevo_tipus" />
+    </changeSet>
+
+    <changeSet id="20251105193000-5" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <columnExists tableName="megrendelesek" columnName="megrendeles_statusz" />
+        </preConditions>
+        <dropColumn tableName="megrendelesek" columnName="megrendeles_statusz" />
+    </changeSet>
+
+    <changeSet id="20251105193000-6" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <columnExists tableName="megrendelesek" columnName="megrendeles_forrasa" />
+        </preConditions>
+        <dropColumn tableName="megrendelesek" columnName="megrendeles_forrasa" />
+    </changeSet>
+
+    <changeSet id="20251105193000-7" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <columnExists tableName="megrendelesek" columnName="peldanyok_szama" />
+        </preConditions>
+        <dropColumn tableName="megrendelesek" columnName="peldanyok_szama" />
+    </changeSet>
+
+    <changeSet id="20251105193000-8" author="copilot">
+        <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+            <columnExists tableName="megrendelesek" columnName="szamlazando" />
+        </preConditions>
+        <dropColumn tableName="megrendelesek" columnName="szamlazando" />
+    </changeSet>
+</databaseChangeLog>

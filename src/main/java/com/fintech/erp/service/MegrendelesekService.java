@@ -4,14 +4,13 @@ import com.fintech.erp.domain.Megrendelesek;
 import com.fintech.erp.domain.SzerzodesesJogviszonyok;
 import com.fintech.erp.domain.enumeration.DijazasTipusa;
 import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
-import com.fintech.erp.domain.enumeration.MegrendelesStatusz;
 import com.fintech.erp.domain.enumeration.MegrendelesTipus;
 import com.fintech.erp.repository.MegrendelesekRepository;
+import com.fintech.erp.repository.MunkakorokRepository;
 import com.fintech.erp.repository.SzerzodesesJogviszonyokRepository;
 import com.fintech.erp.service.dto.MegrendelesekDTO;
 import com.fintech.erp.service.mapper.MegrendelesekMapper;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -36,14 +35,18 @@ public class MegrendelesekService {
 
     private final SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository;
 
+    private final MunkakorokRepository munkakorokRepository;
+
     public MegrendelesekService(
         MegrendelesekRepository megrendelesekRepository,
         MegrendelesekMapper megrendelesekMapper,
-        SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository
+        SzerzodesesJogviszonyokRepository szerzodesesJogviszonyokRepository,
+        MunkakorokRepository munkakorokRepository
     ) {
         this.megrendelesekRepository = megrendelesekRepository;
         this.megrendelesekMapper = megrendelesekMapper;
         this.szerzodesesJogviszonyokRepository = szerzodesesJogviszonyokRepository;
+        this.munkakorokRepository = munkakorokRepository;
     }
 
     /**
@@ -55,6 +58,7 @@ public class MegrendelesekService {
     public MegrendelesekDTO save(MegrendelesekDTO megrendelesekDTO) {
         LOG.debug("Request to save Megrendelesek : {}", megrendelesekDTO);
         Megrendelesek megrendelesek = megrendelesekMapper.toEntity(megrendelesekDTO);
+        applyMunkakorReference(megrendelesek, megrendelesekDTO, false);
         SzerzodesesJogviszonyok jogviszony = resolveSzerzodesesJogviszony(megrendelesek);
         applyDefaults(megrendelesek);
         validateBusinessRules(megrendelesek, jogviszony);
@@ -72,6 +76,7 @@ public class MegrendelesekService {
     public MegrendelesekDTO update(MegrendelesekDTO megrendelesekDTO) {
         LOG.debug("Request to update Megrendelesek : {}", megrendelesekDTO);
         Megrendelesek megrendelesek = megrendelesekMapper.toEntity(megrendelesekDTO);
+        applyMunkakorReference(megrendelesek, megrendelesekDTO, false);
         SzerzodesesJogviszonyok jogviszony = resolveSzerzodesesJogviszony(megrendelesek);
         applyDefaults(megrendelesek);
         validateBusinessRules(megrendelesek, jogviszony);
@@ -93,6 +98,7 @@ public class MegrendelesekService {
             .findById(megrendelesekDTO.getId())
             .map(existingMegrendelesek -> {
                 megrendelesekMapper.partialUpdate(existingMegrendelesek, megrendelesekDTO);
+                applyMunkakorReference(existingMegrendelesek, megrendelesekDTO, true);
                 SzerzodesesJogviszonyok jogviszony = resolveSzerzodesesJogviszony(existingMegrendelesek);
                 applyDefaults(existingMegrendelesek);
                 validateBusinessRules(existingMegrendelesek, jogviszony);
@@ -127,17 +133,11 @@ public class MegrendelesekService {
     }
 
     private void applyDefaults(Megrendelesek entity) {
-        if (entity.getMegrendelesStatusz() == null) {
-            entity.setMegrendelesStatusz(MegrendelesStatusz.DRAFT);
-        }
-        if (entity.getPeldanyokSzama() == null) {
-            entity.setPeldanyokSzama(1);
-        }
-        if (entity.getSzamlazando() == null) {
-            entity.setSzamlazando(Boolean.FALSE);
-        }
         if (entity.getMegrendelesDokumentumGeneralta() == null) {
             entity.setMegrendelesDokumentumGeneralta(MegrendelesDokumentumEredet.KEZI);
+        }
+        if (entity.getMegrendelesDatuma() == null) {
+            entity.setMegrendelesDatuma(LocalDate.now());
         }
     }
 
@@ -201,19 +201,11 @@ public class MegrendelesekService {
                 "inkonzisztensdijazas"
             );
         }
-        if (Boolean.TRUE.equals(entity.getSzamlazando())) {
-            BigDecimal amount = entity.getDijOsszege();
-            if (amount == null || amount.signum() <= 0) {
-                throw new BadRequestAlertException("Számlázandó megrendeléshez pozitív díjösszeg szükséges", ENTITY_NAME, "dijosszeg");
-            }
-        }
-
-        if (entity.getPeldanyokSzama() != null && entity.getPeldanyokSzama() <= 0) {
-            throw new BadRequestAlertException("A példányszámnak pozitívnak kell lennie", ENTITY_NAME, "peldanyszam");
-        }
-
         if (jogviszony.getSzerzodesAzonosito() == null || jogviszony.getSzerzodesAzonosito().isBlank()) {
             throw new BadRequestAlertException("A szerződéses jogviszony azonosítója hiányzik", ENTITY_NAME, "uresjogazonosito");
+        }
+        if (entity.getMunkakorId() != null && !munkakorokRepository.existsById(entity.getMunkakorId())) {
+            throw new BadRequestAlertException("A megadott munkakör nem található", ENTITY_NAME, "ismeretlenmunkakor");
         }
     }
 
@@ -232,6 +224,23 @@ public class MegrendelesekService {
                 .orElse(0) +
             1;
         entity.setMegrendelesSzam(prefix + String.format("%03d", nextSequence));
+    }
+
+    private void applyMunkakorReference(Megrendelesek entity, MegrendelesekDTO source, boolean partial) {
+        if (source == null) {
+            return;
+        }
+
+        Long resolvedId = source.getMunkakorId();
+        if (resolvedId == null && source.getMunkakor() != null) {
+            resolvedId = source.getMunkakor().getId();
+        }
+
+        if (resolvedId != null) {
+            entity.setMunkakorId(resolvedId);
+        } else if (!partial) {
+            entity.setMunkakorId(null);
+        }
     }
 
     private int extractSequence(String currentValue, String prefix) {
