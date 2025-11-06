@@ -1,12 +1,16 @@
 package com.fintech.erp.service.document;
 
+import com.fintech.erp.domain.Bankszamlaszamok;
 import com.fintech.erp.domain.CegAlapadatok;
 import com.fintech.erp.domain.Maganszemelyek;
 import com.fintech.erp.domain.Megrendelesek;
+import com.fintech.erp.domain.Munkakorok;
 import com.fintech.erp.domain.SzerzodesesJogviszonyok;
+import com.fintech.erp.repository.BankszamlaszamokRepository;
 import com.fintech.erp.repository.MegrendelesekRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,6 +24,7 @@ import java.util.stream.Collectors;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,12 +38,10 @@ public class MegrendelesTemplatePlaceholderService {
     private static final String KEY_ORDER_CUSTOMER_NUMBER = "megrendeles.ugyfel_megrendeles_id";
     private static final String KEY_ORDER_TYPE = "megrendeles.tipus";
     private static final String KEY_ORDER_TYPE_LABEL = "megrendeles.tipus_label";
-    private static final String KEY_ORDER_STATUS = "megrendeles.statusz";
-    private static final String KEY_ORDER_STATUS_LABEL = "megrendeles.statusz_label";
-    private static final String KEY_ORDER_SOURCE = "megrendeles.forras";
-    private static final String KEY_ORDER_SOURCE_LABEL = "megrendeles.forras_label";
     private static final String KEY_ORDER_SHORT_DESC = "megrendeles.feladat_rovid_leirasa";
     private static final String KEY_ORDER_LONG_DESC = "megrendeles.feladat_reszletes_leirasa";
+    private static final String KEY_ORDER_DELIVERY_ITEMS = "megrendeles.szallitasra_kerulo_tetelek";
+    private static final String KEY_ORDER_DATE = "megrendeles.datuma";
     private static final String KEY_ORDER_START = "megrendeles.kezdete";
     private static final String KEY_ORDER_END = "megrendeles.vege";
     private static final String KEY_ORDER_PRICING_TYPE = "megrendeles.dijazas_tipusa";
@@ -46,11 +49,13 @@ public class MegrendelesTemplatePlaceholderService {
     private static final String KEY_ORDER_CURRENCY = "megrendeles.devizanem";
     private static final String KEY_ORDER_CURRENCY_LABEL = "megrendeles.devizanem_label";
     private static final String KEY_ORDER_AMOUNT = "megrendeles.dij_osszege";
-    private static final String KEY_ORDER_COPY_COUNT = "megrendeles.peldanyok_szama";
-    private static final String KEY_ORDER_INVOICE = "megrendeles.szamlazando";
-    private static final String KEY_ORDER_INVOICE_LABEL = "megrendeles.szamlazando_label";
-    private static final String KEY_ORDER_PARTICIPANT_TYPE = "megrendeles.resztvevo_tipus";
-    private static final String KEY_ORDER_PARTICIPANT_TYPE_LABEL = "megrendeles.resztvevo_tipus_label";
+    private static final String KEY_ORDER_AMOUNT_IN_WORDS = "megrendeles.dij_osszege_betukkel";
+    private static final String KEY_ORDER_JOB_ID = "megrendeles.munkakor_id";
+    private static final String KEY_ORDER_JOB_CODE = "megrendeles.munkakor_kod";
+    private static final String KEY_ORDER_JOB_NAME = "megrendeles.munkakor_nev";
+    private static final String KEY_ORDER_JOB_TASKS = "megrendeles.munkakor_feladatai";
+    private static final String KEY_ORDER_JOB_SKILLS = "megrendeles.munkakor_szaktudasai";
+    private static final String KEY_ORDER_JOB_EFO = "megrendeles.munkakor_efo";
     private static final String KEY_ORDER_COLLEAGUE_TYPE = "megrendeles.resztvevo_kollaga_tipusa";
     private static final String KEY_ORDER_COLLEAGUE_TYPE_LABEL = "megrendeles.resztvevo_kollaga_tipusa_label";
 
@@ -62,6 +67,7 @@ public class MegrendelesTemplatePlaceholderService {
     private static final String KEY_CLIENT_NAME = "megrendelo_ceg.nev";
     private static final String KEY_CLIENT_SHORT_ID = "megrendelo_ceg.rovid_azonosito";
     private static final String KEY_CLIENT_ADDRESS = "megrendelo_ceg.szekhely";
+    private static final String KEY_CLIENT_BANK = "megrendelo_ceg.bankszamlaszam";
     private static final String KEY_CLIENT_TAX = "megrendelo_ceg.adoszam";
     private static final String KEY_CLIENT_REGISTER = "megrendelo_ceg.cegjegyzekszam";
     private static final String KEY_CLIENT_EMAIL = "megrendelo_ceg.email";
@@ -71,6 +77,7 @@ public class MegrendelesTemplatePlaceholderService {
     private static final String KEY_SUPPLIER_NAME = "vallalkozo_ceg.nev";
     private static final String KEY_SUPPLIER_SHORT_ID = "vallalkozo_ceg.rovid_azonosito";
     private static final String KEY_SUPPLIER_ADDRESS = "vallalkozo_ceg.szekhely";
+    private static final String KEY_SUPPLIER_BANK = "vallalkozo_ceg.bankszamlaszam";
     private static final String KEY_SUPPLIER_TAX = "vallalkozo_ceg.adoszam";
     private static final String KEY_SUPPLIER_REGISTER = "vallalkozo_ceg.cegjegyzekszam";
     private static final String KEY_SUPPLIER_EMAIL = "vallalkozo_ceg.email";
@@ -90,6 +97,47 @@ public class MegrendelesTemplatePlaceholderService {
     private static final String KEY_CURRENT_DATE = "datum.ma";
     private static final String KEY_CURRENT_TIMESTAMP = "idopont.most";
 
+    private static final String[] NUMBER_UNITS = { "", "egy", "ketto", "harom", "negy", "ot", "hat", "het", "nyolc", "kilenc" };
+
+    private static final String[] NUMBER_TEENS = {
+        "tiz",
+        "tizenegy",
+        "tizenketto",
+        "tizenharom",
+        "tizennegy",
+        "tizenot",
+        "tizenhat",
+        "tizenhet",
+        "tizennyolc",
+        "tizenkilenc",
+    };
+
+    private static final String[] NUMBER_TENS = {
+        "",
+        "tiz",
+        "husz",
+        "harminc",
+        "negyven",
+        "otven",
+        "hatvan",
+        "hetven",
+        "nyolcvan",
+        "kilencven",
+    };
+
+    private static final String[] NUMBER_HUNDREDS = {
+        "",
+        "szaz",
+        "ketszaz",
+        "haromszaz",
+        "negyszaz",
+        "otszaz",
+        "hatszaz",
+        "hetszaz",
+        "nyolcszaz",
+        "kilencszaz",
+    };
+
     private static final List<TemplatePlaceholderDefinition> DEFINITIONS;
 
     static {
@@ -99,12 +147,10 @@ public class MegrendelesTemplatePlaceholderService {
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_CUSTOMER_NUMBER, "Ugyfel altal hivatkozott megrendeles azonositoja"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_TYPE, "Megrendeles tipusa (ENUM ertek)"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_TYPE_LABEL, "Megrendeles tipusa olvashato formaban"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_STATUS, "Megrendeles statusza (ENUM ertek)"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_STATUS_LABEL, "Megrendeles statusza olvashato formaban"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_SOURCE, "Megrendeles forrasa (ENUM ertek)"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_SOURCE_LABEL, "Megrendeles forrasa olvashato formaban"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_SHORT_DESC, "Feladat rovid leirasa"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_LONG_DESC, "Feladat reszletes leirasa"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_DELIVERY_ITEMS, "Szallitasra kerulo tetelek"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_DATE, "Megrendeles datuma"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_START, "Megrendeles kezdete"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_END, "Megrendeles vege"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_PRICING_TYPE, "Dijazas tipusa (ENUM ertek)"));
@@ -112,11 +158,13 @@ public class MegrendelesTemplatePlaceholderService {
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_CURRENCY, "Devizanem (ENUM ertek)"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_CURRENCY_LABEL, "Devizanem olvashato formaban"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_AMOUNT, "Dij osszege"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_COPY_COUNT, "Peldanyok szama"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_INVOICE, "Szamlazando flag (true/false)"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_INVOICE_LABEL, "Szamlazando flag olvashato formaban"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_PARTICIPANT_TYPE, "Resztvevo tipusa (ENUM ertek)"));
-        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_PARTICIPANT_TYPE_LABEL, "Resztvevo tipusa olvashato formaban"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_AMOUNT_IN_WORDS, "Dij osszege betukkel"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_JOB_ID, "Kapcsolodo munkakor azonositoja"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_JOB_CODE, "Kapcsolodo munkakor kodja"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_JOB_NAME, "Kapcsolodo munkakor neve"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_JOB_TASKS, "Kapcsolodo munkakor feladatai"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_JOB_SKILLS, "Kapcsolodo munkakor szaktudasai"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_JOB_EFO, "Kapcsolodo munkakor EFO statusza"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_COLLEAGUE_TYPE, "Resztvevo kollega tipusa (ENUM ertek)"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ORDER_COLLEAGUE_TYPE_LABEL, "Resztvevo kollega tipusa olvashato formaban"));
         defs.add(new TemplatePlaceholderDefinition(KEY_CONTRACT_ID, "Szerzodes azonosito (adatbazis ID)"));
@@ -126,6 +174,7 @@ public class MegrendelesTemplatePlaceholderService {
         defs.add(new TemplatePlaceholderDefinition(KEY_CLIENT_NAME, "Megrendelo ceg neve"));
         defs.add(new TemplatePlaceholderDefinition(KEY_CLIENT_SHORT_ID, "Megrendelo ceg rovid azonositoja"));
         defs.add(new TemplatePlaceholderDefinition(KEY_CLIENT_ADDRESS, "Megrendelo ceg szekhelye"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_CLIENT_BANK, "Megrendelo ceg bankszamlaszama"));
         defs.add(new TemplatePlaceholderDefinition(KEY_CLIENT_TAX, "Megrendelo ceg adoszama"));
         defs.add(new TemplatePlaceholderDefinition(KEY_CLIENT_REGISTER, "Megrendelo ceg cegjegyzekszama"));
         defs.add(new TemplatePlaceholderDefinition(KEY_CLIENT_EMAIL, "Megrendelo ceg email cime"));
@@ -134,6 +183,7 @@ public class MegrendelesTemplatePlaceholderService {
         defs.add(new TemplatePlaceholderDefinition(KEY_SUPPLIER_NAME, "Vallalkozo ceg neve"));
         defs.add(new TemplatePlaceholderDefinition(KEY_SUPPLIER_SHORT_ID, "Vallalkozo ceg rovid azonositoja"));
         defs.add(new TemplatePlaceholderDefinition(KEY_SUPPLIER_ADDRESS, "Vallalkozo ceg szekhelye"));
+        defs.add(new TemplatePlaceholderDefinition(KEY_SUPPLIER_BANK, "Vallalkozo ceg bankszamlaszama"));
         defs.add(new TemplatePlaceholderDefinition(KEY_SUPPLIER_TAX, "Vallalkozo ceg adoszama"));
         defs.add(new TemplatePlaceholderDefinition(KEY_SUPPLIER_REGISTER, "Vallalkozo ceg cegjegyzekszama"));
         defs.add(new TemplatePlaceholderDefinition(KEY_SUPPLIER_EMAIL, "Vallalkozo ceg email cime"));
@@ -154,9 +204,14 @@ public class MegrendelesTemplatePlaceholderService {
     }
 
     private final MegrendelesekRepository megrendelesekRepository;
+    private final BankszamlaszamokRepository bankszamlaszamokRepository;
 
-    public MegrendelesTemplatePlaceholderService(MegrendelesekRepository megrendelesekRepository) {
+    public MegrendelesTemplatePlaceholderService(
+        MegrendelesekRepository megrendelesekRepository,
+        BankszamlaszamokRepository bankszamlaszamokRepository
+    ) {
         this.megrendelesekRepository = megrendelesekRepository;
+        this.bankszamlaszamokRepository = bankszamlaszamokRepository;
     }
 
     public Map<String, String> build(Long megrendelesId) {
@@ -189,18 +244,25 @@ public class MegrendelesTemplatePlaceholderService {
         addValue(placeholders, KEY_ORDER_NUMBER, megrendeles.getMegrendelesSzam());
         addValue(placeholders, KEY_ORDER_CUSTOMER_NUMBER, megrendeles.getUgyfelMegrendelesId());
         addEnum(placeholders, KEY_ORDER_TYPE, megrendeles.getMegrendelesTipusa());
-        addEnum(placeholders, KEY_ORDER_STATUS, megrendeles.getMegrendelesStatusz());
-        addEnum(placeholders, KEY_ORDER_SOURCE, megrendeles.getMegrendelesForrasa());
         addValue(placeholders, KEY_ORDER_SHORT_DESC, megrendeles.getFeladatRovidLeirasa());
         addValue(placeholders, KEY_ORDER_LONG_DESC, megrendeles.getFeladatReszletesLeirasa());
+        addValue(placeholders, KEY_ORDER_DELIVERY_ITEMS, megrendeles.getSzallitasraKeruloTetelek());
+        addDate(placeholders, KEY_ORDER_DATE, megrendeles.getMegrendelesDatuma());
         addDate(placeholders, KEY_ORDER_START, megrendeles.getMegrendelesKezdete());
         addDate(placeholders, KEY_ORDER_END, megrendeles.getMegrendelesVege());
         addEnum(placeholders, KEY_ORDER_PRICING_TYPE, megrendeles.getDijazasTipusa());
         addEnum(placeholders, KEY_ORDER_CURRENCY, megrendeles.getDevizanem());
         addDecimal(placeholders, KEY_ORDER_AMOUNT, megrendeles.getDijOsszege());
-        addValue(placeholders, KEY_ORDER_COPY_COUNT, megrendeles.getPeldanyokSzama());
-        addBoolean(placeholders, KEY_ORDER_INVOICE, megrendeles.getSzamlazando());
-        addEnum(placeholders, KEY_ORDER_PARTICIPANT_TYPE, megrendeles.getResztvevoTipus());
+        addValue(placeholders, KEY_ORDER_AMOUNT_IN_WORDS, convertAmountToHungarianWords(megrendeles.getDijOsszege()));
+        addValue(placeholders, KEY_ORDER_JOB_ID, megrendeles.getMunkakorId());
+        Munkakorok munkakor = megrendeles.getMunkakor();
+        if (munkakor != null) {
+            addValue(placeholders, KEY_ORDER_JOB_CODE, munkakor.getMunkakorKod());
+            addValue(placeholders, KEY_ORDER_JOB_NAME, munkakor.getMunkakorNeve());
+            addValue(placeholders, KEY_ORDER_JOB_TASKS, munkakor.getMunkakorFeladatai());
+            addValue(placeholders, KEY_ORDER_JOB_SKILLS, munkakor.getMunkakorSzaktudasai());
+            addValue(placeholders, KEY_ORDER_JOB_EFO, munkakor.getEfoMunkakor());
+        }
         addEnum(placeholders, KEY_ORDER_COLLEAGUE_TYPE, megrendeles.getResztvevoKollagaTipusa());
 
         SzerzodesesJogviszonyok jogviszony = megrendeles.getSzerzodesesJogviszony();
@@ -240,6 +302,7 @@ public class MegrendelesTemplatePlaceholderService {
         addValue(target, prefix + ".nev", ceg.getCegNev());
         addValue(target, prefix + ".rovid_azonosito", ceg.getCegRovidAzonosito());
         addValue(target, prefix + ".szekhely", ceg.getCegSzekhely());
+        addValue(target, prefix + ".bankszamlaszam", resolveCompanyBankAccount(ceg));
         addValue(target, prefix + ".adoszam", ceg.getAdoszam());
         addValue(target, prefix + ".cegjegyzekszam", ceg.getCegjegyzekszam());
         addValue(target, prefix + ".email", ceg.getCegKozpontiEmail());
@@ -250,15 +313,6 @@ public class MegrendelesTemplatePlaceholderService {
     private void addEnum(Map<String, String> target, String key, Enum<?> value) {
         addValue(target, key, value == null ? null : value.name());
         addValue(target, key + "_label", value == null ? null : humanizeEnum(value));
-    }
-
-    private void addBoolean(Map<String, String> target, String key, Boolean value) {
-        addValue(target, key, value);
-        if (value == null) {
-            addValue(target, key + "_label", null);
-        } else {
-            addValue(target, key + "_label", value ? "igen" : "nem");
-        }
     }
 
     private void addDate(Map<String, String> target, String key, LocalDate value) {
@@ -317,5 +371,163 @@ public class MegrendelesTemplatePlaceholderService {
         if (maganszemely != null) {
             Hibernate.initialize(maganszemely);
         }
+        Munkakorok munkakor = megrendeles.getMunkakor();
+        if (munkakor != null) {
+            Hibernate.initialize(munkakor);
+        }
+    }
+
+    private String resolveCompanyBankAccount(CegAlapadatok ceg) {
+        if (ceg == null || ceg.getId() == null) {
+            return "";
+        }
+        return bankszamlaszamokRepository
+            .findFirstByCegIdAndStatuszOrderByIdAsc(ceg.getId(), "AKTIV")
+            .or(() -> bankszamlaszamokRepository.findFirstByCegIdOrderByIdAsc(ceg.getId()))
+            .map(this::formatBankAccount)
+            .orElse("");
+    }
+
+    private String formatBankAccount(Bankszamlaszamok bankAccount) {
+        if (bankAccount == null) {
+            return "";
+        }
+        if (StringUtils.hasText(bankAccount.getBankszamlaIBAN())) {
+            return bankAccount.getBankszamlaIBAN();
+        }
+        if (StringUtils.hasText(bankAccount.getBankszamlaGIRO())) {
+            return bankAccount.getBankszamlaGIRO();
+        }
+        return "";
+    }
+
+    private String convertAmountToHungarianWords(BigDecimal amount) {
+        if (amount == null) {
+            return "";
+        }
+        BigDecimal integerPart = amount.setScale(0, RoundingMode.DOWN);
+        if (integerPart.compareTo(BigDecimal.ZERO) < 0) {
+            return integerPart.toPlainString();
+        }
+        long numericValue;
+        try {
+            numericValue = integerPart.longValueExact();
+        } catch (ArithmeticException ex) {
+            return integerPart.toPlainString();
+        }
+        return convertNumberToHungarianWords(numericValue);
+    }
+
+    private String convertNumberToHungarianWords(long value) {
+        if (value == 0) {
+            return "nulla";
+        }
+        StringBuilder builder = new StringBuilder();
+        if (value < 0) {
+            builder.append("minusz ");
+            value = Math.abs(value);
+        }
+        long[] scaleValues = { 1_000_000_000_000L, 1_000_000_000L, 1_000_000L, 1_000L };
+        String[] scaleNames = { "billio", "milliard", "millio", "ezer" };
+        for (int i = 0; i < scaleValues.length; i++) {
+            int groupValue = (int) (value / scaleValues[i]);
+            if (groupValue > 0) {
+                appendScalePart(builder, groupValue, scaleNames[i]);
+                value = value % scaleValues[i];
+            }
+        }
+        if (value > 0) {
+            if (builder.length() > 0) {
+                builder.append(" ");
+            }
+            builder.append(convertBelowThousand((int) value));
+        }
+        return builder.toString().trim();
+    }
+
+    private void appendScalePart(StringBuilder builder, int value, String scale) {
+        if (value <= 0) {
+            return;
+        }
+        if (builder.length() > 0) {
+            builder.append(" ");
+        }
+        switch (scale) {
+            case "ezer" -> {
+                if (value == 1) {
+                    builder.append("ezer");
+                    return;
+                }
+                if (value == 2) {
+                    builder.append("ketezer");
+                    return;
+                }
+            }
+            case "millio" -> {
+                if (value == 1) {
+                    builder.append("egymillio");
+                    return;
+                }
+                if (value == 2) {
+                    builder.append("ketmillio");
+                    return;
+                }
+            }
+            case "milliard" -> {
+                if (value == 1) {
+                    builder.append("egymilliard");
+                    return;
+                }
+                if (value == 2) {
+                    builder.append("ketmilliard");
+                    return;
+                }
+            }
+            case "billio" -> {
+                if (value == 1) {
+                    builder.append("egybillio");
+                    return;
+                }
+                if (value == 2) {
+                    builder.append("ketbillio");
+                    return;
+                }
+            }
+            default -> {}
+        }
+        builder.append(convertBelowThousand(value));
+        builder.append(scale);
+    }
+
+    private String convertBelowThousand(int value) {
+        if (value == 0) {
+            return "";
+        }
+        StringBuilder part = new StringBuilder();
+        int hundreds = value / 100;
+        if (hundreds > 0) {
+            part.append(NUMBER_HUNDREDS[hundreds]);
+        }
+        int remainder = value % 100;
+        if (remainder >= 10 && remainder < 20) {
+            part.append(NUMBER_TEENS[remainder - 10]);
+            return part.toString();
+        }
+        int tens = remainder / 10;
+        if (tens > 0) {
+            if (tens == 2) {
+                part.append("husz");
+                if (remainder % 10 != 0) {
+                    part.append("on");
+                }
+            } else {
+                part.append(NUMBER_TENS[tens]);
+            }
+        }
+        int units = remainder % 10;
+        if (units > 0) {
+            part.append(NUMBER_UNITS[units]);
+        }
+        return part.toString();
     }
 }

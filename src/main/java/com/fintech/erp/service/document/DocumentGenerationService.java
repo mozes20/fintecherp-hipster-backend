@@ -30,17 +30,20 @@ public class DocumentGenerationService {
     private final SzerzodesesJogviszonyDokumentumTemplateRepository templateRepository;
     private final SzerzodesesJogviszonyDokumentumService dokumentumService;
     private final DocxTemplateEngine docxTemplateEngine;
+    private final PdfConversionService pdfConversionService;
     private final SzerzodesesJogviszonyTemplatePlaceholderService placeholderService;
 
     public DocumentGenerationService(
         SzerzodesesJogviszonyDokumentumTemplateRepository templateRepository,
         SzerzodesesJogviszonyDokumentumService dokumentumService,
         DocxTemplateEngine docxTemplateEngine,
+        PdfConversionService pdfConversionService,
         SzerzodesesJogviszonyTemplatePlaceholderService placeholderService
     ) {
         this.templateRepository = templateRepository;
         this.dokumentumService = dokumentumService;
         this.docxTemplateEngine = docxTemplateEngine;
+        this.pdfConversionService = pdfConversionService;
         this.placeholderService = placeholderService;
     }
 
@@ -74,12 +77,17 @@ public class DocumentGenerationService {
         if (placeholders != null && !placeholders.isEmpty()) {
             replacements.putAll(placeholders);
         }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Template replacements for jogviszony {}: {}", szerzodesesJogviszonyId, replacements);
+        }
         byte[] filledDocx = docxTemplateEngine.populateTemplate(templatePath, replacements);
 
-        DocumentFormat effectiveFormat = format != null ? format : DocumentFormat.DOCX;
-        byte[] outputBytes = effectiveFormat == DocumentFormat.PDF ? docxTemplateEngine.convertToPdf(filledDocx) : filledDocx;
-
         String baseFileName = sanitizeFileName(dokumentumNev != null ? dokumentumNev : template.getTemplateNev());
+        DocumentFormat effectiveFormat = format != null ? format : DocumentFormat.DOCX;
+        byte[] outputBytes = effectiveFormat == DocumentFormat.PDF
+            ? pdfConversionService.convertDocxToPdf(filledDocx, baseFileName)
+            : filledDocx;
+
         String fileName = baseFileName + effectiveFormat.getExtension();
         SzerzodesesJogviszonyDokumentumDTO persisted = null;
 

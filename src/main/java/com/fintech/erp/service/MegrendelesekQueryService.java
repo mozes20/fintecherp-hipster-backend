@@ -2,14 +2,14 @@ package com.fintech.erp.service;
 
 import com.fintech.erp.domain.Maganszemelyek_;
 import com.fintech.erp.domain.Megrendelesek;
-import com.fintech.erp.domain.Megrendelesek_;
+import com.fintech.erp.domain.Megrendelesek_; // for static metamodels
 import com.fintech.erp.domain.SzerzodesesJogviszonyok_;
 import com.fintech.erp.repository.MegrendelesekRepository;
 import com.fintech.erp.service.criteria.MegrendelesekCriteria;
 import com.fintech.erp.service.dto.MegrendelesekDTO;
 import com.fintech.erp.service.mapper.MegrendelesekMapper;
 import jakarta.persistence.criteria.JoinType;
-import org.slf4j.Logger; // for static metamodels
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -91,6 +91,11 @@ public class MegrendelesekQueryService extends QueryService<Megrendelesek> {
                     buildStringSpecification(criteria.getFeladatReszletesLeirasa(), Megrendelesek_.feladatReszletesLeirasa)
                 );
             }
+            if (criteria.getMegrendelesDatuma() != null) {
+                specification = specification.and(
+                    buildRangeSpecification(criteria.getMegrendelesDatuma(), Megrendelesek_.megrendelesDatuma)
+                );
+            }
             if (criteria.getMegrendelesKezdete() != null) {
                 specification = specification.and(
                     buildRangeSpecification(criteria.getMegrendelesKezdete(), Megrendelesek_.megrendelesKezdete)
@@ -104,9 +109,6 @@ public class MegrendelesekQueryService extends QueryService<Megrendelesek> {
                     buildSpecification(criteria.getResztvevoKollagaTipusa(), Megrendelesek_.resztvevoKollagaTipusa)
                 );
             }
-            if (criteria.getResztvevoTipus() != null) {
-                specification = specification.and(buildSpecification(criteria.getResztvevoTipus(), Megrendelesek_.resztvevoTipus));
-            }
             if (criteria.getDevizanem() != null) {
                 specification = specification.and(buildSpecification(criteria.getDevizanem(), Megrendelesek_.devizanem));
             }
@@ -115,6 +117,11 @@ public class MegrendelesekQueryService extends QueryService<Megrendelesek> {
             }
             if (criteria.getDijOsszege() != null) {
                 specification = specification.and(buildRangeSpecification(criteria.getDijOsszege(), Megrendelesek_.dijOsszege));
+            }
+            if (criteria.getSzallitasraKeruloTetelek() != null) {
+                specification = specification.and(
+                    buildStringSpecification(criteria.getSzallitasraKeruloTetelek(), Megrendelesek_.szallitasraKeruloTetelek)
+                );
             }
             if (criteria.getMegrendelesDokumentumGeneralta() != null) {
                 specification = specification.and(
@@ -129,17 +136,8 @@ public class MegrendelesekQueryService extends QueryService<Megrendelesek> {
             if (criteria.getMegrendelesSzam() != null) {
                 specification = specification.and(buildStringSpecification(criteria.getMegrendelesSzam(), Megrendelesek_.megrendelesSzam));
             }
-            if (criteria.getMegrendelesStatusz() != null) {
-                specification = specification.and(buildSpecification(criteria.getMegrendelesStatusz(), Megrendelesek_.megrendelesStatusz));
-            }
-            if (criteria.getMegrendelesForrasa() != null) {
-                specification = specification.and(buildSpecification(criteria.getMegrendelesForrasa(), Megrendelesek_.megrendelesForrasa));
-            }
-            if (criteria.getPeldanyokSzama() != null) {
-                specification = specification.and(buildRangeSpecification(criteria.getPeldanyokSzama(), Megrendelesek_.peldanyokSzama));
-            }
-            if (criteria.getSzamlazando() != null) {
-                specification = specification.and(buildSpecification(criteria.getSzamlazando(), Megrendelesek_.szamlazando));
+            if (criteria.getMunkakorId() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getMunkakorId(), Megrendelesek_.munkakorId));
             }
             if (criteria.getSzerzodesesJogviszonyId() != null) {
                 specification = specification.and(

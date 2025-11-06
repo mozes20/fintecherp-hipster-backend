@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fintech.erp.domain.enumeration.Devizanem;
 import com.fintech.erp.domain.enumeration.DijazasTipusa;
 import com.fintech.erp.domain.enumeration.MegrendelesDokumentumEredet;
-import com.fintech.erp.domain.enumeration.MegrendelesForras;
-import com.fintech.erp.domain.enumeration.MegrendelesStatusz;
 import com.fintech.erp.domain.enumeration.MegrendelesTipus;
 import com.fintech.erp.domain.enumeration.ResztvevoKollagaTipus;
-import com.fintech.erp.domain.enumeration.ResztvevoTipus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,6 +14,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -53,19 +51,21 @@ public class Megrendelesek implements Serializable {
     @Column(name = "feladat_reszletes_leirasa")
     private String feladatReszletesLeirasa;
 
+    @Column(name = "szallitasra_kerulo_tetelek", columnDefinition = "text")
+    private String szallitasraKeruloTetelek;
+
     @Column(name = "megrendeles_kezdete")
     private LocalDate megrendelesKezdete;
 
     @Column(name = "megrendeles_vege")
     private LocalDate megrendelesVege;
 
+    @Column(name = "megrendeles_datuma")
+    private LocalDate megrendelesDatuma;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "resztvevo_kollaga_tipusa")
     private ResztvevoKollagaTipus resztvevoKollagaTipusa;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "resztvevo_tipus")
-    private ResztvevoTipus resztvevoTipus;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "devizanem")
@@ -88,19 +88,12 @@ public class Megrendelesek implements Serializable {
     @Column(name = "megrendeles_szam", unique = true)
     private String megrendelesSzam;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "megrendeles_statusz")
-    private MegrendelesStatusz megrendelesStatusz;
+    @Column(name = "munkakor_id")
+    private Long munkakorId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "megrendeles_forrasa")
-    private MegrendelesForras megrendelesForrasa;
-
-    @Column(name = "peldanyok_szama")
-    private Integer peldanyokSzama;
-
-    @Column(name = "szamlazando")
-    private Boolean szamlazando;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "munkakor_id", insertable = false, updatable = false)
+    private Munkakorok munkakor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "megrendeloCeg", "vallalkozoCeg" }, allowSetters = true)
@@ -163,6 +156,19 @@ public class Megrendelesek implements Serializable {
         this.feladatReszletesLeirasa = feladatReszletesLeirasa;
     }
 
+    public String getSzallitasraKeruloTetelek() {
+        return this.szallitasraKeruloTetelek;
+    }
+
+    public Megrendelesek szallitasraKeruloTetelek(String szallitasraKeruloTetelek) {
+        this.setSzallitasraKeruloTetelek(szallitasraKeruloTetelek);
+        return this;
+    }
+
+    public void setSzallitasraKeruloTetelek(String szallitasraKeruloTetelek) {
+        this.szallitasraKeruloTetelek = szallitasraKeruloTetelek;
+    }
+
     public LocalDate getMegrendelesKezdete() {
         return this.megrendelesKezdete;
     }
@@ -189,6 +195,19 @@ public class Megrendelesek implements Serializable {
         this.megrendelesVege = megrendelesVege;
     }
 
+    public LocalDate getMegrendelesDatuma() {
+        return this.megrendelesDatuma;
+    }
+
+    public Megrendelesek megrendelesDatuma(LocalDate megrendelesDatuma) {
+        this.setMegrendelesDatuma(megrendelesDatuma);
+        return this;
+    }
+
+    public void setMegrendelesDatuma(LocalDate megrendelesDatuma) {
+        this.megrendelesDatuma = megrendelesDatuma;
+    }
+
     public ResztvevoKollagaTipus getResztvevoKollagaTipusa() {
         return this.resztvevoKollagaTipusa;
     }
@@ -200,19 +219,6 @@ public class Megrendelesek implements Serializable {
 
     public void setResztvevoKollagaTipusa(ResztvevoKollagaTipus resztvevoKollagaTipusa) {
         this.resztvevoKollagaTipusa = resztvevoKollagaTipusa;
-    }
-
-    public ResztvevoTipus getResztvevoTipus() {
-        return this.resztvevoTipus;
-    }
-
-    public Megrendelesek resztvevoTipus(ResztvevoTipus resztvevoTipus) {
-        this.setResztvevoTipus(resztvevoTipus);
-        return this;
-    }
-
-    public void setResztvevoTipus(ResztvevoTipus resztvevoTipus) {
-        this.resztvevoTipus = resztvevoTipus;
     }
 
     public Devizanem getDevizanem() {
@@ -293,56 +299,30 @@ public class Megrendelesek implements Serializable {
         this.megrendelesSzam = megrendelesSzam;
     }
 
-    public MegrendelesStatusz getMegrendelesStatusz() {
-        return this.megrendelesStatusz;
+    public Long getMunkakorId() {
+        return this.munkakorId;
     }
 
-    public Megrendelesek megrendelesStatusz(MegrendelesStatusz megrendelesStatusz) {
-        this.setMegrendelesStatusz(megrendelesStatusz);
+    public Megrendelesek munkakorId(Long munkakorId) {
+        this.setMunkakorId(munkakorId);
         return this;
     }
 
-    public void setMegrendelesStatusz(MegrendelesStatusz megrendelesStatusz) {
-        this.megrendelesStatusz = megrendelesStatusz;
+    public void setMunkakorId(Long munkakorId) {
+        this.munkakorId = munkakorId;
     }
 
-    public MegrendelesForras getMegrendelesForrasa() {
-        return this.megrendelesForrasa;
+    public Munkakorok getMunkakor() {
+        return this.munkakor;
     }
 
-    public Megrendelesek megrendelesForrasa(MegrendelesForras megrendelesForrasa) {
-        this.setMegrendelesForrasa(megrendelesForrasa);
+    public void setMunkakor(Munkakorok munkakor) {
+        this.munkakor = munkakor;
+    }
+
+    public Megrendelesek munkakor(Munkakorok munkakor) {
+        this.setMunkakor(munkakor);
         return this;
-    }
-
-    public void setMegrendelesForrasa(MegrendelesForras megrendelesForrasa) {
-        this.megrendelesForrasa = megrendelesForrasa;
-    }
-
-    public Integer getPeldanyokSzama() {
-        return this.peldanyokSzama;
-    }
-
-    public Megrendelesek peldanyokSzama(Integer peldanyokSzama) {
-        this.setPeldanyokSzama(peldanyokSzama);
-        return this;
-    }
-
-    public void setPeldanyokSzama(Integer peldanyokSzama) {
-        this.peldanyokSzama = peldanyokSzama;
-    }
-
-    public Boolean getSzamlazando() {
-        return this.szamlazando;
-    }
-
-    public Megrendelesek szamlazando(Boolean szamlazando) {
-        this.setSzamlazando(szamlazando);
-        return this;
-    }
-
-    public void setSzamlazando(Boolean szamlazando) {
-        this.szamlazando = szamlazando;
     }
 
     public SzerzodesesJogviszonyok getSzerzodesesJogviszony() {
@@ -398,20 +378,18 @@ public class Megrendelesek implements Serializable {
             ", megrendelesTipusa='" + getMegrendelesTipusa() + "'" +
             ", feladatRovidLeirasa='" + getFeladatRovidLeirasa() + "'" +
             ", feladatReszletesLeirasa='" + getFeladatReszletesLeirasa() + "'" +
+            ", szallitasraKeruloTetelek='" + getSzallitasraKeruloTetelek() + "'" +
             ", megrendelesKezdete='" + getMegrendelesKezdete() + "'" +
             ", megrendelesVege='" + getMegrendelesVege() + "'" +
+            ", megrendelesDatuma='" + getMegrendelesDatuma() + "'" +
             ", resztvevoKollagaTipusa='" + getResztvevoKollagaTipusa() + "'" +
-            ", resztvevoTipus='" + getResztvevoTipus() + "'" +
             ", devizanem='" + getDevizanem() + "'" +
             ", dijazasTipusa='" + getDijazasTipusa() + "'" +
             ", dijOsszege=" + getDijOsszege() +
             ", megrendelesDokumentumGeneralta='" + getMegrendelesDokumentumGeneralta() + "'" +
             ", ugyfelMegrendelesId=" + getUgyfelMegrendelesId() +
             ", megrendelesSzam='" + getMegrendelesSzam() + "'" +
-            ", megrendelesStatusz='" + getMegrendelesStatusz() + "'" +
-            ", megrendelesForrasa='" + getMegrendelesForrasa() + "'" +
-            ", peldanyokSzama=" + getPeldanyokSzama() +
-            ", szamlazando='" + getSzamlazando() + "'" +
+            ", munkakorId=" + getMunkakorId() +
             "}";
     }
 }
