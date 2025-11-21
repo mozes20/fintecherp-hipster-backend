@@ -34,6 +34,14 @@ public class EfoFoglalkoztatasokCriteria implements Serializable, Criteria {
 
     private LongFilter munkavallaloId;
 
+    private LongFilter munkakorId;
+
+    private StringFilter generaltDokumentumNev;
+
+    private StringFilter generaltDokumentumUrl;
+
+    private StringFilter alairtDokumentumUrl;
+
     private Boolean distinct;
 
     public EfoFoglalkoztatasokCriteria() {}
@@ -45,6 +53,10 @@ public class EfoFoglalkoztatasokCriteria implements Serializable, Criteria {
         this.generaltEfoSzerzodes = other.optionalGeneraltEfoSzerzodes().map(BooleanFilter::copy).orElse(null);
         this.alairtEfoSzerzodes = other.optionalAlairtEfoSzerzodes().map(BooleanFilter::copy).orElse(null);
         this.munkavallaloId = other.optionalMunkavallaloId().map(LongFilter::copy).orElse(null);
+        this.munkakorId = other.optionalMunkakorId().map(LongFilter::copy).orElse(null);
+        this.generaltDokumentumNev = other.optionalGeneraltDokumentumNev().map(StringFilter::copy).orElse(null);
+        this.generaltDokumentumUrl = other.optionalGeneraltDokumentumUrl().map(StringFilter::copy).orElse(null);
+        this.alairtDokumentumUrl = other.optionalAlairtDokumentumUrl().map(StringFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -167,6 +179,82 @@ public class EfoFoglalkoztatasokCriteria implements Serializable, Criteria {
         this.munkavallaloId = munkavallaloId;
     }
 
+    public LongFilter getMunkakorId() {
+        return munkakorId;
+    }
+
+    public Optional<LongFilter> optionalMunkakorId() {
+        return Optional.ofNullable(munkakorId);
+    }
+
+    public LongFilter munkakorId() {
+        if (munkakorId == null) {
+            setMunkakorId(new LongFilter());
+        }
+        return munkakorId;
+    }
+
+    public void setMunkakorId(LongFilter munkakorId) {
+        this.munkakorId = munkakorId;
+    }
+
+    public StringFilter getGeneraltDokumentumNev() {
+        return generaltDokumentumNev;
+    }
+
+    public Optional<StringFilter> optionalGeneraltDokumentumNev() {
+        return Optional.ofNullable(generaltDokumentumNev);
+    }
+
+    public StringFilter generaltDokumentumNev() {
+        if (generaltDokumentumNev == null) {
+            setGeneraltDokumentumNev(new StringFilter());
+        }
+        return generaltDokumentumNev;
+    }
+
+    public void setGeneraltDokumentumNev(StringFilter generaltDokumentumNev) {
+        this.generaltDokumentumNev = generaltDokumentumNev;
+    }
+
+    public StringFilter getGeneraltDokumentumUrl() {
+        return generaltDokumentumUrl;
+    }
+
+    public Optional<StringFilter> optionalGeneraltDokumentumUrl() {
+        return Optional.ofNullable(generaltDokumentumUrl);
+    }
+
+    public StringFilter generaltDokumentumUrl() {
+        if (generaltDokumentumUrl == null) {
+            setGeneraltDokumentumUrl(new StringFilter());
+        }
+        return generaltDokumentumUrl;
+    }
+
+    public void setGeneraltDokumentumUrl(StringFilter generaltDokumentumUrl) {
+        this.generaltDokumentumUrl = generaltDokumentumUrl;
+    }
+
+    public StringFilter getAlairtDokumentumUrl() {
+        return alairtDokumentumUrl;
+    }
+
+    public Optional<StringFilter> optionalAlairtDokumentumUrl() {
+        return Optional.ofNullable(alairtDokumentumUrl);
+    }
+
+    public StringFilter alairtDokumentumUrl() {
+        if (alairtDokumentumUrl == null) {
+            setAlairtDokumentumUrl(new StringFilter());
+        }
+        return alairtDokumentumUrl;
+    }
+
+    public void setAlairtDokumentumUrl(StringFilter alairtDokumentumUrl) {
+        this.alairtDokumentumUrl = alairtDokumentumUrl;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -202,13 +290,29 @@ public class EfoFoglalkoztatasokCriteria implements Serializable, Criteria {
             Objects.equals(generaltEfoSzerzodes, that.generaltEfoSzerzodes) &&
             Objects.equals(alairtEfoSzerzodes, that.alairtEfoSzerzodes) &&
             Objects.equals(munkavallaloId, that.munkavallaloId) &&
+            Objects.equals(munkakorId, that.munkakorId) &&
+            Objects.equals(generaltDokumentumNev, that.generaltDokumentumNev) &&
+            Objects.equals(generaltDokumentumUrl, that.generaltDokumentumUrl) &&
+            Objects.equals(alairtDokumentumUrl, that.alairtDokumentumUrl) &&
             Objects.equals(distinct, that.distinct)
         );
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, datum, osszeg, generaltEfoSzerzodes, alairtEfoSzerzodes, munkavallaloId, distinct);
+        return Objects.hash(
+            id,
+            datum,
+            osszeg,
+            generaltEfoSzerzodes,
+            alairtEfoSzerzodes,
+            munkavallaloId,
+            munkakorId,
+            generaltDokumentumNev,
+            generaltDokumentumUrl,
+            alairtDokumentumUrl,
+            distinct
+        );
     }
 
     // prettier-ignore
@@ -221,6 +325,10 @@ public class EfoFoglalkoztatasokCriteria implements Serializable, Criteria {
             optionalGeneraltEfoSzerzodes().map(f -> "generaltEfoSzerzodes=" + f + ", ").orElse("") +
             optionalAlairtEfoSzerzodes().map(f -> "alairtEfoSzerzodes=" + f + ", ").orElse("") +
             optionalMunkavallaloId().map(f -> "munkavallaloId=" + f + ", ").orElse("") +
+            optionalMunkakorId().map(f -> "munkakorId=" + f + ", ").orElse("") +
+            optionalGeneraltDokumentumNev().map(f -> "generaltDokumentumNev=" + f + ", ").orElse("") +
+            optionalGeneraltDokumentumUrl().map(f -> "generaltDokumentumUrl=" + f + ", ").orElse("") +
+            optionalAlairtDokumentumUrl().map(f -> "alairtDokumentumUrl=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

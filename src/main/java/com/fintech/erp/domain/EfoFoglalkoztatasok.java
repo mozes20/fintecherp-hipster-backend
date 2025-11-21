@@ -43,6 +43,18 @@ public class EfoFoglalkoztatasok implements Serializable {
     @JsonIgnoreProperties(value = { "sajatCeg", "maganszemely" }, allowSetters = true)
     private Munkavallalok munkavallalo;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Munkakorok munkakor;
+
+    @Column(name = "generalt_dokumentum_nev")
+    private String generaltDokumentumNev;
+
+    @Column(name = "generalt_dokumentum_url")
+    private String generaltDokumentumUrl;
+
+    @Column(name = "alairt_dokumentum_url")
+    private String alairtDokumentumUrl;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -123,6 +135,58 @@ public class EfoFoglalkoztatasok implements Serializable {
         return this;
     }
 
+    public Munkakorok getMunkakor() {
+        return this.munkakor;
+    }
+
+    public void setMunkakor(Munkakorok munkakor) {
+        this.munkakor = munkakor;
+    }
+
+    public EfoFoglalkoztatasok munkakor(Munkakorok munkakor) {
+        this.setMunkakor(munkakor);
+        return this;
+    }
+
+    public String getGeneraltDokumentumNev() {
+        return this.generaltDokumentumNev;
+    }
+
+    public void setGeneraltDokumentumNev(String generaltDokumentumNev) {
+        this.generaltDokumentumNev = generaltDokumentumNev;
+    }
+
+    public EfoFoglalkoztatasok generaltDokumentumNev(String generaltDokumentumNev) {
+        this.setGeneraltDokumentumNev(generaltDokumentumNev);
+        return this;
+    }
+
+    public String getGeneraltDokumentumUrl() {
+        return this.generaltDokumentumUrl;
+    }
+
+    public void setGeneraltDokumentumUrl(String generaltDokumentumUrl) {
+        this.generaltDokumentumUrl = generaltDokumentumUrl;
+    }
+
+    public EfoFoglalkoztatasok generaltDokumentumUrl(String generaltDokumentumUrl) {
+        this.setGeneraltDokumentumUrl(generaltDokumentumUrl);
+        return this;
+    }
+
+    public String getAlairtDokumentumUrl() {
+        return this.alairtDokumentumUrl;
+    }
+
+    public void setAlairtDokumentumUrl(String alairtDokumentumUrl) {
+        this.alairtDokumentumUrl = alairtDokumentumUrl;
+    }
+
+    public EfoFoglalkoztatasok alairtDokumentumUrl(String alairtDokumentumUrl) {
+        this.setAlairtDokumentumUrl(alairtDokumentumUrl);
+        return this;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -151,6 +215,9 @@ public class EfoFoglalkoztatasok implements Serializable {
             ", osszeg=" + getOsszeg() +
             ", generaltEfoSzerzodes='" + getGeneraltEfoSzerzodes() + "'" +
             ", alairtEfoSzerzodes='" + getAlairtEfoSzerzodes() + "'" +
+            ", generaltDokumentumNev='" + getGeneraltDokumentumNev() + "'" +
+            ", generaltDokumentumUrl='" + getGeneraltDokumentumUrl() + "'" +
+            ", alairtDokumentumUrl='" + getAlairtDokumentumUrl() + "'" +
             "}";
     }
 }

@@ -1,13 +1,18 @@
 package com.fintech.erp.web.rest;
 
 import com.fintech.erp.repository.EfoFoglalkoztatasokRepository;
+import com.fintech.erp.service.EfoCsvImportService;
 import com.fintech.erp.service.EfoFoglalkoztatasokQueryService;
 import com.fintech.erp.service.EfoFoglalkoztatasokService;
 import com.fintech.erp.service.criteria.EfoFoglalkoztatasokCriteria;
+import com.fintech.erp.service.dto.EfoCsvImportPreviewDTO;
+import com.fintech.erp.service.dto.EfoCsvImportRequestDTO;
+import com.fintech.erp.service.dto.EfoCsvImportResultDTO;
 import com.fintech.erp.service.dto.EfoFoglalkoztatasokDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -19,8 +24,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -30,7 +37,7 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link com.fintech.erp.domain.EfoFoglalkoztatasok}.
  */
 @RestController
-@RequestMapping("/api/efo-foglalkoztatasoks")
+@RequestMapping({ "/api/efo-foglalkoztatasoks", "/api/efo-foglalkoztatasok" })
 public class EfoFoglalkoztatasokResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(EfoFoglalkoztatasokResource.class);
@@ -46,14 +53,18 @@ public class EfoFoglalkoztatasokResource {
 
     private final EfoFoglalkoztatasokQueryService efoFoglalkoztatasokQueryService;
 
+    private final EfoCsvImportService efoCsvImportService;
+
     public EfoFoglalkoztatasokResource(
         EfoFoglalkoztatasokService efoFoglalkoztatasokService,
         EfoFoglalkoztatasokRepository efoFoglalkoztatasokRepository,
-        EfoFoglalkoztatasokQueryService efoFoglalkoztatasokQueryService
+        EfoFoglalkoztatasokQueryService efoFoglalkoztatasokQueryService,
+        EfoCsvImportService efoCsvImportService
     ) {
         this.efoFoglalkoztatasokService = efoFoglalkoztatasokService;
         this.efoFoglalkoztatasokRepository = efoFoglalkoztatasokRepository;
         this.efoFoglalkoztatasokQueryService = efoFoglalkoztatasokQueryService;
+        this.efoCsvImportService = efoCsvImportService;
     }
 
     /**
@@ -163,6 +174,72 @@ public class EfoFoglalkoztatasokResource {
         Page<EfoFoglalkoztatasokDTO> page = efoFoglalkoztatasokQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @PostMapping(value = "/import/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EfoCsvImportPreviewDTO> previewCsv(
+        @RequestParam(value = "sajatCegId", required = false) Long sajatCegId,
+        @RequestParam(value = "companyId", required = false) Long legacyCompanyParam,
+        @RequestHeader(value = "X-Sajat-Ceg-Id", required = false) Long companyHeader,
+        @RequestPart(value = "request", required = false) EfoCsvImportRequestDTO request,
+        @RequestPart(value = "payload", required = false) EfoCsvImportRequestDTO payload,
+        @RequestPart("file") MultipartFile file
+    ) throws IOException {
+        Long resolvedCompanyId = sajatCegId;
+        if (resolvedCompanyId == null) {
+            resolvedCompanyId = legacyCompanyParam;
+        }
+        if (resolvedCompanyId == null) {
+            resolvedCompanyId = companyHeader;
+        }
+        if (resolvedCompanyId == null && request != null) {
+            resolvedCompanyId = request.getSajatCegId();
+        }
+        if (resolvedCompanyId == null && payload != null) {
+            resolvedCompanyId = payload.getSajatCegId();
+        }
+        LOG.debug("REST request to preview EFO CSV import for company {}", resolvedCompanyId);
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestAlertException("A CSV fájl kötelező", ENTITY_NAME, "csvmissing");
+        }
+        if (resolvedCompanyId == null) {
+            throw new BadRequestAlertException("A saját cég azonosító kötelező", ENTITY_NAME, "companymissing");
+        }
+        EfoCsvImportPreviewDTO preview = efoCsvImportService.generatePreview(resolvedCompanyId, file.getBytes());
+        return ResponseEntity.ok(preview);
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EfoCsvImportResultDTO> importCsv(
+        @RequestPart(value = "request", required = false) @Valid EfoCsvImportRequestDTO request,
+        @RequestPart(value = "payload", required = false) @Valid EfoCsvImportRequestDTO payload,
+        @RequestParam(value = "sajatCegId", required = false) Long sajatCegId,
+        @RequestParam(value = "companyId", required = false) Long legacyCompanyParam,
+        @RequestHeader(value = "X-Sajat-Ceg-Id", required = false) Long companyHeader,
+        @RequestPart("file") MultipartFile file
+    ) throws IOException {
+        EfoCsvImportRequestDTO effectiveRequest = request != null ? request : payload;
+        if (effectiveRequest == null) {
+            effectiveRequest = new EfoCsvImportRequestDTO();
+        }
+        if (effectiveRequest.getSajatCegId() == null) {
+            if (sajatCegId != null) {
+                effectiveRequest.setSajatCegId(sajatCegId);
+            } else if (legacyCompanyParam != null) {
+                effectiveRequest.setSajatCegId(legacyCompanyParam);
+            } else if (companyHeader != null) {
+                effectiveRequest.setSajatCegId(companyHeader);
+            }
+        }
+        LOG.debug("REST request to import EFO CSV for company {}", effectiveRequest.getSajatCegId());
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestAlertException("A CSV fájl kötelező", ENTITY_NAME, "csvmissing");
+        }
+        if (effectiveRequest.getSajatCegId() == null) {
+            throw new BadRequestAlertException("A saját cég azonosító kötelező", ENTITY_NAME, "companymissing");
+        }
+        EfoCsvImportResultDTO result = efoCsvImportService.importCsv(effectiveRequest, file.getBytes());
+        return ResponseEntity.ok(result);
     }
 
     /**
