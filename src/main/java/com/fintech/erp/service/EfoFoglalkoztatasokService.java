@@ -129,19 +129,16 @@ public class EfoFoglalkoztatasokService {
         efoFoglalkoztatasokRepository.deleteById(id);
     }
 
-    public Optional<EfoFoglalkoztatasokDTO> uploadSignedDocument(Long employmentId, MultipartFile file) throws IOException {
+    public EfoFoglalkoztatasokDTO uploadSignedDocument(Long employmentId, MultipartFile file) throws IOException {
         LOG.debug("Request to upload signed document for EfoFoglalkoztatasok : {}", employmentId);
         validateSignedDocument(file);
         if (employmentId == null) {
             throw new IllegalArgumentException("A foglalkoztatás azonosítója kötelező");
         }
 
-        Optional<EfoFoglalkoztatasok> maybeEmployment = efoFoglalkoztatasokRepository.findById(employmentId);
-        if (maybeEmployment.isEmpty()) {
-            return Optional.empty();
-        }
-
-        EfoFoglalkoztatasok employment = maybeEmployment.get();
+        EfoFoglalkoztatasok employment = efoFoglalkoztatasokRepository
+            .findById(employmentId)
+            .orElseThrow(() -> new IllegalArgumentException("A megadott foglalkoztatás nem található"));
         Long workerId = employment.getMunkavallalo() != null ? employment.getMunkavallalo().getId() : null;
         LocalDate datum = employment.getDatum();
         if (workerId == null || datum == null) {
@@ -158,11 +155,7 @@ public class EfoFoglalkoztatasokService {
         employment.setAlairtEfoSzerzodes(Boolean.TRUE);
         employment.setAlairtDokumentumUrl(storedFileName);
         EfoFoglalkoztatasok persisted = efoFoglalkoztatasokRepository.save(employment);
-
-        return efoFoglalkoztatasokRepository
-            .findById(persisted.getId())
-            .map(efoFoglalkoztatasokMapper::toDto)
-            .map(this::enrichDocumentUrls);
+        return enrichDocumentUrls(efoFoglalkoztatasokMapper.toDto(persisted));
     }
 
     private EfoFoglalkoztatasokDTO enrichDocumentUrls(EfoFoglalkoztatasokDTO dto) {
@@ -276,18 +269,15 @@ public class EfoFoglalkoztatasokService {
             });
     }
 
-    public Optional<EfoFoglalkoztatasokDTO> deleteSignedDocument(Long employmentId) {
+    public void deleteSignedDocument(Long employmentId) {
         LOG.debug("Request to delete signed document for EfoFoglalkoztatasok : {}", employmentId);
         if (employmentId == null) {
             throw new IllegalArgumentException("A foglalkoztatás azonosítója kötelező");
         }
 
-        Optional<EfoFoglalkoztatasok> maybeEmployment = efoFoglalkoztatasokRepository.findById(employmentId);
-        if (maybeEmployment.isEmpty()) {
-            return Optional.empty();
-        }
-
-        EfoFoglalkoztatasok employment = maybeEmployment.get();
+        EfoFoglalkoztatasok employment = efoFoglalkoztatasokRepository
+            .findById(employmentId)
+            .orElseThrow(() -> new IllegalArgumentException("A megadott foglalkoztatás nem található"));
         Long workerId = employment.getMunkavallalo() != null ? employment.getMunkavallalo().getId() : null;
         LocalDate datum = employment.getDatum();
         String stored = extractFileName(employment.getAlairtDokumentumUrl());
@@ -302,9 +292,7 @@ public class EfoFoglalkoztatasokService {
 
         employment.setAlairtEfoSzerzodes(Boolean.FALSE);
         employment.setAlairtDokumentumUrl(null);
-        EfoFoglalkoztatasok saved = efoFoglalkoztatasokRepository.save(employment);
-
-        return efoFoglalkoztatasokRepository.findById(saved.getId()).map(efoFoglalkoztatasokMapper::toDto).map(this::enrichDocumentUrls);
+        efoFoglalkoztatasokRepository.save(employment);
     }
 
     private String buildSignedFileName(String originalFilename, LocalDate datum) {
