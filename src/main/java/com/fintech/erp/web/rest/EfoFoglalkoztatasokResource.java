@@ -1,26 +1,50 @@
 package com.fintech.erp.web.rest;
 
 import com.fintech.erp.repository.EfoFoglalkoztatasokRepository;
+import com.fintech.erp.service.EfoCsvImportService;
 import com.fintech.erp.service.EfoFoglalkoztatasokQueryService;
 import com.fintech.erp.service.EfoFoglalkoztatasokService;
 import com.fintech.erp.service.criteria.EfoFoglalkoztatasokCriteria;
+import com.fintech.erp.service.dto.EfoCsvImportPreviewDTO;
+import com.fintech.erp.service.dto.EfoCsvImportRequestDTO;
+import com.fintech.erp.service.dto.EfoCsvImportResultDTO;
 import com.fintech.erp.service.dto.EfoFoglalkoztatasokDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -30,7 +54,7 @@ import tech.jhipster.web.util.ResponseUtil;
  * REST controller for managing {@link com.fintech.erp.domain.EfoFoglalkoztatasok}.
  */
 @RestController
-@RequestMapping("/api/efo-foglalkoztatasoks")
+@RequestMapping({ "/api/efo-foglalkoztatasoks", "/api/efo-foglalkoztatasok" })
 public class EfoFoglalkoztatasokResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(EfoFoglalkoztatasokResource.class);
@@ -46,14 +70,18 @@ public class EfoFoglalkoztatasokResource {
 
     private final EfoFoglalkoztatasokQueryService efoFoglalkoztatasokQueryService;
 
+    private final EfoCsvImportService efoCsvImportService;
+
     public EfoFoglalkoztatasokResource(
         EfoFoglalkoztatasokService efoFoglalkoztatasokService,
         EfoFoglalkoztatasokRepository efoFoglalkoztatasokRepository,
-        EfoFoglalkoztatasokQueryService efoFoglalkoztatasokQueryService
+        EfoFoglalkoztatasokQueryService efoFoglalkoztatasokQueryService,
+        EfoCsvImportService efoCsvImportService
     ) {
         this.efoFoglalkoztatasokService = efoFoglalkoztatasokService;
         this.efoFoglalkoztatasokRepository = efoFoglalkoztatasokRepository;
         this.efoFoglalkoztatasokQueryService = efoFoglalkoztatasokQueryService;
+        this.efoCsvImportService = efoCsvImportService;
     }
 
     /**
@@ -163,6 +191,166 @@ public class EfoFoglalkoztatasokResource {
         Page<EfoFoglalkoztatasokDTO> page = efoFoglalkoztatasokQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    @PostMapping(value = "/import/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EfoCsvImportPreviewDTO> previewCsv(
+        @RequestParam(value = "sajatCegId", required = false) Long sajatCegId,
+        @RequestParam(value = "companyId", required = false) Long legacyCompanyParam,
+        @RequestHeader(value = "X-Sajat-Ceg-Id", required = false) Long companyHeader,
+        @RequestPart(value = "request", required = false) EfoCsvImportRequestDTO request,
+        @RequestPart(value = "payload", required = false) EfoCsvImportRequestDTO payload,
+        @RequestPart("file") MultipartFile file
+    ) throws IOException {
+        Long resolvedCompanyId = sajatCegId;
+        if (resolvedCompanyId == null) {
+            resolvedCompanyId = legacyCompanyParam;
+        }
+        if (resolvedCompanyId == null) {
+            resolvedCompanyId = companyHeader;
+        }
+        if (resolvedCompanyId == null && request != null) {
+            resolvedCompanyId = request.getSajatCegId();
+        }
+        if (resolvedCompanyId == null && payload != null) {
+            resolvedCompanyId = payload.getSajatCegId();
+        }
+        LOG.debug("REST request to preview EFO CSV import for company {}", resolvedCompanyId);
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestAlertException("A CSV fájl kötelező", ENTITY_NAME, "csvmissing");
+        }
+        if (resolvedCompanyId == null) {
+            throw new BadRequestAlertException("A saját cég azonosító kötelező", ENTITY_NAME, "companymissing");
+        }
+        EfoCsvImportPreviewDTO preview = efoCsvImportService.generatePreview(resolvedCompanyId, file.getBytes());
+        return ResponseEntity.ok(preview);
+    }
+
+    @PostMapping(value = "/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EfoCsvImportResultDTO> importCsv(
+        @RequestPart(value = "request", required = false) @Valid EfoCsvImportRequestDTO request,
+        @RequestPart(value = "payload", required = false) @Valid EfoCsvImportRequestDTO payload,
+        @RequestParam(value = "sajatCegId", required = false) Long sajatCegId,
+        @RequestParam(value = "companyId", required = false) Long legacyCompanyParam,
+        @RequestHeader(value = "X-Sajat-Ceg-Id", required = false) Long companyHeader,
+        @RequestPart("file") MultipartFile file
+    ) throws IOException {
+        EfoCsvImportRequestDTO effectiveRequest = request != null ? request : payload;
+        if (effectiveRequest == null) {
+            effectiveRequest = new EfoCsvImportRequestDTO();
+        }
+        if (effectiveRequest.getSajatCegId() == null) {
+            if (sajatCegId != null) {
+                effectiveRequest.setSajatCegId(sajatCegId);
+            } else if (legacyCompanyParam != null) {
+                effectiveRequest.setSajatCegId(legacyCompanyParam);
+            } else if (companyHeader != null) {
+                effectiveRequest.setSajatCegId(companyHeader);
+            }
+        }
+        LOG.debug("REST request to import EFO CSV for company {}", effectiveRequest.getSajatCegId());
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestAlertException("A CSV fájl kötelező", ENTITY_NAME, "csvmissing");
+        }
+        if (effectiveRequest.getSajatCegId() == null) {
+            throw new BadRequestAlertException("A saját cég azonosító kötelező", ENTITY_NAME, "companymissing");
+        }
+        EfoCsvImportResultDTO result = efoCsvImportService.importCsv(effectiveRequest, file.getBytes());
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping(value = "/import/archives/{fileName:.+}")
+    public ResponseEntity<Resource> downloadImportArchive(@PathVariable("fileName") String fileName) throws IOException {
+        LOG.debug("REST request to download EFO import archive : {}", fileName);
+        if (!StringUtils.hasText(fileName) || fileName.contains("..")) {
+            throw new BadRequestAlertException("Érvénytelen archívum név", ENTITY_NAME, "invalidarchive");
+        }
+        Path archivePath = efoCsvImportService
+            .resolveArchivePath(fileName)
+            .orElseThrow(() -> new BadRequestAlertException("A kért archívum nem található", ENTITY_NAME, "archivenotfound"));
+        Resource resource = new FileSystemResource(archivePath);
+        if (!resource.exists()) {
+            throw new BadRequestAlertException("A kért archívum nem található", ENTITY_NAME, "archivenotfound");
+        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + resource.getFilename())
+            .body(resource);
+    }
+
+    @GetMapping(value = "/generated-documents/{workerId}/{employmentDate}/{fileName:.+}")
+    public ResponseEntity<Resource> downloadGeneratedDocument(
+        @PathVariable("workerId") Long workerId,
+        @PathVariable("employmentDate") String employmentDate,
+        @PathVariable("fileName") String fileName
+    ) throws IOException {
+        LOG.debug("REST request to download generated EFO document for worker {} on {} : {}", workerId, employmentDate, fileName);
+        if (workerId == null || !StringUtils.hasText(employmentDate) || !StringUtils.hasText(fileName) || fileName.contains("..")) {
+            throw new BadRequestAlertException("Érvénytelen dokumentum azonosítók", ENTITY_NAME, "invalidgenerateddoc");
+        }
+        LocalDate parsedDate;
+        try {
+            parsedDate = LocalDate.parse(employmentDate);
+        } catch (DateTimeParseException ex) {
+            throw new BadRequestAlertException("Érvénytelen dátum formátum", ENTITY_NAME, "invaliddateformat");
+        }
+        Path documentPath = efoCsvImportService
+            .resolveGeneratedDocumentPath(workerId, parsedDate, fileName)
+            .orElseThrow(() -> new BadRequestAlertException("A kért dokumentum nem található", ENTITY_NAME, "generateddocnotfound"));
+        Resource resource = new FileSystemResource(documentPath);
+        if (!resource.exists()) {
+            throw new BadRequestAlertException("A kért dokumentum nem található", ENTITY_NAME, "generateddocnotfound");
+        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + resource.getFilename())
+            .body(resource);
+    }
+
+    @PostMapping(value = "/{id}/signed-document", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EfoFoglalkoztatasokDTO> uploadSignedDocument(
+        @PathVariable("id") Long id,
+        @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        LOG.debug("REST request to upload signed document for EfoFoglalkoztatasok : {}", id);
+        try {
+            EfoFoglalkoztatasokDTO updated = efoFoglalkoztatasokService
+                .uploadSignedDocument(id, file)
+                .orElseThrow(() -> new BadRequestAlertException("A megadott foglalkoztatás nem található", ENTITY_NAME, "idnotfound"));
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invalidsigneddocument");
+        }
+    }
+
+    @GetMapping(value = "/{id}/signed-document")
+    public ResponseEntity<Resource> downloadSignedDocument(@PathVariable("id") Long id) throws IOException {
+        LOG.debug("REST request to download signed document for EfoFoglalkoztatasok : {}", id);
+        Path signedPath = efoFoglalkoztatasokService
+            .resolveSignedDocumentPath(id)
+            .orElseThrow(() -> new BadRequestAlertException("A kért aláírt dokumentum nem található", ENTITY_NAME, "signeddocnotfound"));
+        Resource resource = new FileSystemResource(signedPath);
+        if (!resource.exists()) {
+            throw new BadRequestAlertException("A kért aláírt dokumentum nem található", ENTITY_NAME, "signeddocnotfound");
+        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + resource.getFilename())
+            .body(resource);
+    }
+
+    @DeleteMapping(value = "/{id}/signed-document")
+    public ResponseEntity<Void> deleteSignedDocument(@PathVariable("id") Long id) {
+        LOG.debug("REST request to delete signed document for EfoFoglalkoztatasok : {}", id);
+        try {
+            boolean found = efoFoglalkoztatasokService.deleteSignedDocument(id).isPresent();
+            if (!found) {
+                throw new BadRequestAlertException("A megadott foglalkoztatás nem található", ENTITY_NAME, "idnotfound");
+            }
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invalidsigneddocument");
+        }
     }
 
     /**

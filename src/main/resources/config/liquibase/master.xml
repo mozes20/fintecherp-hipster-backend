@@ -35,6 +35,7 @@
     <include file="config/liquibase/changelog/20251021120001_added_entity_SzerzodesesJogviszonyDokumentumTemplate.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251021120002_added_entity_SzerzodesesJogviszonyDokumentum.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251021143000_added_entity_MegrendelesDokumentumTemplate.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251201100000_added_entity_EfoDokumentumTemplate.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20250915192424_added_entity_constraints_Timesheetek.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250915192524_added_entity_constraints_Berek.xml" relativeToChangelogFile="false"/>
@@ -62,5 +63,6 @@
     <include file="config/liquibase/changelog/20251029100000_fix_missing_dokumentum_tipus_column.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251105193000_update_megrendelesek_fields.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251105194500_create_munkakorok_table.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251119120000_update_efo_foglalkoztatasok_documents.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
 </databaseChangeLog>

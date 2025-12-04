@@ -81,8 +81,14 @@ public class EfoFoglalkoztatasokQueryService extends QueryService<EfoFoglalkozta
                 buildRangeSpecification(criteria.getOsszeg(), EfoFoglalkoztatasok_.osszeg),
                 buildSpecification(criteria.getGeneraltEfoSzerzodes(), EfoFoglalkoztatasok_.generaltEfoSzerzodes),
                 buildSpecification(criteria.getAlairtEfoSzerzodes(), EfoFoglalkoztatasok_.alairtEfoSzerzodes),
+                buildStringSpecification(criteria.getGeneraltDokumentumNev(), EfoFoglalkoztatasok_.generaltDokumentumNev),
+                buildStringSpecification(criteria.getGeneraltDokumentumUrl(), EfoFoglalkoztatasok_.generaltDokumentumUrl),
+                buildStringSpecification(criteria.getAlairtDokumentumUrl(), EfoFoglalkoztatasok_.alairtDokumentumUrl),
                 buildSpecification(criteria.getMunkavallaloId(), root ->
                     root.join(EfoFoglalkoztatasok_.munkavallalo, JoinType.LEFT).get(Munkavallalok_.id)
+                ),
+                buildSpecification(criteria.getMunkakorId(), root ->
+                    root.join(EfoFoglalkoztatasok_.munkakor, JoinType.LEFT).get(Munkakorok_.id)
                 )
             );
         }

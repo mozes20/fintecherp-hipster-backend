@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20251119120000-1" author="gpt-5-codex">
+        <addColumn tableName="efo_foglalkoztatasok">
+            <column name="generalt_dokumentum_nev" type="varchar(255)"/>
+            <column name="generalt_dokumentum_url" type="varchar(1024)"/>
+            <column name="alairt_dokumentum_url" type="varchar(1024)"/>
+            <column name="munkakor_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20251119120000-2" author="gpt-5-codex">
+        <addForeignKeyConstraint baseTableName="efo_foglalkoztatasok"
+            baseColumnNames="munkakor_id"
+            referencedTableName="munkakorok"
+            referencedColumnNames="id"
+            constraintName="fk_efo_foglalkoztatasok__munkakor"
+            deferrable="false"
+            initiallyDeferred="false"
+            onDelete="SET NULL"/>
+    </changeSet>
+
+</databaseChangeLog>

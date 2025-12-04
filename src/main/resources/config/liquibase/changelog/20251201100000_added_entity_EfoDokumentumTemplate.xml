@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity EfoDokumentumTemplate.
+    -->
+    <changeSet id="20251201100000-1" author="copilot">
+        <createTable tableName="efo_dokumentum_template">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="template_nev" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="template_leiras" type="varchar(1024)"/>
+            <column name="fajl_utvonal" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="utolso_modositas" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="dokumentum_tipus" type="varchar(128)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20251201100000-2" author="copilot">
+        <createIndex indexName="idx_efo_template_tipus" tableName="efo_dokumentum_template">
+            <column name="dokumentum_tipus"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

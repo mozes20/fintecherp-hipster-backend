@@ -25,6 +25,14 @@ public class EfoFoglalkoztatasokDTO implements Serializable {
 
     private MunkavallalokDTO munkavallalo;
 
+    private MunkakorokDTO munkakor;
+
+    private String generaltDokumentumNev;
+
+    private String generaltDokumentumUrl;
+
+    private String alairtDokumentumUrl;
+
     public Long getId() {
         return id;
     }
@@ -73,6 +81,38 @@ public class EfoFoglalkoztatasokDTO implements Serializable {
         this.munkavallalo = munkavallalo;
     }
 
+    public MunkakorokDTO getMunkakor() {
+        return munkakor;
+    }
+
+    public void setMunkakor(MunkakorokDTO munkakor) {
+        this.munkakor = munkakor;
+    }
+
+    public String getGeneraltDokumentumNev() {
+        return generaltDokumentumNev;
+    }
+
+    public void setGeneraltDokumentumNev(String generaltDokumentumNev) {
+        this.generaltDokumentumNev = generaltDokumentumNev;
+    }
+
+    public String getGeneraltDokumentumUrl() {
+        return generaltDokumentumUrl;
+    }
+
+    public void setGeneraltDokumentumUrl(String generaltDokumentumUrl) {
+        this.generaltDokumentumUrl = generaltDokumentumUrl;
+    }
+
+    public String getAlairtDokumentumUrl() {
+        return alairtDokumentumUrl;
+    }
+
+    public void setAlairtDokumentumUrl(String alairtDokumentumUrl) {
+        this.alairtDokumentumUrl = alairtDokumentumUrl;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -104,6 +144,10 @@ public class EfoFoglalkoztatasokDTO implements Serializable {
             ", generaltEfoSzerzodes='" + getGeneraltEfoSzerzodes() + "'" +
             ", alairtEfoSzerzodes='" + getAlairtEfoSzerzodes() + "'" +
             ", munkavallalo=" + getMunkavallalo() +
+            ", munkakor=" + getMunkakor() +
+            ", generaltDokumentumNev='" + getGeneraltDokumentumNev() + "'" +
+            ", generaltDokumentumUrl='" + getGeneraltDokumentumUrl() + "'" +
+            ", alairtDokumentumUrl='" + getAlairtDokumentumUrl() + "'" +
             "}";
     }
 }
