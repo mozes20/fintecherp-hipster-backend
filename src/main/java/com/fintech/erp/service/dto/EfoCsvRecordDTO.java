@@ -10,7 +10,15 @@ public class EfoCsvRecordDTO implements Serializable {
     private String employeeName;
     private String taxId;
     private LocalDate employmentDate;
+    private LocalDate employmentEndDate;
     private BigDecimal amount;
+    private Integer dayCount;
+    private String birthName;
+    private String birthPlace;
+    private LocalDate birthDate;
+    private String birthDateRaw;
+    private String motherName;
+    private String address;
     private boolean workerExists;
     private Long munkavallaloId;
     private String statusMessage;
@@ -45,6 +53,70 @@ public class EfoCsvRecordDTO implements Serializable {
 
     public void setEmploymentDate(LocalDate employmentDate) {
         this.employmentDate = employmentDate;
+    }
+
+    public LocalDate getEmploymentEndDate() {
+        return employmentEndDate;
+    }
+
+    public void setEmploymentEndDate(LocalDate employmentEndDate) {
+        this.employmentEndDate = employmentEndDate;
+    }
+
+    public Integer getDayCount() {
+        return dayCount;
+    }
+
+    public void setDayCount(Integer dayCount) {
+        this.dayCount = dayCount;
+    }
+
+    public String getBirthName() {
+        return birthName;
+    }
+
+    public void setBirthName(String birthName) {
+        this.birthName = birthName;
+    }
+
+    public String getBirthPlace() {
+        return birthPlace;
+    }
+
+    public void setBirthPlace(String birthPlace) {
+        this.birthPlace = birthPlace;
+    }
+
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public String getMotherName() {
+        return motherName;
+    }
+
+    public void setMotherName(String motherName) {
+        this.motherName = motherName;
+    }
+
+    public String getBirthDateRaw() {
+        return birthDateRaw;
+    }
+
+    public void setBirthDateRaw(String birthDateRaw) {
+        this.birthDateRaw = birthDateRaw;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public BigDecimal getAmount() {

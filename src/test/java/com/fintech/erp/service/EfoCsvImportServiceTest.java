@@ -31,6 +31,7 @@ class EfoCsvImportServiceTest {
     private DocxTemplateEngine docxTemplateEngine;
     private PdfConversionService pdfConversionService;
     private EfoTemplatePlaceholderService placeholderService;
+    private EfoDokumentumTemplateService efoDokumentumTemplateService;
     private EfoCsvImportService service;
 
     @BeforeEach
@@ -42,6 +43,7 @@ class EfoCsvImportServiceTest {
         docxTemplateEngine = mock(DocxTemplateEngine.class);
         pdfConversionService = mock(PdfConversionService.class);
         placeholderService = mock(EfoTemplatePlaceholderService.class);
+        efoDokumentumTemplateService = mock(EfoDokumentumTemplateService.class);
 
         when(munkavallalokRepository.findBySajatCegIdAndMaganszemelyAdoAzonositoJel(anyLong(), anyString())).thenReturn(
             java.util.Optional.empty()
@@ -54,7 +56,8 @@ class EfoCsvImportServiceTest {
             efoFoglalkoztatasokRepository,
             docxTemplateEngine,
             pdfConversionService,
-            placeholderService
+            placeholderService,
+            efoDokumentumTemplateService
         );
     }
 
@@ -78,7 +81,16 @@ class EfoCsvImportServiceTest {
         assertThat(preview.getRecords().get(0).getEmployeeName()).isEqualTo("Mikulás Marcell");
         assertThat(preview.getRecords().get(0).getTaxId()).isEqualTo("8502452908");
         assertThat(preview.getRecords().get(0).getEmploymentDate()).hasToString("2025-09-03");
+        assertThat(preview.getRecords().get(0).getEmploymentEndDate()).hasToString("2025-09-03");
+        assertThat(preview.getRecords().get(0).getDayCount()).isEqualTo(1);
         assertThat(preview.getRecords().get(0).getAmount()).isNotNull();
+        assertThat(preview.getRecords().get(0).getBirthName()).isEqualTo("Mikulás Marcell");
+        assertThat(preview.getRecords().get(0).getBirthPlace()).isEqualTo("Budapest");
+        assertThat(preview.getRecords().get(0).getBirthDateRaw()).isEqualTo("2004. July 26.");
+        if (preview.getRecords().get(0).getBirthDate() != null) {
+            assertThat(preview.getRecords().get(0).getBirthDate()).hasToString("2004-07-26");
+        }
+        assertThat(preview.getRecords().get(0).getMotherName()).isEqualTo("Csónyi Zsuzsanna");
 
         ObjectMapper mapper = new ObjectMapper();
         JacksonConfiguration jacksonConfiguration = new JacksonConfiguration();

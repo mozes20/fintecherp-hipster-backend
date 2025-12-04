@@ -17,6 +17,8 @@ public class EfoCsvImportRequestDTO implements Serializable {
 
     private Map<String, Long> jobAssignments = new HashMap<>();
 
+    private Long templateId;
+
     public Long getSajatCegId() {
         return sajatCegId;
     }
@@ -47,5 +49,13 @@ public class EfoCsvImportRequestDTO implements Serializable {
 
     public void setJobAssignments(Map<String, Long> jobAssignments) {
         this.jobAssignments = jobAssignments;
+    }
+
+    public Long getTemplateId() {
+        return templateId;
+    }
+
+    public void setTemplateId(Long templateId) {
+        this.templateId = templateId;
     }
 }

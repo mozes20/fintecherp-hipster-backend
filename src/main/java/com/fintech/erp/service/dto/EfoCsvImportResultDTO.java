@@ -9,6 +9,8 @@ public class EfoCsvImportResultDTO implements Serializable {
     private final List<EfoEmploymentGenerationDTO> generated = new ArrayList<>();
     private final List<EfoCsvRecordDTO> skipped = new ArrayList<>();
     private final List<String> errors = new ArrayList<>();
+    private String zipArchiveName;
+    private String zipArchiveUrl;
 
     public List<EfoEmploymentGenerationDTO> getGenerated() {
         return generated;
@@ -32,5 +34,21 @@ public class EfoCsvImportResultDTO implements Serializable {
 
     public void addError(String error) {
         errors.add(error);
+    }
+
+    public String getZipArchiveName() {
+        return zipArchiveName;
+    }
+
+    public void setZipArchiveName(String zipArchiveName) {
+        this.zipArchiveName = zipArchiveName;
+    }
+
+    public String getZipArchiveUrl() {
+        return zipArchiveUrl;
+    }
+
+    public void setZipArchiveUrl(String zipArchiveUrl) {
+        this.zipArchiveUrl = zipArchiveUrl;
     }
 }
