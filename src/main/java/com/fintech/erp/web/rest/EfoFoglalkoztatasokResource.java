@@ -314,11 +314,11 @@ public class EfoFoglalkoztatasokResource {
     ) throws IOException {
         LOG.debug("REST request to upload signed document for EfoFoglalkoztatasok : {}", id);
         try {
-            EfoFoglalkoztatasokDTO updated = efoFoglalkoztatasokService
-                .uploadSignedDocument(id, file)
-                .orElseThrow(() -> new BadRequestAlertException("A megadott foglalkoztatás nem található", ENTITY_NAME, "idnotfound"));
+            EfoFoglalkoztatasokDTO updated = efoFoglalkoztatasokService.uploadSignedDocument(id, file);
             return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException | IllegalStateException ex) {
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invalidsigneddocument");
+        } catch (IllegalStateException ex) {
             throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invalidsigneddocument");
         }
     }
@@ -343,10 +343,7 @@ public class EfoFoglalkoztatasokResource {
     public ResponseEntity<Void> deleteSignedDocument(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete signed document for EfoFoglalkoztatasok : {}", id);
         try {
-            boolean found = efoFoglalkoztatasokService.deleteSignedDocument(id).isPresent();
-            if (!found) {
-                throw new BadRequestAlertException("A megadott foglalkoztatás nem található", ENTITY_NAME, "idnotfound");
-            }
+            efoFoglalkoztatasokService.deleteSignedDocument(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException ex) {
             throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invalidsigneddocument");

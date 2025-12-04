@@ -265,17 +265,20 @@ public class EfoCsvImportService {
         for (CsvEmploymentRow row : rows) {
             EfoCsvRecordDTO dto = toRecordDTO(row);
             Optional<Munkavallalok> workerOpt = findWorker(sajatCegId, row.taxId());
-            if (workerOpt.isPresent()) {
-                dto.setWorkerExists(true);
-                dto.setMunkavallaloId(workerOpt.get().getId());
-                dto.setStatusMessage("Meglévő munkavállaló");
-            } else {
-                dto.setWorkerExists(false);
-                dto.setStatusMessage("Hiányzó munkavállaló");
-                if (missingTaxIds.add(normalizeTaxId(row.taxId()))) {
-                    preview.addMissingWorker(new EfoCsvMissingWorkerDTO(row.employeeName(), row.taxId()));
+            workerOpt.ifPresentOrElse(
+                worker -> {
+                    dto.setWorkerExists(true);
+                    dto.setMunkavallaloId(worker.getId());
+                    dto.setStatusMessage("Meglévő munkavállaló");
+                },
+                () -> {
+                    dto.setWorkerExists(false);
+                    dto.setStatusMessage("Hiányzó munkavállaló");
+                    if (missingTaxIds.add(normalizeTaxId(row.taxId()))) {
+                        preview.addMissingWorker(new EfoCsvMissingWorkerDTO(row.employeeName(), row.taxId()));
+                    }
                 }
-            }
+            );
             preview.addRecord(dto);
         }
         if (LOG.isDebugEnabled()) {
@@ -313,7 +316,7 @@ public class EfoCsvImportService {
                 result.addSkipped(skipped);
                 continue;
             }
-            Munkavallalok worker = workerOpt.get();
+            Munkavallalok worker = workerOpt.orElse(null);
 
             Long jobId = normalizedAssignments.get(normalizedTaxId);
             if (jobId == null) {
@@ -332,7 +335,7 @@ public class EfoCsvImportService {
                 result.addSkipped(skipped);
                 continue;
             }
-            Munkakorok job = jobOpt.get();
+            Munkakorok job = jobOpt.orElse(null);
 
             if (Boolean.FALSE.equals(job.getEfoMunkakor())) {
                 EfoCsvRecordDTO skipped = toRecordDTO(row);
@@ -691,11 +694,10 @@ public class EfoCsvImportService {
 
     private Path resolveTemplatePath(Long templateId) throws IOException {
         if (templateId != null) {
-            Optional<EfoDokumentumTemplateDTO> selectedTemplate = efoDokumentumTemplateService.findOne(templateId);
-            if (selectedTemplate.isEmpty()) {
-                throw new IOException("A kiválasztott EFO sablon nem található (id=" + templateId + ")");
-            }
-            Path candidate = TEMPLATE_BASE_DIR.resolve(selectedTemplate.get().getFajlUtvonal()).normalize();
+            EfoDokumentumTemplateDTO template = efoDokumentumTemplateService
+                .findOne(templateId)
+                .orElseThrow(() -> new IOException("A kiválasztott EFO sablon nem található (id=" + templateId + ")"));
+            Path candidate = TEMPLATE_BASE_DIR.resolve(template.getFajlUtvonal()).normalize();
             if (!Files.exists(candidate)) {
                 throw new IOException("A kiválasztott EFO sablon fájl nem található: " + candidate);
             }
@@ -705,7 +707,8 @@ public class EfoCsvImportService {
             DEFAULT_DOKUMENTUM_TIPUS
         );
         if (latestTemplate.isPresent()) {
-            Path candidate = TEMPLATE_BASE_DIR.resolve(latestTemplate.get().getFajlUtvonal()).normalize();
+            EfoDokumentumTemplate template = latestTemplate.orElse(null);
+            Path candidate = TEMPLATE_BASE_DIR.resolve(template.getFajlUtvonal()).normalize();
             if (!Files.exists(candidate)) {
                 throw new IOException("A tárolt EFO sablon fájl nem található: " + candidate);
             }
