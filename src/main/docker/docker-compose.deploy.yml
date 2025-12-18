@@ -58,7 +58,13 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.3
     container_name: keycloak
-    command: 'start --import-realm --hostname=auth.mikroclouds.hu --hostname-url=https://auth.mikroclouds.hu --hostname-admin-url=https://auth.mikroclouds.hu'
+    command:
+      - 'start'
+      - '--import-realm'
+      - '--hostname=auth.mikroclouds.hu'
+      - '--hostname-admin=auth.mikroclouds.hu'
+      - '--hostname-strict=false'
+      - '--proxy-headers=xforwarded'
     restart: unless-stopped
     volumes:
       - ./realm-config:/opt/keycloak/data/import
