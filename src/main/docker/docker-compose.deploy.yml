@@ -24,10 +24,13 @@ services:
         - SPRING_LIQUIBASE_URL=jdbc:postgresql://185.65.68.120:32768/postgres
         - SPRING_LIQUIBASE_USER=postgres
         - SPRING_LIQUIBASE_PASSWORD=postgresfintech!
+        - APPLICATION_GOTENBERG_ENABLED=true
+        - APPLICATION_GOTENBERG_BASEURL=http://gotenberg:3000
       ports:
         - '8080:8080'
       depends_on:
         - keycloak
+        - gotenberg
       networks:
         - fintecherp-net
       # NOTE: DB password inlined above (insecure). Replace with secrets later if needed.
@@ -39,6 +42,19 @@ services:
         service: keycloak
       networks:
         - fintecherp-net
+
+    # Gotenberg service for PDF conversion
+    gotenberg:
+      image: gotenberg/gotenberg:8
+      restart: unless-stopped
+      command:
+        - 'gotenberg'
+        - '--api-timeout=60s'
+        - '--log-level=info'
+      networks:
+        - fintecherp-net
+      # No ports exposed - internal communication only via Docker network
+
   networks:
     fintecherp-net:
       driver: bridge
