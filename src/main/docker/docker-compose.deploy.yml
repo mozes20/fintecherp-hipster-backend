@@ -62,7 +62,7 @@ services:
       - 'start'
       - '--import-realm'
       - '--hostname=auth.mikroclouds.hu'
-      - '--hostname-admin=auth.mikroclouds.hu'
+      - '--hostname-admin=https://auth.mikroclouds.hu'
       - '--hostname-strict=false'
       - '--proxy-headers=xforwarded'
     restart: unless-stopped
@@ -84,15 +84,8 @@ services:
       KC_HTTPS_PORT: 10443
       KC_HEALTH_ENABLED: 'true'
       KC_HTTP_MANAGEMENT_PORT: 9990
-      KC_PROXY: edge
-      # Hostname configuration
-      KC_HOSTNAME: auth.mikroclouds.hu
-      KC_HOSTNAME_URL: https://auth.mikroclouds.hu
-      KC_HOSTNAME_ADMIN_URL: https://auth.mikroclouds.hu
-      # CORS settings for frontend/backend access
+      # CORS and access settings
       KC_HTTP_ENABLED: 'true'
-      KC_HOSTNAME_STRICT: 'false'
-      KC_HOSTNAME_STRICT_BACKCHANNEL: 'false'
     ports:
       - '10080:10080'
       - '10443:10443'
