@@ -2,45 +2,128 @@ version: '3.8'
 
 services:
   # Application service
-  services:
-    # Application service
-    app:
-      image: intecherp:latest
-      build:
-        context: ..
-        dockerfile: ../Dockerfile
-      restart: unless-stopped
-      environment:
-        # NOTE: inlined DB credentials (not secure) — remove and use secrets later
-        - _JAVA_OPTIONS=-Xmx1024m -Xms512m
-        - SPRING_PROFILES_ACTIVE=prod,api-docs
-        - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
-        - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:10080/realms/jhipster
-        - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=web_app
-        - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=web_app
-        - SPRING_DATASOURCE_URL=jdbc:postgresql://185.65.68.120:32768/postgres
-        - SPRING_DATASOURCE_USERNAME=postgres
-        - SPRING_DATASOURCE_PASSWORD=postgresfintech!
-        - SPRING_LIQUIBASE_URL=jdbc:postgresql://185.65.68.120:32768/postgres
-        - SPRING_LIQUIBASE_USER=postgres
-        - SPRING_LIQUIBASE_PASSWORD=postgresfintech!
-      ports:
-        - '8080:8080'
-      depends_on:
-        - keycloak
-      networks:
-        - fintecherp-net
-      # NOTE: DB password inlined above (insecure). Replace with secrets later if needed.
+  app:
+    image: intecherp:latest
+    build:
+      context: ..
+      dockerfile: ../Dockerfile
+    restart: unless-stopped
+    environment:
+      # NOTE: inlined DB credentials (not secure) — remove and use secrets later
+      - _JAVA_OPTIONS=-Xmx1024m -Xms512m
+      - SPRING_PROFILES_ACTIVE=prod,api-docs
+      - MANAGEMENT_PROMETHEUS_METRICS_EXPORT_ENABLED=true
+      - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI=http://keycloak:10080/realms/jhipster
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID=web_app
+      - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET=web_app
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://185.65.68.120:32768/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgresfintech!
+      - SPRING_LIQUIBASE_URL=jdbc:postgresql://185.65.68.120:32768/postgres
+      - SPRING_LIQUIBASE_USER=postgres
+      - SPRING_LIQUIBASE_PASSWORD=postgresfintech!
+      - APPLICATION_GOTENBERG_ENABLED=true
+      - APPLICATION_GOTENBERG_BASEURL=http://gotenberg:3000
+    ports:
+      - '8080:8080'
+    volumes:
+      # Persistent storage for uploaded files
+      - app-uploads:/app/uploads
+    depends_on:
+      - keycloak
+      - gotenberg
+    networks:
+      - fintecherp-net
+    # NOTE: DB password inlined above (insecure). Replace with secrets later if needed.
 
-    # Keycloak (reuse dev config)
-    keycloak:
-      extends:
-        file: ./keycloak.yml
-        service: keycloak
-      networks:
-        - fintecherp-net
-  networks:
-    fintecherp-net:
-      driver: bridge
+  # PostgreSQL for Keycloak
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_secure_pass_2024
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - fintecherp-net
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U keycloak']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # secrets removed - credentials are inlined above (insecure). Prefer Docker secrets in production.
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2.3
+    container_name: keycloak
+    command: 'start --import-realm --hostname=auth.mikroclouds.hu --hostname-url=https://auth.mikroclouds.hu --hostname-admin-url=https://auth.mikroclouds.hu'
+    restart: unless-stopped
+    volumes:
+      - ./realm-config:/opt/keycloak/data/import
+      - ./realm-config/keycloak-health-check.sh:/opt/keycloak/health-check.sh
+    environment:
+      # PostgreSQL Database Configuration
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_secure_pass_2024
+      # Admin credentials
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      # Features and settings
+      KC_FEATURES: scripts
+      KC_HTTP_PORT: 10080
+      KC_HTTPS_PORT: 10443
+      KC_HEALTH_ENABLED: 'true'
+      KC_HTTP_MANAGEMENT_PORT: 9990
+      KC_PROXY: edge
+      # Hostname configuration
+      KC_HOSTNAME: auth.mikroclouds.hu
+      KC_HOSTNAME_URL: https://auth.mikroclouds.hu
+      KC_HOSTNAME_ADMIN_URL: https://auth.mikroclouds.hu
+      # CORS settings for frontend/backend access
+      KC_HTTP_ENABLED: 'true'
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HOSTNAME_STRICT_BACKCHANNEL: 'false'
+    ports:
+      - '10080:10080'
+      - '10443:10443'
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - fintecherp-net
+    healthcheck:
+      test: 'bash /opt/keycloak/health-check.sh'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  # Gotenberg service for PDF conversion
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: gotenberg
+    restart: unless-stopped
+    command:
+      - 'gotenberg'
+      - '--api-timeout=60s'
+      - '--log-level=info'
+    networks:
+      - fintecherp-net
+    # No ports exposed - internal communication only via Docker network
+
+networks:
+  fintecherp-net:
+    driver: bridge
+
+volumes:
+  # Named volumes for persistent data storage
+  keycloak-db-data:
+    name: fintecherp-keycloak-db-data
+  app-uploads:
+    name: fintecherp-app-uploads
+# secrets removed - credentials are inlined above (insecure). Prefer Docker secrets in production.
