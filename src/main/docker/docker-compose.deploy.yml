@@ -61,7 +61,7 @@ services:
     command:
       - 'start'
       - '--import-realm'
-      - '--hostname=auth.mikroclouds.hu'
+      - '--hostname=https://auth.mikroclouds.hu'
       - '--hostname-admin=https://auth.mikroclouds.hu'
       - '--hostname-strict=false'
       - '--proxy-headers=xforwarded'
