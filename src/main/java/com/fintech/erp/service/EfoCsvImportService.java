@@ -444,11 +444,29 @@ public class EfoCsvImportService {
         );
         byte[] filledDocx = docxTemplateEngine.populateTemplate(templatePath, placeholders);
         DocumentFormat format = request.getOutputFormat() != null ? request.getOutputFormat() : DocumentFormat.PDF;
-        byte[] finalBytes = format == DocumentFormat.PDF
-            ? pdfConversionService.convertDocxToPdf(filledDocx, buildFileNameBase(worker, row))
-            : filledDocx;
+        byte[] finalBytes;
+        DocumentFormat actualFormat = format;
 
-        String storedFileName = buildStoredFileName(worker, row, format);
+        if (format == DocumentFormat.PDF) {
+            try {
+                finalBytes = pdfConversionService.convertDocxToPdf(filledDocx, buildFileNameBase(worker, row));
+            } catch (IOException pdfEx) {
+                LOG.warn(
+                    "PDF konvertálás sikertelen a {} munkavállaló {} dátumú dokumentumánál. DOCX mentése helyette. Hiba: {}",
+                    worker.getVezeteknev() + " " + worker.getKeresztnev(),
+                    row.employmentDate(),
+                    pdfEx.getMessage()
+                );
+                LOG.debug("PDF conversion error details", pdfEx);
+                // Fall back to DOCX format
+                finalBytes = filledDocx;
+                actualFormat = DocumentFormat.DOCX;
+            }
+        } else {
+            finalBytes = filledDocx;
+        }
+
+        String storedFileName = buildStoredFileName(worker, row, actualFormat);
         Path targetPath = buildStoragePath(worker.getId(), row.employmentDate(), storedFileName);
         Files.createDirectories(targetPath.getParent());
         Files.write(targetPath, finalBytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);

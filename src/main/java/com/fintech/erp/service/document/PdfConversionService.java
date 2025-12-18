@@ -32,6 +32,7 @@ public class PdfConversionService {
 
         if (gotenbergClient != null && gotenbergClient.isEnabled()) {
             try {
+                LOG.debug("Attempting Gotenberg conversion for {}", safeFileName);
                 return gotenbergClient.convertDocxToPdf(docxBytes, safeFileName);
             } catch (Exception ex) {
                 LOG.warn("Gotenberg conversion failed for {}. Falling back to Docx4J: {}", safeFileName, ex.getMessage());
@@ -39,6 +40,28 @@ public class PdfConversionService {
             }
         }
 
-        return docxTemplateEngine.convertToPdf(docxBytes);
+        try {
+            LOG.debug("Attempting Docx4J conversion for {}", safeFileName);
+            return docxTemplateEngine.convertToPdf(docxBytes);
+        } catch (IOException e) {
+            // Check if it's a layout/FOP error
+            Throwable rootCause = getRootCause(e);
+            if (rootCause instanceof IllegalStateException) {
+                throw new IOException(
+                    "PDF konvertálás sikertelen a dokumentum összetett elrendezése miatt (FOP layout hiba). " +
+                    "Javaslat: használjon egyszerűbb sablont vagy engedélyezze a Gotenberg szolgáltatást.",
+                    e
+                );
+            }
+            throw e;
+        }
+    }
+
+    private Throwable getRootCause(Throwable throwable) {
+        Throwable cause = throwable;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        return cause;
     }
 }
