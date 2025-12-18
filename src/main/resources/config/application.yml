@@ -152,8 +152,8 @@ spring:
             issuer-uri: https://auth.mikroclouds.hu/realms/fintech-erp
         registration:
           oidc:
-            client-id: erp-backend
-            client-secret: MWgbih26OK5zsqWuk7RIAcB1s4qsEuxn
+            client-id: backend-api
+            client-secret: fintech-erp-backend-secret-2024
             scope: openid, profile, email, offline_access # last one for refresh tokens
   task:
     execution:
