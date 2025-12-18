@@ -46,6 +46,7 @@ services:
     # Gotenberg service for PDF conversion
     gotenberg:
       image: gotenberg/gotenberg:8
+      container_name: gotenberg
       restart: unless-stopped
       command:
         - 'gotenberg'
