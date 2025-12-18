@@ -284,26 +284,51 @@ public class EfoFoglalkoztatasokResource {
         @PathVariable("employmentDate") String employmentDate,
         @PathVariable("fileName") String fileName
     ) throws IOException {
-        LOG.debug("REST request to download generated EFO document for worker {} on {} : {}", workerId, employmentDate, fileName);
+        LOG.info(
+            "REST request to download generated EFO document - workerId: {}, date: {}, fileName: {}",
+            workerId,
+            employmentDate,
+            fileName
+        );
+
         if (workerId == null || !StringUtils.hasText(employmentDate) || !StringUtils.hasText(fileName) || fileName.contains("..")) {
+            LOG.error("Invalid document identifiers - workerId: {}, date: {}, fileName: {}", workerId, employmentDate, fileName);
             throw new BadRequestAlertException("Érvénytelen dokumentum azonosítók", ENTITY_NAME, "invalidgenerateddoc");
         }
+
         LocalDate parsedDate;
         try {
             parsedDate = LocalDate.parse(employmentDate);
         } catch (DateTimeParseException ex) {
+            LOG.error("Invalid date format: {}", employmentDate, ex);
             throw new BadRequestAlertException("Érvénytelen dátum formátum", ENTITY_NAME, "invaliddateformat");
         }
+
         Path documentPath = efoCsvImportService
             .resolveGeneratedDocumentPath(workerId, parsedDate, fileName)
-            .orElseThrow(() -> new BadRequestAlertException("A kért dokumentum nem található", ENTITY_NAME, "generateddocnotfound"));
+            .orElseThrow(() -> {
+                LOG.error("Document not found in path resolver - workerId: {}, date: {}, fileName: {}", workerId, parsedDate, fileName);
+                return new BadRequestAlertException("A kért dokumentum nem található", ENTITY_NAME, "generateddocnotfound");
+            });
+
+        LOG.info("Resolved document path: {}", documentPath);
+
         Resource resource = new FileSystemResource(documentPath);
         if (!resource.exists()) {
+            LOG.error("Document file does not exist at path: {}", documentPath);
             throw new BadRequestAlertException("A kért dokumentum nem található", ENTITY_NAME, "generateddocnotfound");
         }
+
+        LOG.info("Successfully serving document: {}", documentPath.getFileName());
+
+        String contentType = fileName.toLowerCase().endsWith(".pdf") ? "application/pdf" : "application/octet-stream";
+
         return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_OCTET_STREAM)
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + resource.getFilename())
+            .contentType(MediaType.parseMediaType(contentType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+            .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+            .header(HttpHeaders.PRAGMA, "no-cache")
+            .header(HttpHeaders.EXPIRES, "0")
             .body(resource);
     }
 
