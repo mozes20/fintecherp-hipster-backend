@@ -237,8 +237,11 @@ jhipster:
 
 application:
   gotenberg:
-    enabled: false
-    base-url:
+    # Gotenberg PDF konverziós szolgáltatás (ajánlott használni)
+    # Dev: http://localhost:3000 (docker compose -f src/main/docker/gotenberg.yml up -d)
+    # Prod: http://gotenberg:3000 (docker compose -f src/main/docker/app.yml up -d)
+    enabled: true
+    base-url: http://localhost:3000
     api-key:
     connect-timeout: 5s
     read-timeout: 60s
