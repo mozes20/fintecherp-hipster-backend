@@ -451,9 +451,12 @@ public class EfoCsvImportService {
             try {
                 finalBytes = pdfConversionService.convertDocxToPdf(filledDocx, buildFileNameBase(worker, row));
             } catch (IOException pdfEx) {
+                String workerName = worker.getMaganszemely() != null
+                    ? worker.getMaganszemely().getMaganszemelyNeve()
+                    : "Ismeretlen munkavállaló";
                 LOG.warn(
                     "PDF konvertálás sikertelen a {} munkavállaló {} dátumú dokumentumánál. DOCX mentése helyette. Hiba: {}",
-                    worker.getVezeteknev() + " " + worker.getKeresztnev(),
+                    workerName,
                     row.employmentDate(),
                     pdfEx.getMessage()
                 );
