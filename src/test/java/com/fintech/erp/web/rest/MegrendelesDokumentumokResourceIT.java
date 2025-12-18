@@ -1,29 +1,44 @@
 package com.fintech.erp.web.rest;
 
-import static com.fintech.erp.domain.MegrendelesDokumentumokAsserts.*;
+import static com.fintech.erp.domain.MegrendelesDokumentumokAsserts.assertMegrendelesDokumentumokAllPropertiesEquals;
+import static com.fintech.erp.domain.MegrendelesDokumentumokAsserts.assertMegrendelesDokumentumokAllUpdatablePropertiesEquals;
+import static com.fintech.erp.domain.MegrendelesDokumentumokAsserts.assertMegrendelesDokumentumokUpdatableFieldsEquals;
 import static com.fintech.erp.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintech.erp.IntegrationTest;
 import com.fintech.erp.domain.MegrendelesDokumentumok;
 import com.fintech.erp.domain.Megrendelesek;
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumTipus;
 import com.fintech.erp.repository.MegrendelesDokumentumokRepository;
 import com.fintech.erp.service.dto.MegrendelesDokumentumokDTO;
 import com.fintech.erp.service.mapper.MegrendelesDokumentumokMapper;
 import jakarta.persistence.EntityManager;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,11 +51,17 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class MegrendelesDokumentumokResourceIT {
 
-    private static final String DEFAULT_DOKUMENTUM_TIPUSA = "AAAAAAAAAA";
-    private static final String UPDATED_DOKUMENTUM_TIPUSA = "BBBBBBBBBB";
+    private static final MegrendelesDokumentumTipus DEFAULT_DOKUMENTUM_TIPUSA = MegrendelesDokumentumTipus.GENERALTA_WORD;
+    private static final MegrendelesDokumentumTipus UPDATED_DOKUMENTUM_TIPUSA = MegrendelesDokumentumTipus.GENERALTA_PDF;
 
     private static final String DEFAULT_DOKUMENTUM = "AAAAAAAAAA";
     private static final String UPDATED_DOKUMENTUM = "BBBBBBBBBB";
+
+    private static final String DEFAULT_DOKUMENTUM_URL = "uploads/megrendelesek/1/AAAAAAAAAA.docx";
+    private static final String UPDATED_DOKUMENTUM_URL = "uploads/megrendelesek/1/BBBBBBBBBB.docx";
+
+    private static final String DEFAULT_DOKUMENTUM_AZONOSITO = "001";
+    private static final String UPDATED_DOKUMENTUM_AZONOSITO = "002";
 
     private static final String ENTITY_API_URL = "/api/megrendeles-dokumentumoks";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
@@ -74,7 +95,11 @@ class MegrendelesDokumentumokResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static MegrendelesDokumentumok createEntity() {
-        return new MegrendelesDokumentumok().dokumentumTipusa(DEFAULT_DOKUMENTUM_TIPUSA).dokumentum(DEFAULT_DOKUMENTUM);
+        return new MegrendelesDokumentumok()
+            .dokumentumTipusa(DEFAULT_DOKUMENTUM_TIPUSA)
+            .dokumentum(DEFAULT_DOKUMENTUM)
+            .dokumentumUrl(DEFAULT_DOKUMENTUM_URL)
+            .dokumentumAzonosito(DEFAULT_DOKUMENTUM_AZONOSITO);
     }
 
     /**
@@ -84,7 +109,11 @@ class MegrendelesDokumentumokResourceIT {
      * if they test an entity which requires the current entity.
      */
     public static MegrendelesDokumentumok createUpdatedEntity() {
-        return new MegrendelesDokumentumok().dokumentumTipusa(UPDATED_DOKUMENTUM_TIPUSA).dokumentum(UPDATED_DOKUMENTUM);
+        return new MegrendelesDokumentumok()
+            .dokumentumTipusa(UPDATED_DOKUMENTUM_TIPUSA)
+            .dokumentum(UPDATED_DOKUMENTUM)
+            .dokumentumUrl(UPDATED_DOKUMENTUM_URL)
+            .dokumentumAzonosito(UPDATED_DOKUMENTUM_AZONOSITO);
     }
 
     @BeforeEach
@@ -167,8 +196,10 @@ class MegrendelesDokumentumokResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(megrendelesDokumentumok.getId().intValue())))
-            .andExpect(jsonPath("$.[*].dokumentumTipusa").value(hasItem(DEFAULT_DOKUMENTUM_TIPUSA)))
-            .andExpect(jsonPath("$.[*].dokumentum").value(hasItem(DEFAULT_DOKUMENTUM)));
+            .andExpect(jsonPath("$.[*].dokumentumTipusa").value(hasItem(DEFAULT_DOKUMENTUM_TIPUSA.toString())))
+            .andExpect(jsonPath("$.[*].dokumentum").value(hasItem(DEFAULT_DOKUMENTUM)))
+            .andExpect(jsonPath("$.[*].dokumentumUrl").value(hasItem(DEFAULT_DOKUMENTUM_URL)))
+            .andExpect(jsonPath("$.[*].dokumentumAzonosito").value(hasItem(DEFAULT_DOKUMENTUM_AZONOSITO)));
     }
 
     @Test
@@ -183,8 +214,10 @@ class MegrendelesDokumentumokResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(megrendelesDokumentumok.getId().intValue()))
-            .andExpect(jsonPath("$.dokumentumTipusa").value(DEFAULT_DOKUMENTUM_TIPUSA))
-            .andExpect(jsonPath("$.dokumentum").value(DEFAULT_DOKUMENTUM));
+            .andExpect(jsonPath("$.dokumentumTipusa").value(DEFAULT_DOKUMENTUM_TIPUSA.toString()))
+            .andExpect(jsonPath("$.dokumentum").value(DEFAULT_DOKUMENTUM))
+            .andExpect(jsonPath("$.dokumentumUrl").value(DEFAULT_DOKUMENTUM_URL))
+            .andExpect(jsonPath("$.dokumentumAzonosito").value(DEFAULT_DOKUMENTUM_AZONOSITO));
     }
 
     @Test
@@ -210,8 +243,8 @@ class MegrendelesDokumentumokResourceIT {
 
         // Get all the megrendelesDokumentumokList where dokumentumTipusa equals to
         defaultMegrendelesDokumentumokFiltering(
-            "dokumentumTipusa.equals=" + DEFAULT_DOKUMENTUM_TIPUSA,
-            "dokumentumTipusa.equals=" + UPDATED_DOKUMENTUM_TIPUSA
+            "dokumentumTipusa.equals=" + DEFAULT_DOKUMENTUM_TIPUSA.name(),
+            "dokumentumTipusa.equals=" + UPDATED_DOKUMENTUM_TIPUSA.name()
         );
     }
 
@@ -223,8 +256,8 @@ class MegrendelesDokumentumokResourceIT {
 
         // Get all the megrendelesDokumentumokList where dokumentumTipusa in
         defaultMegrendelesDokumentumokFiltering(
-            "dokumentumTipusa.in=" + DEFAULT_DOKUMENTUM_TIPUSA + "," + UPDATED_DOKUMENTUM_TIPUSA,
-            "dokumentumTipusa.in=" + UPDATED_DOKUMENTUM_TIPUSA
+            "dokumentumTipusa.in=" + DEFAULT_DOKUMENTUM_TIPUSA.name() + "," + UPDATED_DOKUMENTUM_TIPUSA.name(),
+            "dokumentumTipusa.in=" + UPDATED_DOKUMENTUM_TIPUSA.name()
         );
     }
 
@@ -236,32 +269,6 @@ class MegrendelesDokumentumokResourceIT {
 
         // Get all the megrendelesDokumentumokList where dokumentumTipusa is not null
         defaultMegrendelesDokumentumokFiltering("dokumentumTipusa.specified=true", "dokumentumTipusa.specified=false");
-    }
-
-    @Test
-    @Transactional
-    void getAllMegrendelesDokumentumoksByDokumentumTipusaContainsSomething() throws Exception {
-        // Initialize the database
-        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
-
-        // Get all the megrendelesDokumentumokList where dokumentumTipusa contains
-        defaultMegrendelesDokumentumokFiltering(
-            "dokumentumTipusa.contains=" + DEFAULT_DOKUMENTUM_TIPUSA,
-            "dokumentumTipusa.contains=" + UPDATED_DOKUMENTUM_TIPUSA
-        );
-    }
-
-    @Test
-    @Transactional
-    void getAllMegrendelesDokumentumoksByDokumentumTipusaNotContainsSomething() throws Exception {
-        // Initialize the database
-        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
-
-        // Get all the megrendelesDokumentumokList where dokumentumTipusa does not contain
-        defaultMegrendelesDokumentumokFiltering(
-            "dokumentumTipusa.doesNotContain=" + UPDATED_DOKUMENTUM_TIPUSA,
-            "dokumentumTipusa.doesNotContain=" + DEFAULT_DOKUMENTUM_TIPUSA
-        );
     }
 
     @Test
@@ -322,6 +329,107 @@ class MegrendelesDokumentumokResourceIT {
 
     @Test
     @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumUrlIsEqualToSomething() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering(
+            "dokumentumUrl.equals=" + DEFAULT_DOKUMENTUM_URL,
+            "dokumentumUrl.equals=" + UPDATED_DOKUMENTUM_URL
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumUrlIsInShouldWork() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering(
+            "dokumentumUrl.in=" + DEFAULT_DOKUMENTUM_URL + "," + UPDATED_DOKUMENTUM_URL,
+            "dokumentumUrl.in=" + UPDATED_DOKUMENTUM_URL
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumUrlIsNullOrNotNull() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering("dokumentumUrl.specified=true", "dokumentumUrl.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumUrlContainsSomething() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering("dokumentumUrl.contains=uploads/megrendelesek/1", "dokumentumUrl.contains=irrelevant");
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumUrlNotContainsSomething() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering(
+            "dokumentumUrl.doesNotContain=" + UPDATED_DOKUMENTUM_URL,
+            "dokumentumUrl.doesNotContain=" + DEFAULT_DOKUMENTUM_URL
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumAzonositoIsEqualToSomething() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering(
+            "dokumentumAzonosito.equals=" + DEFAULT_DOKUMENTUM_AZONOSITO,
+            "dokumentumAzonosito.equals=" + UPDATED_DOKUMENTUM_AZONOSITO
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumAzonositoIsInShouldWork() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering(
+            "dokumentumAzonosito.in=" + DEFAULT_DOKUMENTUM_AZONOSITO + "," + UPDATED_DOKUMENTUM_AZONOSITO,
+            "dokumentumAzonosito.in=" + UPDATED_DOKUMENTUM_AZONOSITO
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumAzonositoIsNullOrNotNull() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering("dokumentumAzonosito.specified=true", "dokumentumAzonosito.specified=false");
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumAzonositoContainsSomething() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering(
+            "dokumentumAzonosito.contains=" + DEFAULT_DOKUMENTUM_AZONOSITO,
+            "dokumentumAzonosito.contains=999"
+        );
+    }
+
+    @Test
+    @Transactional
+    void getAllMegrendelesDokumentumoksByDokumentumAzonositoNotContainsSomething() throws Exception {
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.saveAndFlush(megrendelesDokumentumok);
+
+        defaultMegrendelesDokumentumokFiltering(
+            "dokumentumAzonosito.doesNotContain=" + UPDATED_DOKUMENTUM_AZONOSITO,
+            "dokumentumAzonosito.doesNotContain=" + DEFAULT_DOKUMENTUM_AZONOSITO
+        );
+    }
+
+    @Test
+    @Transactional
     void getAllMegrendelesDokumentumoksByMegrendelesIsEqualToSomething() throws Exception {
         Megrendelesek megrendeles;
         if (TestUtil.findAll(em, Megrendelesek.class).isEmpty()) {
@@ -356,8 +464,10 @@ class MegrendelesDokumentumokResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(megrendelesDokumentumok.getId().intValue())))
-            .andExpect(jsonPath("$.[*].dokumentumTipusa").value(hasItem(DEFAULT_DOKUMENTUM_TIPUSA)))
-            .andExpect(jsonPath("$.[*].dokumentum").value(hasItem(DEFAULT_DOKUMENTUM)));
+            .andExpect(jsonPath("$.[*].dokumentumTipusa").value(hasItem(DEFAULT_DOKUMENTUM_TIPUSA.toString())))
+            .andExpect(jsonPath("$.[*].dokumentum").value(hasItem(DEFAULT_DOKUMENTUM)))
+            .andExpect(jsonPath("$.[*].dokumentumUrl").value(hasItem(DEFAULT_DOKUMENTUM_URL)))
+            .andExpect(jsonPath("$.[*].dokumentumAzonosito").value(hasItem(DEFAULT_DOKUMENTUM_AZONOSITO)));
 
         // Check, that the count call also returns 1
         restMegrendelesDokumentumokMockMvc
@@ -407,7 +517,11 @@ class MegrendelesDokumentumokResourceIT {
             .orElseThrow();
         // Disconnect from session so that the updates on updatedMegrendelesDokumentumok are not directly saved in db
         em.detach(updatedMegrendelesDokumentumok);
-        updatedMegrendelesDokumentumok.dokumentumTipusa(UPDATED_DOKUMENTUM_TIPUSA).dokumentum(UPDATED_DOKUMENTUM);
+        updatedMegrendelesDokumentumok
+            .dokumentumTipusa(UPDATED_DOKUMENTUM_TIPUSA)
+            .dokumentum(UPDATED_DOKUMENTUM)
+            .dokumentumUrl(UPDATED_DOKUMENTUM_URL)
+            .dokumentumAzonosito(UPDATED_DOKUMENTUM_AZONOSITO);
         MegrendelesDokumentumokDTO megrendelesDokumentumokDTO = megrendelesDokumentumokMapper.toDto(updatedMegrendelesDokumentumok);
 
         restMegrendelesDokumentumokMockMvc
@@ -537,7 +651,11 @@ class MegrendelesDokumentumokResourceIT {
         MegrendelesDokumentumok partialUpdatedMegrendelesDokumentumok = new MegrendelesDokumentumok();
         partialUpdatedMegrendelesDokumentumok.setId(megrendelesDokumentumok.getId());
 
-        partialUpdatedMegrendelesDokumentumok.dokumentumTipusa(UPDATED_DOKUMENTUM_TIPUSA).dokumentum(UPDATED_DOKUMENTUM);
+        partialUpdatedMegrendelesDokumentumok
+            .dokumentumTipusa(UPDATED_DOKUMENTUM_TIPUSA)
+            .dokumentum(UPDATED_DOKUMENTUM)
+            .dokumentumUrl(UPDATED_DOKUMENTUM_URL)
+            .dokumentumAzonosito(UPDATED_DOKUMENTUM_AZONOSITO);
 
         restMegrendelesDokumentumokMockMvc
             .perform(
@@ -641,6 +759,61 @@ class MegrendelesDokumentumokResourceIT {
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
+    void uploadDokumentumCreatesRecordAndFile() throws Exception {
+        Megrendelesek megrendeles = MegrendelesekResourceIT.createEntity();
+        em.persist(megrendeles);
+        em.flush();
+
+        MockMultipartFile multipartFile = new MockMultipartFile(
+            "file",
+            "test.txt",
+            MediaType.TEXT_PLAIN_VALUE,
+            "sample".getBytes(StandardCharsets.UTF_8)
+        );
+
+        long databaseSizeBefore = getRepositoryCount();
+
+        String response = restMegrendelesDokumentumokMockMvc
+            .perform(
+                multipart(ENTITY_API_URL + "/upload")
+                    .file(multipartFile)
+                    .param("dokumentumTipusa", DEFAULT_DOKUMENTUM_TIPUSA.name())
+                    .param("megrendelesId", megrendeles.getId().toString())
+                    .with(csrf())
+            )
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        MegrendelesDokumentumokDTO resultDto = om.readValue(response, MegrendelesDokumentumokDTO.class);
+
+        assertIncrementedRepositoryCount(databaseSizeBefore);
+
+        assertThat(resultDto.getDokumentumTipusa()).isEqualTo(DEFAULT_DOKUMENTUM_TIPUSA);
+        assertThat(resultDto.getDokumentumAzonosito()).isNotBlank();
+        assertThat(resultDto.getDokumentumUrl()).isEqualTo(
+            "uploads/megrendelesek/" + megrendeles.getId() + "/" + resultDto.getDokumentum()
+        );
+
+        Path uploadDir = Path.of("uploads", "megrendelesek", megrendeles.getId().toString());
+        Path storedPath = uploadDir.resolve(resultDto.getDokumentum()).normalize();
+        assertThat(Files.exists(storedPath)).isTrue();
+
+        insertedMegrendelesDokumentumok = megrendelesDokumentumokRepository.findById(resultDto.getId()).orElse(null);
+
+        Files.deleteIfExists(storedPath);
+        if (Files.exists(uploadDir)) {
+            try (Stream<Path> entries = Files.list(uploadDir)) {
+                if (entries.findAny().isEmpty()) {
+                    Files.delete(uploadDir);
+                }
+            }
+        }
     }
 
     protected long getRepositoryCount() {

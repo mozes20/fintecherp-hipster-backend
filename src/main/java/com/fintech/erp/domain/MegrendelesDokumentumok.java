@@ -1,7 +1,18 @@
 package com.fintech.erp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumTipus;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -23,11 +34,18 @@ public class MegrendelesDokumentumok implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "dokumentum_tipusa")
-    private String dokumentumTipusa;
+    private MegrendelesDokumentumTipus dokumentumTipusa;
 
     @Column(name = "dokumentum")
     private String dokumentum;
+
+    @Column(name = "dokumentum_url")
+    private String dokumentumUrl;
+
+    @Column(name = "dokumentum_azonosito", length = 50)
+    private String dokumentumAzonosito;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "szerzodesesJogviszony", "maganszemely" }, allowSetters = true)
@@ -48,16 +66,16 @@ public class MegrendelesDokumentumok implements Serializable {
         this.id = id;
     }
 
-    public String getDokumentumTipusa() {
+    public MegrendelesDokumentumTipus getDokumentumTipusa() {
         return this.dokumentumTipusa;
     }
 
-    public MegrendelesDokumentumok dokumentumTipusa(String dokumentumTipusa) {
+    public MegrendelesDokumentumok dokumentumTipusa(MegrendelesDokumentumTipus dokumentumTipusa) {
         this.setDokumentumTipusa(dokumentumTipusa);
         return this;
     }
 
-    public void setDokumentumTipusa(String dokumentumTipusa) {
+    public void setDokumentumTipusa(MegrendelesDokumentumTipus dokumentumTipusa) {
         this.dokumentumTipusa = dokumentumTipusa;
     }
 
@@ -72,6 +90,32 @@ public class MegrendelesDokumentumok implements Serializable {
 
     public void setDokumentum(String dokumentum) {
         this.dokumentum = dokumentum;
+    }
+
+    public String getDokumentumUrl() {
+        return this.dokumentumUrl;
+    }
+
+    public void setDokumentumUrl(String dokumentumUrl) {
+        this.dokumentumUrl = dokumentumUrl;
+    }
+
+    public MegrendelesDokumentumok dokumentumUrl(String dokumentumUrl) {
+        this.setDokumentumUrl(dokumentumUrl);
+        return this;
+    }
+
+    public String getDokumentumAzonosito() {
+        return this.dokumentumAzonosito;
+    }
+
+    public void setDokumentumAzonosito(String dokumentumAzonosito) {
+        this.dokumentumAzonosito = dokumentumAzonosito;
+    }
+
+    public MegrendelesDokumentumok dokumentumAzonosito(String dokumentumAzonosito) {
+        this.setDokumentumAzonosito(dokumentumAzonosito);
+        return this;
     }
 
     public Megrendelesek getMegrendeles() {
@@ -113,6 +157,8 @@ public class MegrendelesDokumentumok implements Serializable {
             "id=" + getId() +
             ", dokumentumTipusa='" + getDokumentumTipusa() + "'" +
             ", dokumentum='" + getDokumentum() + "'" +
+            ", dokumentumUrl='" + getDokumentumUrl() + "'" +
+            ", dokumentumAzonosito='" + getDokumentumAzonosito() + "'" +
             "}";
     }
 }

@@ -1,17 +1,27 @@
 package com.fintech.erp.web.rest;
 
-import static com.fintech.erp.domain.SzerzodesesJogviszonyokAsserts.*;
+import static com.fintech.erp.domain.SzerzodesesJogviszonyokAsserts.assertSzerzodesesJogviszonyokAllPropertiesEquals;
+import static com.fintech.erp.domain.SzerzodesesJogviszonyokAsserts.assertSzerzodesesJogviszonyokAllUpdatablePropertiesEquals;
+import static com.fintech.erp.domain.SzerzodesesJogviszonyokAsserts.assertSzerzodesesJogviszonyokUpdatableFieldsEquals;
 import static com.fintech.erp.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintech.erp.IntegrationTest;
 import com.fintech.erp.domain.CegAlapadatok;
+import com.fintech.erp.domain.SzerzodesesJogviszonyDokumentum;
 import com.fintech.erp.domain.SzerzodesesJogviszonyok;
+import com.fintech.erp.repository.SzerzodesesJogviszonyDokumentumRepository;
 import com.fintech.erp.repository.SzerzodesesJogviszonyokRepository;
 import com.fintech.erp.service.dto.SzerzodesesJogviszonyokDTO;
 import com.fintech.erp.service.mapper.SzerzodesesJogviszonyokMapper;
@@ -41,6 +51,8 @@ class SzerzodesesJogviszonyokResourceIT {
     private static final String DEFAULT_SZERZODES_AZONOSITO = "AAAAAAAAAA";
     private static final String UPDATED_SZERZODES_AZONOSITO = "BBBBBBBBBB";
 
+    private static final String DEFAULT_DOKUMENTUM_TIPUS = "GENERALT_WORD";
+
     private static final LocalDate DEFAULT_JOGVISZONY_KEZDETE = LocalDate.ofEpochDay(0L);
     private static final LocalDate UPDATED_JOGVISZONY_KEZDETE = LocalDate.now(ZoneId.systemDefault());
     private static final LocalDate SMALLER_JOGVISZONY_KEZDETE = LocalDate.ofEpochDay(-1L);
@@ -65,6 +77,9 @@ class SzerzodesesJogviszonyokResourceIT {
     private SzerzodesesJogviszonyokMapper szerzodesesJogviszonyokMapper;
 
     @Autowired
+    private SzerzodesesJogviszonyDokumentumRepository szerzodesesJogviszonyDokumentumRepository;
+
+    @Autowired
     private EntityManager em;
 
     @Autowired
@@ -73,6 +88,9 @@ class SzerzodesesJogviszonyokResourceIT {
     private SzerzodesesJogviszonyok szerzodesesJogviszonyok;
 
     private SzerzodesesJogviszonyok insertedSzerzodesesJogviszonyok;
+    private SzerzodesesJogviszonyDokumentum insertedSzerzodesesJogviszonyDokumentum;
+    private CegAlapadatok insertedMegrendeloCeg;
+    private CegAlapadatok insertedVallalkozoCeg;
 
     /**
      * Create an entity for this test.
@@ -107,9 +125,23 @@ class SzerzodesesJogviszonyokResourceIT {
 
     @AfterEach
     void cleanup() {
+        if (insertedSzerzodesesJogviszonyDokumentum != null && insertedSzerzodesesJogviszonyDokumentum.getId() != null) {
+            szerzodesesJogviszonyDokumentumRepository.deleteById(insertedSzerzodesesJogviszonyDokumentum.getId());
+            insertedSzerzodesesJogviszonyDokumentum = null;
+        }
         if (insertedSzerzodesesJogviszonyok != null) {
             szerzodesesJogviszonyokRepository.delete(insertedSzerzodesesJogviszonyok);
             insertedSzerzodesesJogviszonyok = null;
+        }
+        if (insertedMegrendeloCeg != null && insertedMegrendeloCeg.getId() != null) {
+            CegAlapadatok managed = em.contains(insertedMegrendeloCeg) ? insertedMegrendeloCeg : em.merge(insertedMegrendeloCeg);
+            em.remove(managed);
+            insertedMegrendeloCeg = null;
+        }
+        if (insertedVallalkozoCeg != null && insertedVallalkozoCeg.getId() != null) {
+            CegAlapadatok managed = em.contains(insertedVallalkozoCeg) ? insertedVallalkozoCeg : em.merge(insertedVallalkozoCeg);
+            em.remove(managed);
+            insertedVallalkozoCeg = null;
         }
     }
 
@@ -200,6 +232,62 @@ class SzerzodesesJogviszonyokResourceIT {
             .andExpect(jsonPath("$.szerzodesAzonosito").value(DEFAULT_SZERZODES_AZONOSITO))
             .andExpect(jsonPath("$.jogviszonyKezdete").value(DEFAULT_JOGVISZONY_KEZDETE.toString()))
             .andExpect(jsonPath("$.jogviszonyLejarata").value(DEFAULT_JOGVISZONY_LEJARATA.toString()));
+    }
+
+    @Test
+    @Transactional
+    void getDocumentsForSzerzodesesJogviszonyok() throws Exception {
+        CegAlapadatok megrendelo = CegAlapadatokResourceIT.createEntity();
+        CegAlapadatok vallalkozo = CegAlapadatokResourceIT.createEntity().cegNev("Masik Ceg");
+        em.persist(megrendelo);
+        em.persist(vallalkozo);
+        em.flush();
+        insertedMegrendeloCeg = megrendelo;
+        insertedVallalkozoCeg = vallalkozo;
+
+        szerzodesesJogviszonyok.megrendeloCeg(megrendelo);
+        szerzodesesJogviszonyok.vallalkozoCeg(vallalkozo);
+        insertedSzerzodesesJogviszonyok = szerzodesesJogviszonyokRepository.saveAndFlush(szerzodesesJogviszonyok);
+
+        SzerzodesesJogviszonyDokumentum dokumentum = new SzerzodesesJogviszonyDokumentum()
+            .dokumentumNev("generated.docx")
+            .fajlUtvonal("generated.docx")
+            .contentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            .dokumentumTipus(DEFAULT_DOKUMENTUM_TIPUS)
+            .szerzodesesJogviszony(insertedSzerzodesesJogviszonyok);
+        insertedSzerzodesesJogviszonyDokumentum = szerzodesesJogviszonyDokumentumRepository.saveAndFlush(dokumentum);
+
+        restSzerzodesesJogviszonyokMockMvc
+            .perform(get(ENTITY_API_URL_ID + "/dokumentumok", insertedSzerzodesesJogviszonyok.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$[0].id").value(insertedSzerzodesesJogviszonyDokumentum.getId().intValue()))
+            .andExpect(jsonPath("$[0].dokumentumNev").value("generated.docx"))
+            .andExpect(jsonPath("$[0].dokumentumTipus").value(DEFAULT_DOKUMENTUM_TIPUS));
+    }
+
+    @Test
+    @Transactional
+    void getTemplatePlaceholdersForJogviszony() throws Exception {
+        CegAlapadatok megrendelo = CegAlapadatokResourceIT.createEntity();
+        CegAlapadatok vallalkozo = CegAlapadatokResourceIT.createEntity().cegNev("Masik Kft");
+        em.persist(megrendelo);
+        em.persist(vallalkozo);
+        em.flush();
+        insertedMegrendeloCeg = megrendelo;
+        insertedVallalkozoCeg = vallalkozo;
+
+        szerzodesesJogviszonyok.megrendeloCeg(megrendelo);
+        szerzodesesJogviszonyok.vallalkozoCeg(vallalkozo);
+        insertedSzerzodesesJogviszonyok = szerzodesesJogviszonyokRepository.saveAndFlush(szerzodesesJogviszonyok);
+
+        restSzerzodesesJogviszonyokMockMvc
+            .perform(get("/api/szerzodeses-jogviszony-dokumentumoks/jogviszony/{id}/placeholders", insertedSzerzodesesJogviszonyok.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$.entityId").value(insertedSzerzodesesJogviszonyok.getId().intValue()))
+            .andExpect(jsonPath("$.values['jogviszony.azonosito']").value(DEFAULT_SZERZODES_AZONOSITO))
+            .andExpect(jsonPath("$.definitions").isArray());
     }
 
     @Test

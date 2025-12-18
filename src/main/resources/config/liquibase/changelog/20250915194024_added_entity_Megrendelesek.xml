@@ -41,7 +41,7 @@
             <column name="dij_osszege" type="decimal(21,2)">
                 <constraints nullable="true" />
             </column>
-            <column name="megrendeles_dokumentum_generalta" type="boolean">
+            <column name="megrendeles_dokumentum_generalta" type="varchar(30)">
                 <constraints nullable="true" />
             </column>
             <column name="ugyfel_megrendeles_id" type="bigint">
@@ -83,7 +83,7 @@
             <column name="devizanem" type="string"/>
             <column name="dijazas_tipusa" type="string"/>
             <column name="dij_osszege" type="numeric"/>
-            <column name="megrendeles_dokumentum_generalta" type="boolean"/>
+            <column name="megrendeles_dokumentum_generalta" type="string"/>
             <column name="ugyfel_megrendeles_id" type="numeric"/>
             <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
         </loadData>

@@ -1,5 +1,6 @@
 package com.fintech.erp.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -16,6 +17,28 @@ public class PartnerCegMunkavallalokDTO implements Serializable {
     private PartnerCegAdatokDTO partnerCeg;
 
     private MaganszemelyekDTO maganszemely;
+
+    @JsonProperty("partnerCegId")
+    private Long partnerCegId;
+
+    @JsonProperty("maganszemelyId")
+    private Long maganszemelyId;
+
+    public Long getPartnerCegId() {
+        return partnerCegId;
+    }
+
+    public void setPartnerCegId(Long partnerCegId) {
+        this.partnerCegId = partnerCegId;
+    }
+
+    public Long getMaganszemelyId() {
+        return maganszemelyId;
+    }
+
+    public void setMaganszemelyId(Long maganszemelyId) {
+        this.maganszemelyId = maganszemelyId;
+    }
 
     public Long getId() {
         return id;
@@ -75,9 +98,11 @@ public class PartnerCegMunkavallalokDTO implements Serializable {
     public String toString() {
         return "PartnerCegMunkavallalokDTO{" +
             "id=" + getId() +
-            ", statusz='" + getStatusz() + "'" +
+            ", statusz='" + getStatusz() + '\'' +
             ", partnerCeg=" + getPartnerCeg() +
             ", maganszemely=" + getMaganszemely() +
-            "}";
+            ", partnerCegId=" + getPartnerCegId() +
+            ", maganszemelyId=" + getMaganszemelyId() +
+            '}';
     }
 }

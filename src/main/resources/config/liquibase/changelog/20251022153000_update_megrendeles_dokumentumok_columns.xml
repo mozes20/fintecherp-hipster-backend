@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20251022153000-1" author="copilot">
+        <addColumn tableName="megrendeles_dokumentumok">
+            <column name="dokumentum_url" type="varchar(1024)"/>
+            <column name="dokumentum_azonosito" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+</databaseChangeLog>

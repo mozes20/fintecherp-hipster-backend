@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity SzerzodesesJogviszonyDokumentum.
+    -->
+    <changeSet id="20251021120002-1" author="copilot">
+        <createTable tableName="szerzodeses_jogviszony_dokumentum">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dokumentum_nev" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="leiras" type="varchar(1024)"/>
+            <column name="fajl_utvonal" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_type" type="varchar(255)"/>
+            <column name="feltoltes_ideje" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="szerzodeses_jogviszony_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dokumentum_tipus_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20251021120002-2" author="copilot">
+        <addForeignKeyConstraint
+            baseColumnNames="szerzodeses_jogviszony_id"
+            baseTableName="szerzodeses_jogviszony_dokumentum"
+            constraintName="fk_dokumentum_jogviszony"
+            referencedColumnNames="id"
+            referencedTableName="szerzodeses_jogviszonyok"/>
+        <addForeignKeyConstraint
+            baseColumnNames="dokumentum_tipus_id"
+            baseTableName="szerzodeses_jogviszony_dokumentum"
+            constraintName="fk_dokumentum_tipus"
+            referencedColumnNames="id"
+            referencedTableName="szerzodes_dokumentum_tipus"/>
+        <createIndex indexName="idx_dokumentum_jogviszony" tableName="szerzodeses_jogviszony_dokumentum">
+            <column name="szerzodeses_jogviszony_id"/>
+        </createIndex>
+        <createIndex indexName="idx_dokumentum_tipus" tableName="szerzodeses_jogviszony_dokumentum">
+            <column name="dokumentum_tipus_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

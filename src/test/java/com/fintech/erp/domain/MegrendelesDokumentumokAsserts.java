@@ -57,7 +57,11 @@ public class MegrendelesDokumentumokAsserts {
         assertThat(actual)
             .as("Verify MegrendelesDokumentumok relevant properties")
             .satisfies(a -> assertThat(a.getDokumentumTipusa()).as("check dokumentumTipusa").isEqualTo(expected.getDokumentumTipusa()))
-            .satisfies(a -> assertThat(a.getDokumentum()).as("check dokumentum").isEqualTo(expected.getDokumentum()));
+            .satisfies(a -> assertThat(a.getDokumentum()).as("check dokumentum").isEqualTo(expected.getDokumentum()))
+            .satisfies(a -> assertThat(a.getDokumentumUrl()).as("check dokumentumUrl").isEqualTo(expected.getDokumentumUrl()))
+            .satisfies(a ->
+                assertThat(a.getDokumentumAzonosito()).as("check dokumentumAzonosito").isEqualTo(expected.getDokumentumAzonosito())
+            );
     }
 
     /**

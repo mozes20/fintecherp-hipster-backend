@@ -57,9 +57,15 @@ public class MegrendelesekAsserts {
                     .as("check feladatReszletesLeirasa")
                     .isEqualTo(expected.getFeladatReszletesLeirasa())
             )
+            .satisfies(a ->
+                assertThat(a.getSzallitasraKeruloTetelek())
+                    .as("check szallitasraKeruloTetelek")
+                    .isEqualTo(expected.getSzallitasraKeruloTetelek())
+            )
             .satisfies(a -> assertThat(a.getMegrendelesKezdete()).as("check megrendelesKezdete").isEqualTo(expected.getMegrendelesKezdete())
             )
             .satisfies(a -> assertThat(a.getMegrendelesVege()).as("check megrendelesVege").isEqualTo(expected.getMegrendelesVege()))
+            .satisfies(a -> assertThat(a.getMegrendelesDatuma()).as("check megrendelesDatuma").isEqualTo(expected.getMegrendelesDatuma()))
             .satisfies(a ->
                 assertThat(a.getResztvevoKollagaTipusa()).as("check resztvevoKollagaTipusa").isEqualTo(expected.getResztvevoKollagaTipusa())
             )
@@ -78,7 +84,9 @@ public class MegrendelesekAsserts {
             )
             .satisfies(a ->
                 assertThat(a.getUgyfelMegrendelesId()).as("check ugyfelMegrendelesId").isEqualTo(expected.getUgyfelMegrendelesId())
-            );
+            )
+            .satisfies(a -> assertThat(a.getMegrendelesSzam()).as("check megrendelesSzam").isEqualTo(expected.getMegrendelesSzam()))
+            .satisfies(a -> assertThat(a.getMunkakorId()).as("check munkakorId").isEqualTo(expected.getMunkakorId()));
     }
 
     /**

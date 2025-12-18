@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+    <changeSet id="20251105194500-1" author="github-copilot">
+        <createTable tableName="munkakorok">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_munkakorok"/>
+            </column>
+            <column name="munkakor_kod" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="munkakor_neve" type="text"/>
+            <column name="munkakor_feladatai" type="text"/>
+            <column name="munkakor_szaktudasai" type="text"/>
+            <column name="efo_munkakor" type="boolean"/>
+        </createTable>
+        <addUniqueConstraint tableName="munkakorok" columnNames="munkakor_kod" constraintName="uk_munkakorok_kod"/>
+    </changeSet>
+
+</databaseChangeLog>

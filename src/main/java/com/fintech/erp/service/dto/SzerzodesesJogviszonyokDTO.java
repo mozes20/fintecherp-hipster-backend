@@ -1,5 +1,8 @@
 package com.fintech.erp.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -12,15 +15,27 @@ public class SzerzodesesJogviszonyokDTO implements Serializable {
 
     private Long id;
 
+    @JsonAlias("szerzodesesAzonosito")
+    @NotBlank
     private String szerzodesAzonosito;
 
+    @NotNull
     private LocalDate jogviszonyKezdete;
 
+    @NotNull
     private LocalDate jogviszonyLejarata;
 
     private CegAlapadatokDTO megrendeloCeg;
 
     private CegAlapadatokDTO vallalkozoCeg;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("megrendeloCegId")
+    @NotNull
+    private Long megrendeloCegId;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("vallalkozoCegId")
+    @NotNull
+    private Long vallalkozoCegId;
 
     public Long getId() {
         return id;
@@ -62,12 +77,28 @@ public class SzerzodesesJogviszonyokDTO implements Serializable {
         this.megrendeloCeg = megrendeloCeg;
     }
 
+    public Long getMegrendeloCegId() {
+        return megrendeloCegId;
+    }
+
+    public void setMegrendeloCegId(Long megrendeloCegId) {
+        this.megrendeloCegId = megrendeloCegId;
+    }
+
     public CegAlapadatokDTO getVallalkozoCeg() {
         return vallalkozoCeg;
     }
 
     public void setVallalkozoCeg(CegAlapadatokDTO vallalkozoCeg) {
         this.vallalkozoCeg = vallalkozoCeg;
+    }
+
+    public Long getVallalkozoCegId() {
+        return vallalkozoCegId;
+    }
+
+    public void setVallalkozoCegId(Long vallalkozoCegId) {
+        this.vallalkozoCegId = vallalkozoCegId;
     }
 
     @Override

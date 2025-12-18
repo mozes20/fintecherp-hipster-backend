@@ -1,11 +1,11 @@
 id;megrendeles_tipusa;feladat_rovid_leirasa;feladat_reszletes_leirasa;megrendeles_kezdete;megrendeles_vege;resztvevo_kollaga_tipusa;devizanem;dijazas_tipusa;dij_osszege;megrendeles_dokumentum_generalta;ugyfel_megrendeles_id
-1;midwife;gym in vacation;in-joke bah unabashedly;2025-09-15;2025-09-15;behind;fantastic utterly;indolent forage as;987.91;true;32002
-2;ugh outside;furthermore while um;glossy energetically everlasting;2025-09-14;2025-09-14;what;iridescence good hm;furthermore;8620.31;true;5879
-3;reassuringly wedge;because from;decryption powerful neglect;2025-09-14;2025-09-15;boo sometimes crank;snoopy obscure;valuable however;22897.32;false;3405
-4;frankly encode;sweetly hovel;disadvantage astride reward;2025-09-15;2025-09-14;er irritably times;hourly misreport best;haircut so dearest;23635.06;false;29407
-5;saturate;executor roundabout antagonize;tuxedo;2025-09-14;2025-09-15;or;even;elementary oof;15752.05;false;23114
-6;yowza memorise;conjecture fluffy;signature sate;2025-09-15;2025-09-15;above sashay conservative;jaywalk excluding cardboard;messy tinted;8111.52;true;8143
-7;cow alongside presell;when ostrich but;jet jagged;2025-09-15;2025-09-15;record or carelessly;white meanwhile tributary;unaccountably palatable soggy;23421.34;true;31185
-8;hm cheerful barring;rapidly though;impact;2025-09-15;2025-09-15;yowza mediocre;alongside during;gah variable awkwardly;1640.63;false;10128
-9;till optimal worthwhile;heartfelt hyena flowery;humor;2025-09-15;2025-09-15;sympathetically so;aside trek wisecrack;yuck;10479.15;false;15391
-10;whose whether coordinated;aware;pricey athwart;2025-09-15;2025-09-15;pacemaker palatable;lamp instead sermon;whereas reborn joyfully;11064.13;true;23554
+1;midwife;gym in vacation;in-joke bah unabashedly;2025-09-15;2025-09-15;behind;fantastic utterly;indolent forage as;987.91;GENERALTA;32002
+2;ugh outside;furthermore while um;glossy energetically everlasting;2025-09-14;2025-09-14;what;iridescence good hm;furthermore;8620.31;GENERALTA;5879
+3;reassuringly wedge;because from;decryption powerful neglect;2025-09-14;2025-09-15;boo sometimes crank;snoopy obscure;valuable however;22897.32;KEZI;3405
+4;frankly encode;sweetly hovel;disadvantage astride reward;2025-09-15;2025-09-14;er irritably times;hourly misreport best;haircut so dearest;23635.06;KEZI;29407
+5;saturate;executor roundabout antagonize;tuxedo;2025-09-14;2025-09-15;or;even;elementary oof;15752.05;KEZI;23114
+6;yowza memorise;conjecture fluffy;signature sate;2025-09-15;2025-09-15;above sashay conservative;jaywalk excluding cardboard;messy tinted;8111.52;GENERALTA;8143
+7;cow alongside presell;when ostrich but;jet jagged;2025-09-15;2025-09-15;record or carelessly;white meanwhile tributary;unaccountably palatable soggy;23421.34;GENERALTA;31185
+8;hm cheerful barring;rapidly though;impact;2025-09-15;2025-09-15;yowza mediocre;alongside during;gah variable awkwardly;1640.63;KEZI;10128
+9;till optimal worthwhile;heartfelt hyena flowery;humor;2025-09-15;2025-09-15;sympathetically so;aside trek wisecrack;yuck;10479.15;KEZI;15391
+10;whose whether coordinated;aware;pricey athwart;2025-09-15;2025-09-15;pacemaker palatable;lamp instead sermon;whereas reborn joyfully;11064.13;GENERALTA;23554

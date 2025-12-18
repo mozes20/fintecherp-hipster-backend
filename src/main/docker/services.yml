@@ -9,3 +9,7 @@ services:
     extends:
       file: ./keycloak.yml
       service: keycloak
+  gotenberg:
+    extends:
+      file: ./gotenberg.yml
+      service: gotenberg

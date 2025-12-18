@@ -1,7 +1,9 @@
 package com.fintech.erp.service;
 
-import com.fintech.erp.domain.*; // for static metamodels
+import com.fintech.erp.domain.Maganszemelyek_;
 import com.fintech.erp.domain.Megrendelesek;
+import com.fintech.erp.domain.Megrendelesek_; // for static metamodels
+import com.fintech.erp.domain.SzerzodesesJogviszonyok_;
 import com.fintech.erp.repository.MegrendelesekRepository;
 import com.fintech.erp.service.criteria.MegrendelesekCriteria;
 import com.fintech.erp.service.dto.MegrendelesekDTO;
@@ -70,28 +72,87 @@ public class MegrendelesekQueryService extends QueryService<Megrendelesek> {
     protected Specification<Megrendelesek> createSpecification(MegrendelesekCriteria criteria) {
         Specification<Megrendelesek> specification = Specification.where(null);
         if (criteria != null) {
-            // This has to be called first, because the distinct method returns null
-            specification = Specification.allOf(
-                Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
-                buildRangeSpecification(criteria.getId(), Megrendelesek_.id),
-                buildStringSpecification(criteria.getMegrendelesTipusa(), Megrendelesek_.megrendelesTipusa),
-                buildStringSpecification(criteria.getFeladatRovidLeirasa(), Megrendelesek_.feladatRovidLeirasa),
-                buildStringSpecification(criteria.getFeladatReszletesLeirasa(), Megrendelesek_.feladatReszletesLeirasa),
-                buildRangeSpecification(criteria.getMegrendelesKezdete(), Megrendelesek_.megrendelesKezdete),
-                buildRangeSpecification(criteria.getMegrendelesVege(), Megrendelesek_.megrendelesVege),
-                buildStringSpecification(criteria.getResztvevoKollagaTipusa(), Megrendelesek_.resztvevoKollagaTipusa),
-                buildStringSpecification(criteria.getDevizanem(), Megrendelesek_.devizanem),
-                buildStringSpecification(criteria.getDijazasTipusa(), Megrendelesek_.dijazasTipusa),
-                buildRangeSpecification(criteria.getDijOsszege(), Megrendelesek_.dijOsszege),
-                buildSpecification(criteria.getMegrendelesDokumentumGeneralta(), Megrendelesek_.megrendelesDokumentumGeneralta),
-                buildRangeSpecification(criteria.getUgyfelMegrendelesId(), Megrendelesek_.ugyfelMegrendelesId),
-                buildSpecification(criteria.getSzerzodesesJogviszonyId(), root ->
-                    root.join(Megrendelesek_.szerzodesesJogviszony, JoinType.LEFT).get(SzerzodesesJogviszonyok_.id)
-                ),
-                buildSpecification(criteria.getMaganszemelyId(), root ->
-                    root.join(Megrendelesek_.maganszemely, JoinType.LEFT).get(Maganszemelyek_.id)
-                )
-            );
+            if (criteria.getDistinct() != null) {
+                specification = specification.and(distinct(criteria.getDistinct()));
+            }
+            if (criteria.getId() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getId(), Megrendelesek_.id));
+            }
+            if (criteria.getMegrendelesTipusa() != null) {
+                specification = specification.and(buildSpecification(criteria.getMegrendelesTipusa(), Megrendelesek_.megrendelesTipusa));
+            }
+            if (criteria.getFeladatRovidLeirasa() != null) {
+                specification = specification.and(
+                    buildStringSpecification(criteria.getFeladatRovidLeirasa(), Megrendelesek_.feladatRovidLeirasa)
+                );
+            }
+            if (criteria.getFeladatReszletesLeirasa() != null) {
+                specification = specification.and(
+                    buildStringSpecification(criteria.getFeladatReszletesLeirasa(), Megrendelesek_.feladatReszletesLeirasa)
+                );
+            }
+            if (criteria.getMegrendelesDatuma() != null) {
+                specification = specification.and(
+                    buildRangeSpecification(criteria.getMegrendelesDatuma(), Megrendelesek_.megrendelesDatuma)
+                );
+            }
+            if (criteria.getMegrendelesKezdete() != null) {
+                specification = specification.and(
+                    buildRangeSpecification(criteria.getMegrendelesKezdete(), Megrendelesek_.megrendelesKezdete)
+                );
+            }
+            if (criteria.getMegrendelesVege() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getMegrendelesVege(), Megrendelesek_.megrendelesVege));
+            }
+            if (criteria.getResztvevoKollagaTipusa() != null) {
+                specification = specification.and(
+                    buildSpecification(criteria.getResztvevoKollagaTipusa(), Megrendelesek_.resztvevoKollagaTipusa)
+                );
+            }
+            if (criteria.getDevizanem() != null) {
+                specification = specification.and(buildSpecification(criteria.getDevizanem(), Megrendelesek_.devizanem));
+            }
+            if (criteria.getDijazasTipusa() != null) {
+                specification = specification.and(buildSpecification(criteria.getDijazasTipusa(), Megrendelesek_.dijazasTipusa));
+            }
+            if (criteria.getDijOsszege() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getDijOsszege(), Megrendelesek_.dijOsszege));
+            }
+            if (criteria.getSzallitasraKeruloTetelek() != null) {
+                specification = specification.and(
+                    buildStringSpecification(criteria.getSzallitasraKeruloTetelek(), Megrendelesek_.szallitasraKeruloTetelek)
+                );
+            }
+            if (criteria.getMegrendelesDokumentumGeneralta() != null) {
+                specification = specification.and(
+                    buildSpecification(criteria.getMegrendelesDokumentumGeneralta(), Megrendelesek_.megrendelesDokumentumGeneralta)
+                );
+            }
+            if (criteria.getUgyfelMegrendelesId() != null) {
+                specification = specification.and(
+                    buildRangeSpecification(criteria.getUgyfelMegrendelesId(), Megrendelesek_.ugyfelMegrendelesId)
+                );
+            }
+            if (criteria.getMegrendelesSzam() != null) {
+                specification = specification.and(buildStringSpecification(criteria.getMegrendelesSzam(), Megrendelesek_.megrendelesSzam));
+            }
+            if (criteria.getMunkakorId() != null) {
+                specification = specification.and(buildRangeSpecification(criteria.getMunkakorId(), Megrendelesek_.munkakorId));
+            }
+            if (criteria.getSzerzodesesJogviszonyId() != null) {
+                specification = specification.and(
+                    buildSpecification(criteria.getSzerzodesesJogviszonyId(), root ->
+                        root.join(Megrendelesek_.szerzodesesJogviszony, JoinType.LEFT).get(SzerzodesesJogviszonyok_.id)
+                    )
+                );
+            }
+            if (criteria.getMaganszemelyId() != null) {
+                specification = specification.and(
+                    buildSpecification(criteria.getMaganszemelyId(), root ->
+                        root.join(Megrendelesek_.maganszemely, JoinType.LEFT).get(Maganszemelyek_.id)
+                    )
+                );
+            }
         }
         return specification;
     }

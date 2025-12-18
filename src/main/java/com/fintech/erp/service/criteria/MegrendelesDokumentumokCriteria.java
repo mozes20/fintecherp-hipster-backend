@@ -1,11 +1,14 @@
 package com.fintech.erp.service.criteria;
 
+import com.fintech.erp.domain.enumeration.MegrendelesDokumentumTipus;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 import org.springdoc.core.annotations.ParameterObject;
 import tech.jhipster.service.Criteria;
-import tech.jhipster.service.filter.*;
+import tech.jhipster.service.filter.Filter;
+import tech.jhipster.service.filter.LongFilter;
+import tech.jhipster.service.filter.StringFilter;
 
 /**
  * Criteria class for the {@link com.fintech.erp.domain.MegrendelesDokumentumok} entity. This class is used
@@ -22,11 +25,29 @@ public class MegrendelesDokumentumokCriteria implements Serializable, Criteria {
 
     private static final long serialVersionUID = 1L;
 
+    public static class MegrendelesDokumentumTipusFilter extends Filter<MegrendelesDokumentumTipus> {
+
+        public MegrendelesDokumentumTipusFilter() {}
+
+        public MegrendelesDokumentumTipusFilter(MegrendelesDokumentumTipusFilter filter) {
+            super(filter);
+        }
+
+        @Override
+        public MegrendelesDokumentumTipusFilter copy() {
+            return new MegrendelesDokumentumTipusFilter(this);
+        }
+    }
+
     private LongFilter id;
 
-    private StringFilter dokumentumTipusa;
+    private MegrendelesDokumentumTipusFilter dokumentumTipusa;
 
     private StringFilter dokumentum;
+
+    private StringFilter dokumentumUrl;
+
+    private StringFilter dokumentumAzonosito;
 
     private LongFilter megrendelesId;
 
@@ -36,8 +57,10 @@ public class MegrendelesDokumentumokCriteria implements Serializable, Criteria {
 
     public MegrendelesDokumentumokCriteria(MegrendelesDokumentumokCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
-        this.dokumentumTipusa = other.optionalDokumentumTipusa().map(StringFilter::copy).orElse(null);
+        this.dokumentumTipusa = other.optionalDokumentumTipusa().map(MegrendelesDokumentumTipusFilter::copy).orElse(null);
         this.dokumentum = other.optionalDokumentum().map(StringFilter::copy).orElse(null);
+        this.dokumentumUrl = other.optionalDokumentumUrl().map(StringFilter::copy).orElse(null);
+        this.dokumentumAzonosito = other.optionalDokumentumAzonosito().map(StringFilter::copy).orElse(null);
         this.megrendelesId = other.optionalMegrendelesId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
@@ -66,22 +89,22 @@ public class MegrendelesDokumentumokCriteria implements Serializable, Criteria {
         this.id = id;
     }
 
-    public StringFilter getDokumentumTipusa() {
+    public MegrendelesDokumentumTipusFilter getDokumentumTipusa() {
         return dokumentumTipusa;
     }
 
-    public Optional<StringFilter> optionalDokumentumTipusa() {
+    public Optional<MegrendelesDokumentumTipusFilter> optionalDokumentumTipusa() {
         return Optional.ofNullable(dokumentumTipusa);
     }
 
-    public StringFilter dokumentumTipusa() {
+    public MegrendelesDokumentumTipusFilter dokumentumTipusa() {
         if (dokumentumTipusa == null) {
-            setDokumentumTipusa(new StringFilter());
+            setDokumentumTipusa(new MegrendelesDokumentumTipusFilter());
         }
         return dokumentumTipusa;
     }
 
-    public void setDokumentumTipusa(StringFilter dokumentumTipusa) {
+    public void setDokumentumTipusa(MegrendelesDokumentumTipusFilter dokumentumTipusa) {
         this.dokumentumTipusa = dokumentumTipusa;
     }
 
@@ -102,6 +125,44 @@ public class MegrendelesDokumentumokCriteria implements Serializable, Criteria {
 
     public void setDokumentum(StringFilter dokumentum) {
         this.dokumentum = dokumentum;
+    }
+
+    public StringFilter getDokumentumUrl() {
+        return dokumentumUrl;
+    }
+
+    public Optional<StringFilter> optionalDokumentumUrl() {
+        return Optional.ofNullable(dokumentumUrl);
+    }
+
+    public StringFilter dokumentumUrl() {
+        if (dokumentumUrl == null) {
+            setDokumentumUrl(new StringFilter());
+        }
+        return dokumentumUrl;
+    }
+
+    public void setDokumentumUrl(StringFilter dokumentumUrl) {
+        this.dokumentumUrl = dokumentumUrl;
+    }
+
+    public StringFilter getDokumentumAzonosito() {
+        return dokumentumAzonosito;
+    }
+
+    public Optional<StringFilter> optionalDokumentumAzonosito() {
+        return Optional.ofNullable(dokumentumAzonosito);
+    }
+
+    public StringFilter dokumentumAzonosito() {
+        if (dokumentumAzonosito == null) {
+            setDokumentumAzonosito(new StringFilter());
+        }
+        return dokumentumAzonosito;
+    }
+
+    public void setDokumentumAzonosito(StringFilter dokumentumAzonosito) {
+        this.dokumentumAzonosito = dokumentumAzonosito;
     }
 
     public LongFilter getMegrendelesId() {
@@ -155,6 +216,8 @@ public class MegrendelesDokumentumokCriteria implements Serializable, Criteria {
             Objects.equals(id, that.id) &&
             Objects.equals(dokumentumTipusa, that.dokumentumTipusa) &&
             Objects.equals(dokumentum, that.dokumentum) &&
+            Objects.equals(dokumentumUrl, that.dokumentumUrl) &&
+            Objects.equals(dokumentumAzonosito, that.dokumentumAzonosito) &&
             Objects.equals(megrendelesId, that.megrendelesId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -162,7 +225,7 @@ public class MegrendelesDokumentumokCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dokumentumTipusa, dokumentum, megrendelesId, distinct);
+        return Objects.hash(id, dokumentumTipusa, dokumentum, dokumentumUrl, dokumentumAzonosito, megrendelesId, distinct);
     }
 
     // prettier-ignore
@@ -172,6 +235,8 @@ public class MegrendelesDokumentumokCriteria implements Serializable, Criteria {
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalDokumentumTipusa().map(f -> "dokumentumTipusa=" + f + ", ").orElse("") +
             optionalDokumentum().map(f -> "dokumentum=" + f + ", ").orElse("") +
+            optionalDokumentumUrl().map(f -> "dokumentumUrl=" + f + ", ").orElse("") +
+            optionalDokumentumAzonosito().map(f -> "dokumentumAzonosito=" + f + ", ").orElse("") +
             optionalMegrendelesId().map(f -> "megrendelesId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";

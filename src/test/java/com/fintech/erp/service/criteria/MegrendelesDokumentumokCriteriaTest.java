@@ -78,6 +78,8 @@ class MegrendelesDokumentumokCriteriaTest {
         megrendelesDokumentumokCriteria.id();
         megrendelesDokumentumokCriteria.dokumentumTipusa();
         megrendelesDokumentumokCriteria.dokumentum();
+        megrendelesDokumentumokCriteria.dokumentumUrl();
+        megrendelesDokumentumokCriteria.dokumentumAzonosito();
         megrendelesDokumentumokCriteria.megrendelesId();
         megrendelesDokumentumokCriteria.distinct();
     }
@@ -88,6 +90,8 @@ class MegrendelesDokumentumokCriteriaTest {
                 condition.apply(criteria.getId()) &&
                 condition.apply(criteria.getDokumentumTipusa()) &&
                 condition.apply(criteria.getDokumentum()) &&
+                condition.apply(criteria.getDokumentumUrl()) &&
+                condition.apply(criteria.getDokumentumAzonosito()) &&
                 condition.apply(criteria.getMegrendelesId()) &&
                 condition.apply(criteria.getDistinct()),
             "every filter matches"
@@ -103,6 +107,8 @@ class MegrendelesDokumentumokCriteriaTest {
                 condition.apply(criteria.getId(), copy.getId()) &&
                 condition.apply(criteria.getDokumentumTipusa(), copy.getDokumentumTipusa()) &&
                 condition.apply(criteria.getDokumentum(), copy.getDokumentum()) &&
+                condition.apply(criteria.getDokumentumUrl(), copy.getDokumentumUrl()) &&
+                condition.apply(criteria.getDokumentumAzonosito(), copy.getDokumentumAzonosito()) &&
                 condition.apply(criteria.getMegrendelesId(), copy.getMegrendelesId()) &&
                 condition.apply(criteria.getDistinct(), copy.getDistinct()),
             "every filter matches"

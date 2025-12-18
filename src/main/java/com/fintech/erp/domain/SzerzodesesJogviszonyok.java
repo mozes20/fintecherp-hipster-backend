@@ -1,6 +1,7 @@
 package com.fintech.erp.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.time.LocalDate;
 import org.hibernate.annotations.Cache;
@@ -23,19 +24,24 @@ public class SzerzodesesJogviszonyok implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "szerzodes_azonosito")
+    @NotNull
+    @Column(name = "szerzodes_azonosito", nullable = false, unique = true)
     private String szerzodesAzonosito;
 
-    @Column(name = "jogviszony_kezdete")
+    @NotNull
+    @Column(name = "jogviszony_kezdete", nullable = false)
     private LocalDate jogviszonyKezdete;
 
-    @Column(name = "jogviszony_lejarata")
+    @NotNull
+    @Column(name = "jogviszony_lejarata", nullable = false)
     private LocalDate jogviszonyLejarata;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private CegAlapadatok megrendeloCeg;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private CegAlapadatok vallalkozoCeg;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
