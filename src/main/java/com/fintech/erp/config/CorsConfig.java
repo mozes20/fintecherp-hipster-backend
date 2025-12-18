@@ -1,6 +1,5 @@
 package com.fintech.erp.config;
 
-import java.util.Arrays;
 import java.util.Collections;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,15 +13,9 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Allowed origins for local development - add your frontend host(s) here
-        config.setAllowedOrigins(
-            Arrays.asList(
-                "http://localhost:9000",
-                "http://127.0.0.1:9000, http://localhost:3000",
-                "http://localhost:4200, https://mikroclouds.hu,https://www.mikroclouds.hu"
-            )
-        );
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        // Allow all origins
+        config.setAllowedOriginPatterns(Collections.singletonList("*"));
+        config.setAllowedMethods(Collections.singletonList("*"));
         config.setAllowedHeaders(Collections.singletonList("*"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
