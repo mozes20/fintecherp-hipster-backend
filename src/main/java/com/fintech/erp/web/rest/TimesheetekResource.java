@@ -343,7 +343,7 @@ public class TimesheetekResource {
                         .orElseThrow(() -> new BadRequestAlertException("Nem sikerült azonosítani a felhasználót",
                                 ENTITY_NAME, "usernotfound"));
 
-                if (!existing.get().getUserLogin().equals(currentUserLogin)) {
+                if (!existing.orElseThrow().getUserLogin().equals(currentUserLogin)) {
                     throw new BadRequestAlertException("Nem törölheted más felhasználó timesheet-jét", ENTITY_NAME,
                             "forbidden");
                 }
