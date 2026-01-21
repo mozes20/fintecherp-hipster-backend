@@ -24,7 +24,8 @@ public final class SecurityUtils {
 
     public static final String CLAIMS_NAMESPACE = "https://www.jhipster.tech/";
 
-    private SecurityUtils() {}
+    private SecurityUtils() {
+    }
 
     /**
      * Get the login of the current user.
@@ -61,7 +62,8 @@ public final class SecurityUtils {
      */
     public static boolean isAuthenticated() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && getAuthorities(authentication).noneMatch(AuthoritiesConstants.ANONYMOUS::equals);
+        return authentication != null
+                && getAuthorities(authentication).noneMatch(AuthoritiesConstants.ANONYMOUS::equals);
     }
 
     /**
@@ -72,16 +74,16 @@ public final class SecurityUtils {
      */
     public static boolean hasCurrentUserAnyOfAuthorities(String... authorities) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (
-            authentication != null && getAuthorities(authentication).anyMatch(authority -> Arrays.asList(authorities).contains(authority))
-        );
+        return (authentication != null && getAuthorities(authentication)
+                .anyMatch(authority -> Arrays.asList(authorities).contains(authority)));
     }
 
     /**
      * Checks if the current user has none of the authorities.
      *
      * @param authorities the authorities to check.
-     * @return true if the current user has none of the authorities, false otherwise.
+     * @return true if the current user has none of the authorities, false
+     *         otherwise.
      */
     public static boolean hasCurrentUserNoneOfAuthorities(String... authorities) {
         return !hasCurrentUserAnyOfAuthorities(authorities);
@@ -98,10 +100,9 @@ public final class SecurityUtils {
     }
 
     private static Stream<String> getAuthorities(Authentication authentication) {
-        Collection<? extends GrantedAuthority> authorities = authentication instanceof JwtAuthenticationToken
-            ? extractAuthorityFromClaims(((JwtAuthenticationToken) authentication).getToken().getClaims())
-            : authentication.getAuthorities();
-        return authorities.stream().map(GrantedAuthority::getAuthority);
+        // Közvetlenül használjuk az authentication.getAuthorities()-t
+        // A Spring Security JWT filter már feldolgozta a JWT claims-eket
+        return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
     }
 
     public static List<GrantedAuthority> extractAuthorityFromClaims(Map<String, Object> claims) {
@@ -111,12 +112,12 @@ public final class SecurityUtils {
     @SuppressWarnings("unchecked")
     private static Collection<String> getRolesFromClaims(Map<String, Object> claims) {
         return (Collection<String>) claims.getOrDefault(
-            "groups",
-            claims.getOrDefault("roles", claims.getOrDefault(CLAIMS_NAMESPACE + "roles", new ArrayList<>()))
-        );
+                "groups",
+                claims.getOrDefault("roles", claims.getOrDefault(CLAIMS_NAMESPACE + "roles", new ArrayList<>())));
     }
 
     private static List<GrantedAuthority> mapRolesToGrantedAuthorities(Collection<String> roles) {
-        return roles.stream().filter(role -> role.startsWith("ROLE_")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        return roles.stream().filter(role -> role.startsWith("ROLE_")).map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
     }
 }

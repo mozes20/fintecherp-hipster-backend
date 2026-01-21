@@ -26,9 +26,13 @@ public class TimesheetekCriteria implements Serializable, Criteria {
 
     private LocalDateFilter datum;
 
+    private StringFilter userLogin;
+
     private StringFilter munkanapStatusza;
 
     private StringFilter statusz;
+
+    private IntegerFilter oraMennyiseg;
 
     private LongFilter munkavallaloId;
 
@@ -39,8 +43,10 @@ public class TimesheetekCriteria implements Serializable, Criteria {
     public TimesheetekCriteria(TimesheetekCriteria other) {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.datum = other.optionalDatum().map(LocalDateFilter::copy).orElse(null);
+        this.userLogin = other.optionalUserLogin().map(StringFilter::copy).orElse(null);
         this.munkanapStatusza = other.optionalMunkanapStatusza().map(StringFilter::copy).orElse(null);
         this.statusz = other.optionalStatusz().map(StringFilter::copy).orElse(null);
+        this.oraMennyiseg = other.optionalOraMennyiseg().map(IntegerFilter::copy).orElse(null);
         this.munkavallaloId = other.optionalMunkavallaloId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
@@ -88,6 +94,25 @@ public class TimesheetekCriteria implements Serializable, Criteria {
         this.datum = datum;
     }
 
+    public StringFilter getUserLogin() {
+        return userLogin;
+    }
+
+    public Optional<StringFilter> optionalUserLogin() {
+        return Optional.ofNullable(userLogin);
+    }
+
+    public StringFilter userLogin() {
+        if (userLogin == null) {
+            setUserLogin(new StringFilter());
+        }
+        return userLogin;
+    }
+
+    public void setUserLogin(StringFilter userLogin) {
+        this.userLogin = userLogin;
+    }
+
     public StringFilter getMunkanapStatusza() {
         return munkanapStatusza;
     }
@@ -124,6 +149,25 @@ public class TimesheetekCriteria implements Serializable, Criteria {
 
     public void setStatusz(StringFilter statusz) {
         this.statusz = statusz;
+    }
+
+    public IntegerFilter getOraMennyiseg() {
+        return oraMennyiseg;
+    }
+
+    public Optional<IntegerFilter> optionalOraMennyiseg() {
+        return Optional.ofNullable(oraMennyiseg);
+    }
+
+    public IntegerFilter oraMennyiseg() {
+        if (oraMennyiseg == null) {
+            setOraMennyiseg(new IntegerFilter());
+        }
+        return oraMennyiseg;
+    }
+
+    public void setOraMennyiseg(IntegerFilter oraMennyiseg) {
+        this.oraMennyiseg = oraMennyiseg;
     }
 
     public LongFilter getMunkavallaloId() {
@@ -176,8 +220,10 @@ public class TimesheetekCriteria implements Serializable, Criteria {
         return (
             Objects.equals(id, that.id) &&
             Objects.equals(datum, that.datum) &&
+            Objects.equals(userLogin, that.userLogin) &&
             Objects.equals(munkanapStatusza, that.munkanapStatusza) &&
             Objects.equals(statusz, that.statusz) &&
+            Objects.equals(oraMennyiseg, that.oraMennyiseg) &&
             Objects.equals(munkavallaloId, that.munkavallaloId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -185,7 +231,7 @@ public class TimesheetekCriteria implements Serializable, Criteria {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, datum, munkanapStatusza, statusz, munkavallaloId, distinct);
+        return Objects.hash(id, datum, userLogin, munkanapStatusza, statusz, oraMennyiseg, munkavallaloId, distinct);
     }
 
     // prettier-ignore
@@ -194,8 +240,10 @@ public class TimesheetekCriteria implements Serializable, Criteria {
         return "TimesheetekCriteria{" +
             optionalId().map(f -> "id=" + f + ", ").orElse("") +
             optionalDatum().map(f -> "datum=" + f + ", ").orElse("") +
+            optionalUserLogin().map(f -> "userLogin=" + f + ", ").orElse("") +
             optionalMunkanapStatusza().map(f -> "munkanapStatusza=" + f + ", ").orElse("") +
             optionalStatusz().map(f -> "statusz=" + f + ", ").orElse("") +
+            optionalOraMennyiseg().map(f -> "oraMennyiseg=" + f + ", ").orElse("") +
             optionalMunkavallaloId().map(f -> "munkavallaloId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";

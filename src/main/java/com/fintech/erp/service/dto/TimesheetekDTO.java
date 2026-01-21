@@ -16,9 +16,15 @@ public class TimesheetekDTO implements Serializable {
     @NotNull
     private LocalDate datum;
 
+    private String userLogin;
+
     private String munkanapStatusza;
 
     private String statusz;
+
+    private Integer oraMennyiseg;
+
+    private String megjegyzes;
 
     private MunkavallalokDTO munkavallalo;
 
@@ -38,6 +44,14 @@ public class TimesheetekDTO implements Serializable {
         this.datum = datum;
     }
 
+    public String getUserLogin() {
+        return userLogin;
+    }
+
+    public void setUserLogin(String userLogin) {
+        this.userLogin = userLogin;
+    }
+
     public String getMunkanapStatusza() {
         return munkanapStatusza;
     }
@@ -52,6 +66,22 @@ public class TimesheetekDTO implements Serializable {
 
     public void setStatusz(String statusz) {
         this.statusz = statusz;
+    }
+
+    public Integer getOraMennyiseg() {
+        return oraMennyiseg;
+    }
+
+    public void setOraMennyiseg(Integer oraMennyiseg) {
+        this.oraMennyiseg = oraMennyiseg;
+    }
+
+    public String getMegjegyzes() {
+        return megjegyzes;
+    }
+
+    public void setMegjegyzes(String megjegyzes) {
+        this.megjegyzes = megjegyzes;
     }
 
     public MunkavallalokDTO getMunkavallalo() {
@@ -89,8 +119,11 @@ public class TimesheetekDTO implements Serializable {
         return "TimesheetekDTO{" +
             "id=" + getId() +
             ", datum='" + getDatum() + "'" +
+            ", userLogin='" + getUserLogin() + "'" +
             ", munkanapStatusza='" + getMunkanapStatusza() + "'" +
             ", statusz='" + getStatusz() + "'" +
+            ", oraMennyiseg=" + getOraMennyiseg() +
+            ", megjegyzes='" + getMegjegyzes() + "'" +
             ", munkavallalo=" + getMunkavallalo() +
             "}";
     }

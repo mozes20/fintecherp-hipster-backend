@@ -29,11 +29,21 @@ public class Timesheetek implements Serializable {
     @Column(name = "datum", nullable = false)
     private LocalDate datum;
 
+    @NotNull
+    @Column(name = "user_login", nullable = false)
+    private String userLogin;
+
     @Column(name = "munkanap_statusza")
     private String munkanapStatusza;
 
     @Column(name = "statusz")
     private String statusz;
+
+    @Column(name = "ora_mennyiseg")
+    private Integer oraMennyiseg;
+
+    @Column(name = "megjegyzes", columnDefinition = "TEXT")
+    private String megjegyzes;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "sajatCeg", "maganszemely" }, allowSetters = true)
@@ -67,6 +77,19 @@ public class Timesheetek implements Serializable {
         this.datum = datum;
     }
 
+    public String getUserLogin() {
+        return this.userLogin;
+    }
+
+    public Timesheetek userLogin(String userLogin) {
+        this.setUserLogin(userLogin);
+        return this;
+    }
+
+    public void setUserLogin(String userLogin) {
+        this.userLogin = userLogin;
+    }
+
     public String getMunkanapStatusza() {
         return this.munkanapStatusza;
     }
@@ -91,6 +114,32 @@ public class Timesheetek implements Serializable {
 
     public void setStatusz(String statusz) {
         this.statusz = statusz;
+    }
+
+    public Integer getOraMennyiseg() {
+        return this.oraMennyiseg;
+    }
+
+    public Timesheetek oraMennyiseg(Integer oraMennyiseg) {
+        this.setOraMennyiseg(oraMennyiseg);
+        return this;
+    }
+
+    public void setOraMennyiseg(Integer oraMennyiseg) {
+        this.oraMennyiseg = oraMennyiseg;
+    }
+
+    public String getMegjegyzes() {
+        return this.megjegyzes;
+    }
+
+    public Timesheetek megjegyzes(String megjegyzes) {
+        this.setMegjegyzes(megjegyzes);
+        return this;
+    }
+
+    public void setMegjegyzes(String megjegyzes) {
+        this.megjegyzes = megjegyzes;
     }
 
     public Munkavallalok getMunkavallalo() {
@@ -131,8 +180,11 @@ public class Timesheetek implements Serializable {
         return "Timesheetek{" +
             "id=" + getId() +
             ", datum='" + getDatum() + "'" +
+            ", userLogin='" + getUserLogin() + "'" +
             ", munkanapStatusza='" + getMunkanapStatusza() + "'" +
             ", statusz='" + getStatusz() + "'" +
+            ", oraMennyiseg=" + getOraMennyiseg() +
+            ", megjegyzes='" + getMegjegyzes() + "'" +
             "}";
     }
 }

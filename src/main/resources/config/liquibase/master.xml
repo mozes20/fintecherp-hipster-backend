@@ -36,6 +36,8 @@
     <include file="config/liquibase/changelog/20251021120002_added_entity_SzerzodesesJogviszonyDokumentum.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251021143000_added_entity_MegrendelesDokumentumTemplate.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251201100000_added_entity_EfoDokumentumTemplate.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260120000000_added_entity_WorkingDayTemplate.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260120000001_update_entity_Timesheetek.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20250915192424_added_entity_constraints_Timesheetek.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250915192524_added_entity_constraints_Berek.xml" relativeToChangelogFile="false"/>

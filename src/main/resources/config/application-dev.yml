@@ -98,3 +98,10 @@ application:
     api-key: ${APPLICATION_GOTENBERG_APIKEY:}
     connect-timeout: ${APPLICATION_GOTENBERG_CONNECTTIMEOUT:5s}
     read-timeout: ${APPLICATION_GOTENBERG_READTIMEOUT:60s}
+
+app:
+  security:
+    # WARNING: ONLY FOR DEVELOPMENT! Disable SSL certificate validation
+    # This is needed because the Keycloak SSL certificate has expired (2025-12-20)
+    # Set to 'false' in production!
+    disable-ssl-validation: false
