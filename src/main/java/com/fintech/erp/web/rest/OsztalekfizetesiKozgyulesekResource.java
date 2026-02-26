@@ -4,23 +4,41 @@ import com.fintech.erp.repository.OsztalekfizetesiKozgyulesekRepository;
 import com.fintech.erp.service.OsztalekfizetesiKozgyulesekQueryService;
 import com.fintech.erp.service.OsztalekfizetesiKozgyulesekService;
 import com.fintech.erp.service.criteria.OsztalekfizetesiKozgyulesekCriteria;
+import com.fintech.erp.service.document.OsztalekfizetesiKozgyulesekExcelService;
 import com.fintech.erp.service.dto.OsztalekfizetesiKozgyulesekDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
+import com.fintech.erp.web.rest.vm.OsztalekfizetesiElszamolasExcelRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -46,14 +64,18 @@ public class OsztalekfizetesiKozgyulesekResource {
 
     private final OsztalekfizetesiKozgyulesekQueryService osztalekfizetesiKozgyulesekQueryService;
 
+    private final OsztalekfizetesiKozgyulesekExcelService excelService;
+
     public OsztalekfizetesiKozgyulesekResource(
         OsztalekfizetesiKozgyulesekService osztalekfizetesiKozgyulesekService,
         OsztalekfizetesiKozgyulesekRepository osztalekfizetesiKozgyulesekRepository,
-        OsztalekfizetesiKozgyulesekQueryService osztalekfizetesiKozgyulesekQueryService
+        OsztalekfizetesiKozgyulesekQueryService osztalekfizetesiKozgyulesekQueryService,
+        OsztalekfizetesiKozgyulesekExcelService excelService
     ) {
         this.osztalekfizetesiKozgyulesekService = osztalekfizetesiKozgyulesekService;
         this.osztalekfizetesiKozgyulesekRepository = osztalekfizetesiKozgyulesekRepository;
         this.osztalekfizetesiKozgyulesekQueryService = osztalekfizetesiKozgyulesekQueryService;
+        this.excelService = excelService;
     }
 
     /**
@@ -207,5 +229,118 @@ public class OsztalekfizetesiKozgyulesekResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    // -------------------------------------------------------------------------
+    // Document endpoints
+    // -------------------------------------------------------------------------
+
+    /**
+     * POST /{id}/signed-document : Upload signed assembly minutes for the given meeting.
+     */
+    @PostMapping(value = "/{id}/signed-document", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<OsztalekfizetesiKozgyulesekDTO> uploadSignedDocument(
+        @PathVariable("id") Long id,
+        @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        LOG.debug("REST request to upload signed document for OsztalekfizetesiKozgyulesek : {}", id);
+        try {
+            OsztalekfizetesiKozgyulesekDTO updated = osztalekfizetesiKozgyulesekService.uploadSignedDocument(id, file);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invalidsigneddocument");
+        }
+    }
+
+    /**
+     * GET /{id}/signed-document : Download the signed assembly minutes for the given meeting.
+     */
+    @GetMapping(value = "/{id}/signed-document")
+    public ResponseEntity<Resource> downloadSignedDocument(@PathVariable("id") Long id) throws IOException {
+        LOG.debug("REST request to download signed document for OsztalekfizetesiKozgyulesek : {}", id);
+        Path signedPath = osztalekfizetesiKozgyulesekService
+            .resolveSignedDocumentPath(id)
+            .orElseThrow(() -> new BadRequestAlertException("A kért aláírt dokumentum nem található", ENTITY_NAME, "signeddocnotfound"));
+        Resource resource = new FileSystemResource(signedPath);
+        if (!resource.exists()) {
+            throw new BadRequestAlertException("A kért aláírt dokumentum nem található", ENTITY_NAME, "signeddocnotfound");
+        }
+        String fileName = resource.getFilename();
+        String contentType = fileName != null && fileName.toLowerCase().endsWith(".pdf") ? "application/pdf" : "application/octet-stream";
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(contentType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+            .body(resource);
+    }
+
+    /**
+     * DELETE /{id}/signed-document : Delete the signed assembly minutes for the given meeting.
+     */
+    @DeleteMapping(value = "/{id}/signed-document")
+    public ResponseEntity<Void> deleteSignedDocument(@PathVariable("id") Long id) {
+        LOG.debug("REST request to delete signed document for OsztalekfizetesiKozgyulesek : {}", id);
+        try {
+            osztalekfizetesiKozgyulesekService.deleteSignedDocument(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "invalidsigneddocument");
+        }
+    }
+
+    /**
+     * GET /{id}/generated-document/{fileName} : Download the generated assembly minutes for the given meeting.
+     */
+    @GetMapping(value = "/{id}/generated-document/{fileName:.+}")
+    public ResponseEntity<Resource> downloadGeneratedDocument(@PathVariable("id") Long id, @PathVariable("fileName") String fileName)
+        throws IOException {
+        LOG.debug("REST request to download generated document for OsztalekfizetesiKozgyulesek : {}, file: {}", id, fileName);
+        if (!StringUtils.hasText(fileName) || fileName.contains("..")) {
+            throw new BadRequestAlertException("Érvénytelen fájlnév", ENTITY_NAME, "invalidfilename");
+        }
+        Path documentPath = osztalekfizetesiKozgyulesekService
+            .resolveGeneratedDocumentPath(id, fileName)
+            .orElseThrow(() -> new BadRequestAlertException("A kért dokumentum nem található", ENTITY_NAME, "generateddocnotfound"));
+        Resource resource = new FileSystemResource(documentPath);
+        if (!resource.exists()) {
+            throw new BadRequestAlertException("A kért dokumentum nem található", ENTITY_NAME, "generateddocnotfound");
+        }
+        String contentType = fileName.toLowerCase().endsWith(".pdf") ? "application/pdf" : "application/octet-stream";
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(contentType))
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+            .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+            .header(HttpHeaders.PRAGMA, "no-cache")
+            .header(HttpHeaders.EXPIRES, "0")
+            .body(resource);
+    }
+
+    /**
+     * {@code POST /{id}/excel-export} : Generate the settlement Excel workbook for the given assembly meeting.
+     *
+     * @param id      the id of the OsztalekfizetesiKozgyulesek
+     * @param request optional overhead cost items (can be empty body or null)
+     * @return .xlsx file download
+     */
+    @PostMapping(value = "/{id}/excel-export", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    public ResponseEntity<byte[]> exportElszamolasExcel(
+        @PathVariable("id") Long id,
+        @RequestBody(required = false) OsztalekfizetesiElszamolasExcelRequest request
+    ) throws IOException {
+        LOG.debug("REST request to export Excel for OsztalekfizetesiKozgyulesek : {}", id);
+        if (!osztalekfizetesiKozgyulesekRepository.existsById(id)) {
+            throw new BadRequestAlertException("A közgyűlés nem található", ENTITY_NAME, "idnotfound");
+        }
+        try {
+            byte[] xlsx = excelService.generateExcel(id, request);
+            String fileName = "elszamolas_kozgyules_" + id + ".xlsx";
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentLength(xlsx.length)
+                .body(xlsx);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "excelexporterror");
+        }
     }
 }

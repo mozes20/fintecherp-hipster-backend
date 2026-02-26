@@ -1,9 +1,18 @@
 package com.fintech.erp.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -34,6 +43,24 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
 
     @Column(name = "kozgyulesi_jegyzokonyv_alairt")
     private Boolean kozgyulesiJegyzokonyvAlairt;
+
+    @Column(name = "merleg_foosszeg", precision = 21, scale = 2)
+    private BigDecimal merlegFoosszeg;
+
+    @Column(name = "adozott_eredmeny", precision = 21, scale = 2)
+    private BigDecimal adozottEredmeny;
+
+    @Column(name = "generalt_dokumentum_nev")
+    private String generaltDokumentumNev;
+
+    @Column(name = "generalt_dokumentum_url")
+    private String generaltDokumentumUrl;
+
+    @Column(name = "alairt_dokumentum_nev")
+    private String alairtDokumentumNev;
+
+    @Column(name = "alairt_dokumentum_url")
+    private String alairtDokumentumUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "ceg" }, allowSetters = true)
@@ -93,6 +120,84 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
         this.kozgyulesiJegyzokonyvAlairt = kozgyulesiJegyzokonyvAlairt;
     }
 
+    public BigDecimal getMerlegFoosszeg() {
+        return this.merlegFoosszeg;
+    }
+
+    public OsztalekfizetesiKozgyulesek merlegFoosszeg(BigDecimal merlegFoosszeg) {
+        this.setMerlegFoosszeg(merlegFoosszeg);
+        return this;
+    }
+
+    public void setMerlegFoosszeg(BigDecimal merlegFoosszeg) {
+        this.merlegFoosszeg = merlegFoosszeg;
+    }
+
+    public BigDecimal getAdozottEredmeny() {
+        return this.adozottEredmeny;
+    }
+
+    public OsztalekfizetesiKozgyulesek adozottEredmeny(BigDecimal adozottEredmeny) {
+        this.setAdozottEredmeny(adozottEredmeny);
+        return this;
+    }
+
+    public void setAdozottEredmeny(BigDecimal adozottEredmeny) {
+        this.adozottEredmeny = adozottEredmeny;
+    }
+
+    public String getGeneraltDokumentumNev() {
+        return this.generaltDokumentumNev;
+    }
+
+    public OsztalekfizetesiKozgyulesek generaltDokumentumNev(String generaltDokumentumNev) {
+        this.setGeneraltDokumentumNev(generaltDokumentumNev);
+        return this;
+    }
+
+    public void setGeneraltDokumentumNev(String generaltDokumentumNev) {
+        this.generaltDokumentumNev = generaltDokumentumNev;
+    }
+
+    public String getGeneraltDokumentumUrl() {
+        return this.generaltDokumentumUrl;
+    }
+
+    public OsztalekfizetesiKozgyulesek generaltDokumentumUrl(String generaltDokumentumUrl) {
+        this.setGeneraltDokumentumUrl(generaltDokumentumUrl);
+        return this;
+    }
+
+    public void setGeneraltDokumentumUrl(String generaltDokumentumUrl) {
+        this.generaltDokumentumUrl = generaltDokumentumUrl;
+    }
+
+    public String getAlairtDokumentumNev() {
+        return this.alairtDokumentumNev;
+    }
+
+    public OsztalekfizetesiKozgyulesek alairtDokumentumNev(String alairtDokumentumNev) {
+        this.setAlairtDokumentumNev(alairtDokumentumNev);
+        return this;
+    }
+
+    public void setAlairtDokumentumNev(String alairtDokumentumNev) {
+        this.alairtDokumentumNev = alairtDokumentumNev;
+    }
+
+    public String getAlairtDokumentumUrl() {
+        return this.alairtDokumentumUrl;
+    }
+
+    public OsztalekfizetesiKozgyulesek alairtDokumentumUrl(String alairtDokumentumUrl) {
+        this.setAlairtDokumentumUrl(alairtDokumentumUrl);
+        return this;
+    }
+
+    public void setAlairtDokumentumUrl(String alairtDokumentumUrl) {
+        this.alairtDokumentumUrl = alairtDokumentumUrl;
+    }
+
     public SajatCegAlapadatok getSajatCeg() {
         return this.sajatCeg;
     }
@@ -133,6 +238,12 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
             ", kozgyulesDatum='" + getKozgyulesDatum() + "'" +
             ", kozgyulesiJegyzokonyvGeneralta='" + getKozgyulesiJegyzokonyvGeneralta() + "'" +
             ", kozgyulesiJegyzokonyvAlairt='" + getKozgyulesiJegyzokonyvAlairt() + "'" +
+            ", merlegFoosszeg=" + getMerlegFoosszeg() +
+            ", adozottEredmeny=" + getAdozottEredmeny() +
+            ", generaltDokumentumNev='" + getGeneraltDokumentumNev() + "'" +
+            ", generaltDokumentumUrl='" + getGeneraltDokumentumUrl() + "'" +
+            ", alairtDokumentumNev='" + getAlairtDokumentumNev() + "'" +
+            ", alairtDokumentumUrl='" + getAlairtDokumentumUrl() + "'" +
             "}";
     }
 }

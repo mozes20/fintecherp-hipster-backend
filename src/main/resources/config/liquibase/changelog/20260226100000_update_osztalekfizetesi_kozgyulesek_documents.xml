@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Add document URL fields and financial fields to OsztalekfizetesiKozgyulesek.
+    -->
+    <changeSet id="20260226100000-1" author="dev">
+        <addColumn tableName="osztalekfizetesi_kozgyulesek">
+            <column name="merleg_foosszeg" type="decimal(21,2)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="adozott_eredmeny" type="decimal(21,2)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="generalt_dokumentum_nev" type="varchar(500)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="generalt_dokumentum_url" type="varchar(1000)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="alairt_dokumentum_nev" type="varchar(500)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="alairt_dokumentum_url" type="varchar(1000)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

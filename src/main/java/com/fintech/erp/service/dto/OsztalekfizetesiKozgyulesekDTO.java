@@ -1,7 +1,8 @@
 package com.fintech.erp.service.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -19,6 +20,18 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
     private Boolean kozgyulesiJegyzokonyvGeneralta;
 
     private Boolean kozgyulesiJegyzokonyvAlairt;
+
+    private BigDecimal merlegFoosszeg;
+
+    private BigDecimal adozottEredmeny;
+
+    private String generaltDokumentumNev;
+
+    private String generaltDokumentumUrl;
+
+    private String alairtDokumentumNev;
+
+    private String alairtDokumentumUrl;
 
     private SajatCegAlapadatokDTO sajatCeg;
 
@@ -52,6 +65,54 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
 
     public void setKozgyulesiJegyzokonyvAlairt(Boolean kozgyulesiJegyzokonyvAlairt) {
         this.kozgyulesiJegyzokonyvAlairt = kozgyulesiJegyzokonyvAlairt;
+    }
+
+    public BigDecimal getMerlegFoosszeg() {
+        return merlegFoosszeg;
+    }
+
+    public void setMerlegFoosszeg(BigDecimal merlegFoosszeg) {
+        this.merlegFoosszeg = merlegFoosszeg;
+    }
+
+    public BigDecimal getAdozottEredmeny() {
+        return adozottEredmeny;
+    }
+
+    public void setAdozottEredmeny(BigDecimal adozottEredmeny) {
+        this.adozottEredmeny = adozottEredmeny;
+    }
+
+    public String getGeneraltDokumentumNev() {
+        return generaltDokumentumNev;
+    }
+
+    public void setGeneraltDokumentumNev(String generaltDokumentumNev) {
+        this.generaltDokumentumNev = generaltDokumentumNev;
+    }
+
+    public String getGeneraltDokumentumUrl() {
+        return generaltDokumentumUrl;
+    }
+
+    public void setGeneraltDokumentumUrl(String generaltDokumentumUrl) {
+        this.generaltDokumentumUrl = generaltDokumentumUrl;
+    }
+
+    public String getAlairtDokumentumNev() {
+        return alairtDokumentumNev;
+    }
+
+    public void setAlairtDokumentumNev(String alairtDokumentumNev) {
+        this.alairtDokumentumNev = alairtDokumentumNev;
+    }
+
+    public String getAlairtDokumentumUrl() {
+        return alairtDokumentumUrl;
+    }
+
+    public void setAlairtDokumentumUrl(String alairtDokumentumUrl) {
+        this.alairtDokumentumUrl = alairtDokumentumUrl;
     }
 
     public SajatCegAlapadatokDTO getSajatCeg() {
@@ -91,6 +152,12 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
             ", kozgyulesDatum='" + getKozgyulesDatum() + "'" +
             ", kozgyulesiJegyzokonyvGeneralta='" + getKozgyulesiJegyzokonyvGeneralta() + "'" +
             ", kozgyulesiJegyzokonyvAlairt='" + getKozgyulesiJegyzokonyvAlairt() + "'" +
+            ", merlegFoosszeg=" + getMerlegFoosszeg() +
+            ", adozottEredmeny=" + getAdozottEredmeny() +
+            ", generaltDokumentumNev='" + getGeneraltDokumentumNev() + "'" +
+            ", generaltDokumentumUrl='" + getGeneraltDokumentumUrl() + "'" +
+            ", alairtDokumentumNev='" + getAlairtDokumentumNev() + "'" +
+            ", alairtDokumentumUrl='" + getAlairtDokumentumUrl() + "'" +
             ", sajatCeg=" + getSajatCeg() +
             "}";
     }

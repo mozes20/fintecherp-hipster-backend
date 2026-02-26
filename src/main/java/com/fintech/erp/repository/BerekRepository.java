@@ -1,6 +1,7 @@
 package com.fintech.erp.repository;
 
 import com.fintech.erp.domain.Berek;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface BerekRepository extends JpaRepository<Berek, Long>, JpaSpecificationExecutor<Berek> {}
+public interface BerekRepository extends JpaRepository<Berek, Long>, JpaSpecificationExecutor<Berek> {
+    Optional<Berek> findFirstByMunkavallalo_IdOrderByErvenyessegKezdeteDesc(Long munkavallaloId);
+}
