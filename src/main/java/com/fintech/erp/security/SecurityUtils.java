@@ -81,7 +81,8 @@ public final class SecurityUtils {
      * Checks if the current user has none of the authorities.
      *
      * @param authorities the authorities to check.
-     * @return true if the current user has none of the authorities, false otherwise.
+     * @return true if the current user has none of the authorities, false
+     *         otherwise.
      */
     public static boolean hasCurrentUserNoneOfAuthorities(String... authorities) {
         return !hasCurrentUserAnyOfAuthorities(authorities);
@@ -98,10 +99,9 @@ public final class SecurityUtils {
     }
 
     private static Stream<String> getAuthorities(Authentication authentication) {
-        Collection<? extends GrantedAuthority> authorities = authentication instanceof JwtAuthenticationToken
-            ? extractAuthorityFromClaims(((JwtAuthenticationToken) authentication).getToken().getClaims())
-            : authentication.getAuthorities();
-        return authorities.stream().map(GrantedAuthority::getAuthority);
+        // Közvetlenül használjuk az authentication.getAuthorities()-t
+        // A Spring Security JWT filter már feldolgozta a JWT claims-eket
+        return authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority);
     }
 
     public static List<GrantedAuthority> extractAuthorityFromClaims(Map<String, Object> claims) {

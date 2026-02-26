@@ -46,8 +46,37 @@ public class TimesheetekQueryService extends QueryService<Timesheetek> {
     @Transactional(readOnly = true)
     public Page<TimesheetekDTO> findByCriteria(TimesheetekCriteria criteria, Pageable page) {
         LOG.debug("find by criteria : {}, page: {}", criteria, page);
+        LOG.info(
+            "🔍 Lekérdezés kritériumokkal: userLogin.equals={}, datum={}",
+            criteria.getUserLogin() != null ? criteria.getUserLogin().getEquals() : "null",
+            criteria.getDatum() != null ? criteria.getDatum().getEquals() : "null"
+        );
+
         final Specification<Timesheetek> specification = createSpecification(criteria);
-        return timesheetekRepository.findAll(specification, page).map(timesheetekMapper::toDto);
+        Page<Timesheetek> entityPage = timesheetekRepository.findAll(specification, page);
+
+        LOG.info(
+            "📊 Találatok száma: {}, Oldal: {}/{}",
+            entityPage.getTotalElements(),
+            entityPage.getNumber() + 1,
+            entityPage.getTotalPages()
+        );
+
+        Page<TimesheetekDTO> dtoPage = entityPage.map(timesheetekMapper::toDto);
+
+        if (!dtoPage.isEmpty()) {
+            LOG.info(
+                "✅ Visszaadott első elem: id={}, datum={}, userLogin={}, oraMennyiseg={}",
+                dtoPage.getContent().get(0).getId(),
+                dtoPage.getContent().get(0).getDatum(),
+                dtoPage.getContent().get(0).getUserLogin(),
+                dtoPage.getContent().get(0).getOraMennyiseg()
+            );
+        } else {
+            LOG.warn("⚠️ Nincs találat a megadott kritériumokkal!");
+        }
+
+        return dtoPage;
     }
 
     /**
@@ -75,8 +104,10 @@ public class TimesheetekQueryService extends QueryService<Timesheetek> {
                 Boolean.TRUE.equals(criteria.getDistinct()) ? distinct(criteria.getDistinct()) : null,
                 buildRangeSpecification(criteria.getId(), Timesheetek_.id),
                 buildRangeSpecification(criteria.getDatum(), Timesheetek_.datum),
+                buildStringSpecification(criteria.getUserLogin(), Timesheetek_.userLogin),
                 buildStringSpecification(criteria.getMunkanapStatusza(), Timesheetek_.munkanapStatusza),
                 buildStringSpecification(criteria.getStatusz(), Timesheetek_.statusz),
+                buildRangeSpecification(criteria.getOraMennyiseg(), Timesheetek_.oraMennyiseg),
                 buildSpecification(criteria.getMunkavallaloId(), root ->
                     root.join(Timesheetek_.munkavallalo, JoinType.LEFT).get(Munkavallalok_.id)
                 )
