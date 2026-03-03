@@ -36,14 +36,14 @@ public class HungarianPublicHolidayService {
     }
 
     /**
-     * Visszaadja a megadott év összes magyar ünnepnapjának dátumát.
+     * Visszaadja a megadott év összes magyar ünnepnapját dátummal és névvel.
      * Az eredmény cache-elve van az adott évre.
      *
      * @param year az év (pl. 2026)
-     * @return az ünnepnapok {@link LocalDate} listája, hiba esetén üres lista
+     * @return az ünnepnapok {@link PublicHolidayDTO} listája, hiba esetén üres lista
      */
     @Cacheable(value = CACHE_NAME, key = "#year")
-    public List<LocalDate> getPublicHolidays(int year) {
+    public List<PublicHolidayDTO> getPublicHolidays(int year) {
         LOG.info("🗓️ Magyar ünnepnapok lekérdezése a Nager.Date API-ból: év={}", year);
 
         try {
@@ -58,7 +58,10 @@ public class HungarianPublicHolidayService {
                 return Collections.emptyList();
             }
 
-            List<LocalDate> holidays = java.util.Arrays.stream(responses).map(NagerHolidayResponse::date).filter(d -> d != null).toList();
+            List<PublicHolidayDTO> holidays = java.util.Arrays.stream(responses)
+                .filter(r -> r.date() != null)
+                .map(r -> new PublicHolidayDTO(r.date(), r.localName(), r.name()))
+                .toList();
 
             LOG.info("✅ {} ünnepnap találva a {} évre", holidays.size(), year);
             return holidays;
@@ -75,11 +78,24 @@ public class HungarianPublicHolidayService {
      * @return {@code true} ha ünnepnap
      */
     public boolean isPublicHoliday(LocalDate date) {
-        return getPublicHolidays(date.getYear()).contains(date);
+        return getPublicHolidays(date.getYear()).stream().anyMatch(h -> h.date().equals(date));
     }
 
     // -------------------------------------------------------------------------
-    // Belső record – a Nager.Date API válaszának modellje
+    // Publikus DTO – az endpoint válaszának modellje
+    // -------------------------------------------------------------------------
+
+    /**
+     * Ünnepnap dátuma és neve (magyar + angol).
+     *
+     * @param date       az ünnepnap dátuma
+     * @param localName  magyar neve (pl. "Újév")
+     * @param name       angol neve (pl. "New Year's Day")
+     */
+    public record PublicHolidayDTO(LocalDate date, String localName, String name) {}
+
+    // -------------------------------------------------------------------------
+    // Belső record – a Nager.Date API válaszának modellje (csak service-en belül)
     // -------------------------------------------------------------------------
 
     /**

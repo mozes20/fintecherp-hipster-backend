@@ -13,7 +13,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -475,12 +474,12 @@ public class TimesheetekResource {
      * A Nager.Date nyilvános API-t hívja és cache-eli az eredményt.
      *
      * @param year az év (pl. 2026)
-     * @return az ünnepnapok ISO-8601 dátumlista (pl. ["2026-01-01", "2026-03-15", ...])
+     * @return az ünnepnapok listája dátummal, magyar és angol névvel
      */
     @GetMapping("/public-holidays/{year}")
-    public ResponseEntity<List<LocalDate>> getPublicHolidays(@PathVariable int year) {
+    public ResponseEntity<List<HungarianPublicHolidayService.PublicHolidayDTO>> getPublicHolidays(@PathVariable int year) {
         LOG.info("🗓️ REST request to get Hungarian public holidays for year: {}", year);
-        List<LocalDate> holidays = hungarianPublicHolidayService.getPublicHolidays(year);
+        List<HungarianPublicHolidayService.PublicHolidayDTO> holidays = hungarianPublicHolidayService.getPublicHolidays(year);
         return ResponseEntity.ok().body(holidays);
     }
 
