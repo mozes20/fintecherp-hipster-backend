@@ -164,7 +164,7 @@ public class OsztalekfizetesiKozgyulesekExcelService {
                 BigDecimal napdij;
                 Optional<Berek> berekOpt = berekRepository.findFirstByMunkavallalo_IdOrderByErvenyessegKezdeteDesc(munkavallaloId);
                 if (berekOpt.isPresent()) {
-                    Berek ber = berekOpt.get();
+                    Berek ber = berekOpt.orElseThrow();
                     teljesKoltseg = ber.getTeljesKoltseg() != null ? ber.getTeljesKoltseg() : sumOssszeg(workerEfos);
                     napdij = ber.getBruttoHaviMunkaberVagyNapdij() != null
                         ? ber.getBruttoHaviMunkaberVagyNapdij()
@@ -261,8 +261,8 @@ public class OsztalekfizetesiKozgyulesekExcelService {
         BigDecimal sum = BigDecimal.ZERO;
         for (Map.Entry<Long, List<EfoFoglalkoztatasok>> entry : byWorker.entrySet()) {
             Optional<Berek> berekOpt = berekRepository.findFirstByMunkavallalo_IdOrderByErvenyessegKezdeteDesc(entry.getKey());
-            if (berekOpt.isPresent() && berekOpt.get().getTeljesKoltseg() != null) {
-                sum = sum.add(berekOpt.get().getTeljesKoltseg());
+            if (berekOpt.isPresent() && berekOpt.orElseThrow().getTeljesKoltseg() != null) {
+                sum = sum.add(berekOpt.orElseThrow().getTeljesKoltseg());
             } else {
                 sum = sum.add(sumOssszeg(entry.getValue()));
             }

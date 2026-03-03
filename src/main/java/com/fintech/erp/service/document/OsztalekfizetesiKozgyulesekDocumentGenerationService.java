@@ -1,6 +1,5 @@
 package com.fintech.erp.service.document;
 
-import com.fintech.erp.domain.OsztalekfizetesiKozgyulesek;
 import com.fintech.erp.domain.OsztalekfizetesiKozgyulesekDokumentumTemplate;
 import com.fintech.erp.repository.OsztalekfizetesiKozgyulesekDokumentumTemplateRepository;
 import com.fintech.erp.repository.OsztalekfizetesiKozgyulesekRepository;

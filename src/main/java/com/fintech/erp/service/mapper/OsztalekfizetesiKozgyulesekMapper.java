@@ -6,7 +6,10 @@ import com.fintech.erp.domain.SajatCegAlapadatok;
 import com.fintech.erp.service.dto.CegAlapadatokDTO;
 import com.fintech.erp.service.dto.OsztalekfizetesiKozgyulesekDTO;
 import com.fintech.erp.service.dto.SajatCegAlapadatokDTO;
-import org.mapstruct.*;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 /**
  * Mapper for the entity {@link OsztalekfizetesiKozgyulesek} and its DTO {@link OsztalekfizetesiKozgyulesekDTO}.
