@@ -3,6 +3,7 @@ package com.fintech.erp.web.rest;
 import com.fintech.erp.repository.TimesheetekRepository;
 import com.fintech.erp.security.AuthoritiesConstants;
 import com.fintech.erp.security.SecurityUtils;
+import com.fintech.erp.service.HungarianPublicHolidayService;
 import com.fintech.erp.service.TimesheetekQueryService;
 import com.fintech.erp.service.TimesheetekService;
 import com.fintech.erp.service.criteria.TimesheetekCriteria;
@@ -12,6 +13,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,14 +53,18 @@ public class TimesheetekResource {
 
     private final TimesheetekQueryService timesheetekQueryService;
 
+    private final HungarianPublicHolidayService hungarianPublicHolidayService;
+
     public TimesheetekResource(
         TimesheetekService timesheetekService,
         TimesheetekRepository timesheetekRepository,
-        TimesheetekQueryService timesheetekQueryService
+        TimesheetekQueryService timesheetekQueryService,
+        HungarianPublicHolidayService hungarianPublicHolidayService
     ) {
         this.timesheetekService = timesheetekService;
         this.timesheetekRepository = timesheetekRepository;
         this.timesheetekQueryService = timesheetekQueryService;
+        this.hungarianPublicHolidayService = hungarianPublicHolidayService;
     }
 
     /**
@@ -462,6 +468,20 @@ public class TimesheetekResource {
         return ResponseEntity.ok()
             .headers(HeaderUtil.createAlert(applicationName, "timesheetekApp.timesheetek.rejected", String.valueOf(rejectedCount)))
             .body(rejectedCount);
+    }
+
+    /**
+     * {@code GET  /timesheeteks/public-holidays/{year}} : Magyar állami ünnepnapok lekérdezése.
+     * A Nager.Date nyilvános API-t hívja és cache-eli az eredményt.
+     *
+     * @param year az év (pl. 2026)
+     * @return az ünnepnapok ISO-8601 dátumlista (pl. ["2026-01-01", "2026-03-15", ...])
+     */
+    @GetMapping("/public-holidays/{year}")
+    public ResponseEntity<List<LocalDate>> getPublicHolidays(@PathVariable int year) {
+        LOG.info("🗓️ REST request to get Hungarian public holidays for year: {}", year);
+        List<LocalDate> holidays = hungarianPublicHolidayService.getPublicHolidays(year);
+        return ResponseEntity.ok().body(holidays);
     }
 
     /**

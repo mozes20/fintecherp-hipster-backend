@@ -4,9 +4,13 @@ import com.fintech.erp.repository.OsztalekfizetesiKozgyulesekRepository;
 import com.fintech.erp.service.OsztalekfizetesiKozgyulesekQueryService;
 import com.fintech.erp.service.OsztalekfizetesiKozgyulesekService;
 import com.fintech.erp.service.criteria.OsztalekfizetesiKozgyulesekCriteria;
+import com.fintech.erp.service.document.GeneratedDocumentResult;
+import com.fintech.erp.service.document.OsztalekfizetesiKozgyulesekDocumentGenerationService;
 import com.fintech.erp.service.document.OsztalekfizetesiKozgyulesekExcelService;
 import com.fintech.erp.service.dto.OsztalekfizetesiKozgyulesekDTO;
+import com.fintech.erp.service.dto.OsztalekfizetesiKozgyulesekDokumentumDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
+import com.fintech.erp.web.rest.vm.DocumentGenerationRequest;
 import com.fintech.erp.web.rest.vm.OsztalekfizetesiElszamolasExcelRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -20,6 +24,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -66,16 +71,20 @@ public class OsztalekfizetesiKozgyulesekResource {
 
     private final OsztalekfizetesiKozgyulesekExcelService excelService;
 
+    private final OsztalekfizetesiKozgyulesekDocumentGenerationService documentGenerationService;
+
     public OsztalekfizetesiKozgyulesekResource(
         OsztalekfizetesiKozgyulesekService osztalekfizetesiKozgyulesekService,
         OsztalekfizetesiKozgyulesekRepository osztalekfizetesiKozgyulesekRepository,
         OsztalekfizetesiKozgyulesekQueryService osztalekfizetesiKozgyulesekQueryService,
-        OsztalekfizetesiKozgyulesekExcelService excelService
+        OsztalekfizetesiKozgyulesekExcelService excelService,
+        OsztalekfizetesiKozgyulesekDocumentGenerationService documentGenerationService
     ) {
         this.osztalekfizetesiKozgyulesekService = osztalekfizetesiKozgyulesekService;
         this.osztalekfizetesiKozgyulesekRepository = osztalekfizetesiKozgyulesekRepository;
         this.osztalekfizetesiKozgyulesekQueryService = osztalekfizetesiKozgyulesekQueryService;
         this.excelService = excelService;
+        this.documentGenerationService = documentGenerationService;
     }
 
     /**
@@ -118,7 +127,7 @@ public class OsztalekfizetesiKozgyulesekResource {
     ) throws URISyntaxException {
         LOG.debug("REST request to update OsztalekfizetesiKozgyulesek : {}, {}", id, osztalekfizetesiKozgyulesekDTO);
         if (osztalekfizetesiKozgyulesekDTO.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
+            osztalekfizetesiKozgyulesekDTO.setId(id);
         }
         if (!Objects.equals(id, osztalekfizetesiKozgyulesekDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
@@ -341,6 +350,70 @@ public class OsztalekfizetesiKozgyulesekResource {
                 .body(xlsx);
         } catch (IllegalArgumentException ex) {
             throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "excelexporterror");
+        }
+    }
+
+    /**
+     * {@code POST /{id}/generate} : Generate a közgyűlési document from a DOCX template.
+     *
+     * <p>Request body:
+     * <pre>
+     * {
+     *   "templateId": 1,
+     *   "dokumentumNev": "Kozgyulesi_Jegyzokonyv_2025",   // optional
+     *   "dokumentumTipus": "GENERALT_JEGYZOKONYV",         // optional
+     *   "format": "DOCX",                                  // DOCX | PDF
+     *   "persist": true,                                   // save to DB + disk
+     *   "placeholders": { "sajat_ceg.nev": "FinTech Kft." } // optional overrides
+     * }
+     * </pre>
+     *
+     * @param id      the id of the OsztalekfizetesiKozgyulesek
+     * @param request document generation parameters
+     * @return the generated file as a download; if persist=true the saved document ID is in X-Generated-Document-Id header
+     */
+    @PostMapping("/{id}/generate-document")
+    public ResponseEntity<Resource> generateDocument(
+        @PathVariable("id") Long id,
+        @RequestBody(required = false) DocumentGenerationRequest request
+    ) throws IOException {
+        if (request == null) {
+            request = new DocumentGenerationRequest();
+        }
+        // Always persist and return as PDF so the document cannot be edited
+        request.setPersist(true);
+        if (request.getFormat() == null) {
+            request.setFormat(com.fintech.erp.service.document.DocumentFormat.PDF);
+        }
+        LOG.debug("REST request to generate document for OsztalekfizetesiKozgyulesek {} using template {}", id, request.getTemplateId());
+        if (!osztalekfizetesiKozgyulesekRepository.existsById(id)) {
+            throw new BadRequestAlertException("A közgyűlés nem található", ENTITY_NAME, "idnotfound");
+        }
+        try {
+            GeneratedDocumentResult<OsztalekfizetesiKozgyulesekDokumentumDTO> result = documentGenerationService.generateFromTemplate(
+                id,
+                request
+            );
+
+            ByteArrayResource resource = new ByteArrayResource(result.getData());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(result.getContentType()));
+            headers.setContentLength(result.getData().length);
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + result.getFileName() + "\"");
+            if (result.getPersistedDocument() != null && result.getPersistedDocument().getId() != null) {
+                headers.add("X-Generated-Document-Id", result.getPersistedDocument().getId().toString());
+                headers.addAll(
+                    HeaderUtil.createEntityCreationAlert(
+                        applicationName,
+                        true,
+                        ENTITY_NAME,
+                        result.getPersistedDocument().getId().toString()
+                    )
+                );
+            }
+            return ResponseEntity.ok().headers(headers).body(resource);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestAlertException(ex.getMessage(), ENTITY_NAME, "generationerror");
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.fintech.erp.config;
 
+import com.fintech.erp.service.HungarianPublicHolidayService;
 import java.time.Duration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
@@ -26,6 +27,9 @@ public class CacheConfiguration {
     private BuildProperties buildProperties;
     private final javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration;
 
+    /** Standard JHipster cache konfiguráció. */
+    private final javax.cache.configuration.Configuration<Object, Object> publicHolidayCacheConfiguration;
+
     public CacheConfiguration(JHipsterProperties jHipsterProperties) {
         JHipsterProperties.Cache.Ehcache ehcache = jHipsterProperties.getCache().getEhcache();
 
@@ -36,6 +40,13 @@ public class CacheConfiguration {
                 ResourcePoolsBuilder.heap(ehcache.getMaxEntries())
             )
                 .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(ehcache.getTimeToLiveSeconds())))
+                .build()
+        );
+
+        // Az ünnepnap-adatok egész évben stabilak – 24 óra TTL elegendő
+        publicHolidayCacheConfiguration = Eh107Configuration.fromEhcacheCacheConfiguration(
+            CacheConfigurationBuilder.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(20))
+                .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofHours(24)))
                 .build()
         );
     }
@@ -73,6 +84,8 @@ public class CacheConfiguration {
             createCache(cm, com.fintech.erp.domain.TeljesitesIgazolasDokumentumok.class.getName());
             createCache(cm, com.fintech.erp.domain.UgyfelElszamolasok.class.getName());
             createCache(cm, com.fintech.erp.domain.EfoDokumentumTemplate.class.getName());
+            // Magyar ünnepnapok cache – 24 órás TTL-lel regisztrálva
+            cm.createCache(HungarianPublicHolidayService.CACHE_NAME, publicHolidayCacheConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }
