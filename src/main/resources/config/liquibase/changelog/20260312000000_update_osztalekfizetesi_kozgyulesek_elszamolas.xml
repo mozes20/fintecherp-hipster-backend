@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Store the server-side calculated Excel totals on OsztalekfizetesiKozgyulesek
+        so that document generation (template placeholders) can use them.
+
+        elszamolas_grand_total      = SUM of B column (all worker costs + overhead costs)
+        elszamolas_szamlazott_total = SUM of F column (total invoiced = sum of Korrigalt napdij * days per person)
+    -->
+    <changeSet id="20260312000000-1" author="dev">
+        <addColumn tableName="osztalekfizetesi_kozgyulesek">
+            <column name="elszamolas_grand_total" type="decimal(21,2)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="elszamolas_szamlazott_total" type="decimal(21,2)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

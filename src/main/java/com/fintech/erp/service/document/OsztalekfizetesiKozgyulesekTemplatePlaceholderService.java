@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
  * <pre>
  *   kozgyules.id, kozgyules.datum, kozgyules.ev, kozgyules.honap
  *   kozgyules.merleg_foosszeg, kozgyules.adozott_eredmeny
+ *   kozgyules.elszamolas_grand_total, kozgyules.elszamolas_napidijak_osszesen
  *   sajat_ceg.nev, sajat_ceg.rovid_azonosito, sajat_ceg.szekhely
  *   sajat_ceg.adoszam, sajat_ceg.cegjegyzekszam, sajat_ceg.email, sajat_ceg.telefon
  *   datum.ma, idopont.most
@@ -41,6 +42,8 @@ public class OsztalekfizetesiKozgyulesekTemplatePlaceholderService {
     private static final String KEY_HONAP = "kozgyules.honap";
     private static final String KEY_MERLEG = "kozgyules.merleg_foosszeg";
     private static final String KEY_ADOZOTT = "kozgyules.adozott_eredmeny";
+    private static final String KEY_ELSZAMOLAS_GRAND_TOTAL = "kozgyules.elszamolas_grand_total";
+    private static final String KEY_ELSZAMOLAS_NAPIDIJAK = "kozgyules.elszamolas_napidijak_osszesen";
 
     private static final String KEY_CEG_NEV = "sajat_ceg.nev";
     private static final String KEY_CEG_ROVID = "sajat_ceg.rovid_azonosito";
@@ -63,6 +66,12 @@ public class OsztalekfizetesiKozgyulesekTemplatePlaceholderService {
         defs.add(new TemplatePlaceholderDefinition(KEY_HONAP, "Közgyűlés hónapja"));
         defs.add(new TemplatePlaceholderDefinition(KEY_MERLEG, "Mérlegfőösszeg (e HUF)"));
         defs.add(new TemplatePlaceholderDefinition(KEY_ADOZOTT, "Adózott eredmény (e HUF)"));
+        defs.add(
+            new TemplatePlaceholderDefinition(KEY_ELSZAMOLAS_GRAND_TOTAL, "Elszámolás - összes köztség összesen (e HUF, B oszlop összege)")
+        );
+        defs.add(
+            new TemplatePlaceholderDefinition(KEY_ELSZAMOLAS_NAPIDIJAK, "Elszámolás - számlázott összeg összesen (e HUF, F oszlop összege)")
+        );
         defs.add(new TemplatePlaceholderDefinition(KEY_CEG_NEV, "Saját cég neve"));
         defs.add(new TemplatePlaceholderDefinition(KEY_CEG_ROVID, "Saját cég rövid azonosítója"));
         defs.add(new TemplatePlaceholderDefinition(KEY_CEG_SZEKHELY, "Saját cég székhelye"));
@@ -126,6 +135,8 @@ public class OsztalekfizetesiKozgyulesekTemplatePlaceholderService {
 
         addValue(p, KEY_MERLEG, kozgyules.getMerlegFoosszeg());
         addValue(p, KEY_ADOZOTT, kozgyules.getAdozottEredmeny());
+        addValue(p, KEY_ELSZAMOLAS_GRAND_TOTAL, kozgyules.getElszamolasGrandTotal());
+        addValue(p, KEY_ELSZAMOLAS_NAPIDIJAK, kozgyules.getElszamolasNapidijakOsszesen());
 
         SajatCegAlapadatok sajatCeg = kozgyules.getSajatCeg();
         if (sajatCeg != null) {

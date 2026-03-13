@@ -4,6 +4,7 @@ import com.fintech.erp.domain.Timesheetek;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -27,4 +28,7 @@ public interface TimesheetekRepository extends JpaRepository<Timesheetek, Long>,
      * @return A felhasználó timesheet listája az adott hónapra
      */
     List<Timesheetek> findByUserLoginAndDatumBetween(String userLogin, LocalDate startDate, LocalDate endDate);
+
+    @Query("SELECT t FROM Timesheetek t WHERE t.munkavallalo.id = :munkavallaloId AND YEAR(t.datum) = :ev")
+    List<Timesheetek> findByMunkavallaloIdAndEv(@Param("munkavallaloId") Long munkavallaloId, @Param("ev") int ev);
 }

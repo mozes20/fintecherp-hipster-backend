@@ -62,6 +62,14 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
     @Column(name = "alairt_dokumentum_url")
     private String alairtDokumentumUrl;
 
+    /** Grand total of ALL costs (sum of B column: worker costs + overhead). Persisted on Excel export for document generation. */
+    @Column(name = "elszamolas_grand_total", precision = 21, scale = 2)
+    private BigDecimal elszamolasGrandTotal;
+
+    /** Total invoiced amount (sum of F column: Korrigalt napdij * days per person). Persisted on Excel export for document generation. */
+    @Column(name = "elszamolas_szamlazott_total", precision = 21, scale = 2)
+    private BigDecimal elszamolasNapidijakOsszesen;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "ceg" }, allowSetters = true)
     private SajatCegAlapadatok sajatCeg;
@@ -198,6 +206,32 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
         this.alairtDokumentumUrl = alairtDokumentumUrl;
     }
 
+    public BigDecimal getElszamolasGrandTotal() {
+        return this.elszamolasGrandTotal;
+    }
+
+    public OsztalekfizetesiKozgyulesek elszamolasGrandTotal(BigDecimal elszamolasGrandTotal) {
+        this.setElszamolasGrandTotal(elszamolasGrandTotal);
+        return this;
+    }
+
+    public void setElszamolasGrandTotal(BigDecimal elszamolasGrandTotal) {
+        this.elszamolasGrandTotal = elszamolasGrandTotal;
+    }
+
+    public BigDecimal getElszamolasNapidijakOsszesen() {
+        return this.elszamolasNapidijakOsszesen;
+    }
+
+    public OsztalekfizetesiKozgyulesek elszamolasNapidijakOsszesen(BigDecimal elszamolasNapidijakOsszesen) {
+        this.setElszamolasNapidijakOsszesen(elszamolasNapidijakOsszesen);
+        return this;
+    }
+
+    public void setElszamolasNapidijakOsszesen(BigDecimal elszamolasNapidijakOsszesen) {
+        this.elszamolasNapidijakOsszesen = elszamolasNapidijakOsszesen;
+    }
+
     public SajatCegAlapadatok getSajatCeg() {
         return this.sajatCeg;
     }
@@ -244,6 +278,8 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
             ", generaltDokumentumUrl='" + getGeneraltDokumentumUrl() + "'" +
             ", alairtDokumentumNev='" + getAlairtDokumentumNev() + "'" +
             ", alairtDokumentumUrl='" + getAlairtDokumentumUrl() + "'" +
+            ", elszamolasGrandTotal=" + getElszamolasGrandTotal() +
+            ", elszamolasNapidijakOsszesen=" + getElszamolasNapidijakOsszesen() +
             "}";
     }
 }

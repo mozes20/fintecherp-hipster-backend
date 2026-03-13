@@ -33,6 +33,10 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
 
     private String alairtDokumentumUrl;
 
+    private BigDecimal elszamolasGrandTotal;
+
+    private BigDecimal elszamolasNapidijakOsszesen;
+
     private SajatCegAlapadatokDTO sajatCeg;
 
     public Long getId() {
@@ -119,6 +123,22 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
         return sajatCeg;
     }
 
+    public BigDecimal getElszamolasGrandTotal() {
+        return elszamolasGrandTotal;
+    }
+
+    public void setElszamolasGrandTotal(BigDecimal elszamolasGrandTotal) {
+        this.elszamolasGrandTotal = elszamolasGrandTotal;
+    }
+
+    public BigDecimal getElszamolasNapidijakOsszesen() {
+        return elszamolasNapidijakOsszesen;
+    }
+
+    public void setElszamolasNapidijakOsszesen(BigDecimal elszamolasNapidijakOsszesen) {
+        this.elszamolasNapidijakOsszesen = elszamolasNapidijakOsszesen;
+    }
+
     public void setSajatCeg(SajatCegAlapadatokDTO sajatCeg) {
         this.sajatCeg = sajatCeg;
     }
@@ -158,6 +178,8 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
             ", generaltDokumentumUrl='" + getGeneraltDokumentumUrl() + "'" +
             ", alairtDokumentumNev='" + getAlairtDokumentumNev() + "'" +
             ", alairtDokumentumUrl='" + getAlairtDokumentumUrl() + "'" +
+            ", elszamolasGrandTotal=" + getElszamolasGrandTotal() +
+            ", elszamolasNapidijakOsszesen=" + getElszamolasNapidijakOsszesen() +
             ", sajatCeg=" + getSajatCeg() +
             "}";
     }

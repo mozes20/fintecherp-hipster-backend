@@ -1,6 +1,7 @@
 package com.fintech.erp.repository;
 
 import com.fintech.erp.domain.Munkavallalok;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -34,4 +35,7 @@ public interface MunkavallalokRepository extends JpaRepository<Munkavallalok, Lo
         "where mv.id = :id"
     )
     Optional<Munkavallalok> findByIdWithRelations(@Param("id") Long id);
+
+    @Query("select mv from Munkavallalok mv " + "join fetch mv.maganszemely ms " + "where mv.sajatCeg.id = :sajatCegId")
+    List<Munkavallalok> findBySajatCegIdWithMaganszemely(@Param("sajatCegId") Long sajatCegId);
 }

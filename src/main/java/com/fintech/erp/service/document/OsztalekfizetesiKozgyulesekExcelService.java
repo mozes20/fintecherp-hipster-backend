@@ -1,23 +1,24 @@
 package com.fintech.erp.service.document;
 
 import com.fintech.erp.domain.Berek;
-import com.fintech.erp.domain.EfoFoglalkoztatasok;
 import com.fintech.erp.domain.Munkavallalok;
 import com.fintech.erp.domain.OsztalekfizetesiKozgyulesek;
+import com.fintech.erp.domain.SajatCegTulajdonosok;
 import com.fintech.erp.repository.BerekRepository;
-import com.fintech.erp.repository.EfoFoglalkoztatasokRepository;
+import com.fintech.erp.repository.MunkavallalokRepository;
 import com.fintech.erp.repository.OsztalekfizetesiKozgyulesekRepository;
+import com.fintech.erp.repository.SajatCegTulajdonosokRepository;
+import com.fintech.erp.repository.TimesheetekRepository;
 import com.fintech.erp.web.rest.vm.OsztalekfizetesiElszamolasExcelRequest;
 import com.fintech.erp.web.rest.vm.OsztalekfizetesiElszamolasExcelRequest.EgyebKoltsegSor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -31,6 +32,7 @@ import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFFormulaEvaluator;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
  * </pre>
  */
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class OsztalekfizetesiKozgyulesekExcelService {
 
     private static final Logger LOG = LoggerFactory.getLogger(OsztalekfizetesiKozgyulesekExcelService.class);
@@ -69,16 +71,22 @@ public class OsztalekfizetesiKozgyulesekExcelService {
     private static final int COL_SZAMLA = 5; // F – Számlázott összeg
 
     private final OsztalekfizetesiKozgyulesekRepository kozgyulesekRepository;
-    private final EfoFoglalkoztatasokRepository efoRepository;
+    private final MunkavallalokRepository munkavallalokRepository;
+    private final SajatCegTulajdonosokRepository tulajdonosokRepository;
+    private final TimesheetekRepository timesheetekRepository;
     private final BerekRepository berekRepository;
 
     public OsztalekfizetesiKozgyulesekExcelService(
         OsztalekfizetesiKozgyulesekRepository kozgyulesekRepository,
-        EfoFoglalkoztatasokRepository efoRepository,
+        MunkavallalokRepository munkavallalokRepository,
+        SajatCegTulajdonosokRepository tulajdonosokRepository,
+        TimesheetekRepository timesheetekRepository,
         BerekRepository berekRepository
     ) {
         this.kozgyulesekRepository = kozgyulesekRepository;
-        this.efoRepository = efoRepository;
+        this.munkavallalokRepository = munkavallalokRepository;
+        this.tulajdonosokRepository = tulajdonosokRepository;
+        this.timesheetekRepository = timesheetekRepository;
         this.berekRepository = berekRepository;
     }
 
@@ -103,16 +111,14 @@ public class OsztalekfizetesiKozgyulesekExcelService {
         Long sajatCegId = kozgyules.getSajatCeg().getId();
         int ev = kozgyules.getKozgyulesDatum().getYear();
 
-        // Load EFO entries for this company and year
-        List<EfoFoglalkoztatasok> efoList = efoRepository.findAllBySajatCegIdAndEv(sajatCegId, ev);
+        // Load all employees of the company
+        List<Munkavallalok> munkavallalok = munkavallalokRepository.findBySajatCegIdWithMaganszemely(sajatCegId);
 
-        // Group EFO entries by munkavallalo
-        Map<Long, List<EfoFoglalkoztatasok>> byWorker = new LinkedHashMap<>();
-        for (EfoFoglalkoztatasok e : efoList) {
-            if (e.getMunkavallalo() != null) {
-                byWorker.computeIfAbsent(e.getMunkavallalo().getId(), k -> new ArrayList<>()).add(e);
-            }
-        }
+        // Load all owners of the company
+        List<SajatCegTulajdonosok> tulajdonosok = tulajdonosokRepository.findBySajatCegIdWithMaganszemely(sajatCegId);
+
+        // Build merged person list: workers first, then owners not already present as workers
+        List<PersonRow> persons = buildPersonRows(munkavallalok, tulajdonosok);
 
         List<EgyebKoltsegSor> egyebKoltsegek = (request != null && request.getEgyebKoltsegek() != null)
             ? request.getEgyebKoltsegek()
@@ -147,44 +153,48 @@ public class OsztalekfizetesiKozgyulesekExcelService {
             createCell(header, COL_KORIG, "Korrigált napidíj", styles.headerGreenStyle);
             createCell(header, COL_SZAMLA, "Számlázott összeg", styles.headerStyle);
 
+            int workerStartRowIdx = rowIdx; // 0-based, Excel row = workerStartRowIdx + 1
+
+            // Server-side accumulators (mirroring the Excel formulas) — persisted to DB
+            BigDecimal workerTeljesKoltsegSum = BigDecimal.ZERO;
             BigDecimal szamlazottTotal = BigDecimal.ZERO;
 
-            // ---- Worker rows ----
-            for (Map.Entry<Long, List<EfoFoglalkoztatasok>> entry : byWorker.entrySet()) {
-                Long munkavallaloId = entry.getKey();
-                List<EfoFoglalkoztatasok> workerEfos = entry.getValue();
+            // ---- Worker/Owner rows ----
+            for (PersonRow person : persons) {
+                // Count worked days from Timesheetek for this person and year
+                int ledolgozottNapok = person.munkavallaloId != null
+                    ? timesheetekRepository.findByMunkavallaloIdAndEv(person.munkavallaloId, ev).size()
+                    : 0;
 
-                Munkavallalok worker = workerEfos.get(0).getMunkavallalo();
-                String workerNev = resolveWorkerName(worker);
-
-                int ledolgozottNapok = workerEfos.size();
-
-                // Teljes költség and napidíj from Berek if available
-                BigDecimal teljesKoltseg;
-                BigDecimal napdij;
-                Optional<Berek> berekOpt = berekRepository.findFirstByMunkavallalo_IdOrderByErvenyessegKezdeteDesc(munkavallaloId);
-                if (berekOpt.isPresent()) {
-                    Berek ber = berekOpt.orElseThrow();
-                    teljesKoltseg = ber.getTeljesKoltseg() != null ? ber.getTeljesKoltseg() : sumOssszeg(workerEfos);
-                    napdij = ber.getBruttoHaviMunkaberVagyNapdij() != null
-                        ? ber.getBruttoHaviMunkaberVagyNapdij()
-                        : divideOrZero(teljesKoltseg, ledolgozottNapok);
-                } else {
-                    teljesKoltseg = sumOssszeg(workerEfos);
-                    napdij = divideOrZero(teljesKoltseg, ledolgozottNapok);
+                // Teljes költség from Berek (only available for munkavallalok)
+                BigDecimal teljesKoltseg = BigDecimal.ZERO;
+                if (person.munkavallaloId != null) {
+                    Optional<Berek> berekOpt = berekRepository.findFirstByMunkavallalo_IdOrderByErvenyessegKezdeteDesc(
+                        person.munkavallaloId
+                    );
+                    if (berekOpt.isPresent()) {
+                        Berek ber = berekOpt.orElseThrow();
+                        teljesKoltseg = ber.getTeljesKoltseg() != null ? ber.getTeljesKoltseg() : BigDecimal.ZERO;
+                    }
                 }
 
-                BigDecimal szamlazottOsszeg = KORIGALT_NAPDIJ.multiply(BigDecimal.valueOf(ledolgozottNapok));
-                szamlazottTotal = szamlazottTotal.add(szamlazottOsszeg);
-
                 Row row = sheet.createRow(rowIdx++);
-                createCell(row, COL_NEV, workerNev, styles.dataStyle);
+                int excelRow = row.getRowNum() + 1; // 1-based Excel row number
+                createCell(row, COL_NEV, person.nev, styles.dataStyle);
                 createNumCell(row, COL_TELJES, teljesKoltseg, styles.dataNumStyle);
                 createNumCell(row, COL_NAPOK, BigDecimal.valueOf(ledolgozottNapok), styles.dataGreenNumStyle);
-                createNumCell(row, COL_NAPDIJ, napdij.setScale(0, RoundingMode.HALF_UP), styles.dataNumStyle);
+                // Napidíj = Teljes költség / Ledolgozott napok (formula)
+                createFormulaCell(row, COL_NAPDIJ, "IFERROR(B" + excelRow + "/C" + excelRow + ",0)", styles.dataNumStyle);
                 createNumCell(row, COL_KORIG, KORIGALT_NAPDIJ, styles.dataGreenNumStyle);
-                createNumCell(row, COL_SZAMLA, szamlazottOsszeg, styles.dataNumStyle);
+                // Számlázott összeg = Korrigált napidíj * Ledolgozott napok (formula)
+                createFormulaCell(row, COL_SZAMLA, "E" + excelRow + "*C" + excelRow, styles.dataNumStyle);
+
+                // Accumulate server-side totals for persistence
+                workerTeljesKoltsegSum = workerTeljesKoltsegSum.add(teljesKoltseg);
+                szamlazottTotal = szamlazottTotal.add(KORIGALT_NAPDIJ.multiply(BigDecimal.valueOf(ledolgozottNapok)));
             }
+
+            int workerEndRowIdx = rowIdx - 1; // 0-based index of last worker row
 
             // ---- Total számlázott összeg row ----
             Row totalRow = sheet.createRow(rowIdx++);
@@ -192,7 +202,12 @@ public class OsztalekfizetesiKozgyulesekExcelService {
                 createCell(totalRow, c, "", styles.dataStyle);
             }
             createCell(totalRow, COL_KORIG, "", styles.dataStyle);
-            createNumCell(totalRow, COL_SZAMLA, szamlazottTotal, styles.boldNumStyle);
+            createFormulaCell(
+                totalRow,
+                COL_SZAMLA,
+                "SUM(F" + (workerStartRowIdx + 1) + ":F" + (workerEndRowIdx + 1) + ")",
+                styles.boldNumStyle
+            );
 
             // ---- Blank row ----
             sheet.createRow(rowIdx++);
@@ -211,27 +226,38 @@ public class OsztalekfizetesiKozgyulesekExcelService {
                 }
             }
 
-            // ---- Grand total row ----
-            // Grand total row — sum of all worker costs (B column) + overhead
-            BigDecimal workerTeljesSum = recalcWorkerTeljesSum(byWorker);
-            BigDecimal grandTotalAll = workerTeljesSum.add(egyebTotal);
+            // Grand total B = worker Teljes költség + overhead
+            BigDecimal grandTotal = workerTeljesKoltsegSum.add(egyebTotal);
 
+            // ---- Grand total row ----
+            // SUM of B column from first worker row to the row just above the grand total
+            int grandTotalPrevRowIdx = rowIdx - 1;
             Row grandTotalRow = sheet.createRow(rowIdx++);
             createCell(grandTotalRow, COL_NEV, "", styles.dataStyle);
-            createNumCell(grandTotalRow, COL_TELJES, grandTotalAll, styles.boldNumStyle);
+            createFormulaCell(
+                grandTotalRow,
+                COL_TELJES,
+                "SUM(B" + (workerStartRowIdx + 1) + ":B" + (grandTotalPrevRowIdx + 1) + ")",
+                styles.boldNumStyle
+            );
             for (int c = COL_NAPOK; c <= COL_SZAMLA; c++) {
                 createCell(grandTotalRow, c, "", styles.dataStyle);
             }
 
-            LOG.debug(
-                "Excel generated: {} worker(s), {} overhead items, grand total={} e HUF",
-                byWorker.size(),
-                egyebKoltsegek.size(),
-                grandTotalAll
-            );
+            LOG.debug("Excel generated: {} person(s), {} overhead items", persons.size(), egyebKoltsegek.size());
+
+            // Evaluate all formulas server-side so cached values are stored in the file
+            // (required for server-side re-reading and document generation)
+            XSSFFormulaEvaluator.evaluateAllFormulaCells(wb);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wb.write(out);
+
+            // Persist the calculated totals to the entity so template placeholders can use them
+            kozgyules.setElszamolasGrandTotal(grandTotal);
+            kozgyules.setElszamolasNapidijakOsszesen(szamlazottTotal);
+            kozgyulesekRepository.save(kozgyules);
+
             return out.toByteArray();
         }
     }
@@ -240,34 +266,43 @@ public class OsztalekfizetesiKozgyulesekExcelService {
     // Helpers
     // -------------------------------------------------------------------------
 
-    private String resolveWorkerName(Munkavallalok worker) {
-        if (worker == null) return "Ismeretlen";
-        if (worker.getMaganszemely() != null && worker.getMaganszemely().getMaganszemelyNeve() != null) {
-            return worker.getMaganszemely().getMaganszemelyNeve();
+    /** Merges munkavallalok and tulajdonosok into a deduplicated list of PersonRow. */
+    private List<PersonRow> buildPersonRows(List<Munkavallalok> munkavallalok, List<SajatCegTulajdonosok> tulajdonosok) {
+        List<PersonRow> result = new ArrayList<>();
+        Set<Long> seenMaganszemelyIds = new LinkedHashSet<>();
+
+        for (Munkavallalok mv : munkavallalok) {
+            String nev = (mv.getMaganszemely() != null && mv.getMaganszemely().getMaganszemelyNeve() != null)
+                ? mv.getMaganszemely().getMaganszemelyNeve()
+                : "Munkavállaló #" + mv.getId();
+            Long maganszemelyId = mv.getMaganszemely() != null ? mv.getMaganszemely().getId() : null;
+            result.add(new PersonRow(nev, mv.getId()));
+            if (maganszemelyId != null) seenMaganszemelyIds.add(maganszemelyId);
         }
-        return "Munkavállaló #" + worker.getId();
-    }
 
-    private BigDecimal sumOssszeg(List<EfoFoglalkoztatasok> list) {
-        return list.stream().map(e -> e.getOsszeg() != null ? e.getOsszeg() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal divideOrZero(BigDecimal total, int count) {
-        if (count == 0) return BigDecimal.ZERO;
-        return total.divide(BigDecimal.valueOf(count), 0, RoundingMode.HALF_UP);
-    }
-
-    private BigDecimal recalcWorkerTeljesSum(Map<Long, List<EfoFoglalkoztatasok>> byWorker) {
-        BigDecimal sum = BigDecimal.ZERO;
-        for (Map.Entry<Long, List<EfoFoglalkoztatasok>> entry : byWorker.entrySet()) {
-            Optional<Berek> berekOpt = berekRepository.findFirstByMunkavallalo_IdOrderByErvenyessegKezdeteDesc(entry.getKey());
-            if (berekOpt.isPresent() && berekOpt.orElseThrow().getTeljesKoltseg() != null) {
-                sum = sum.add(berekOpt.orElseThrow().getTeljesKoltseg());
-            } else {
-                sum = sum.add(sumOssszeg(entry.getValue()));
-            }
+        for (SajatCegTulajdonosok t : tulajdonosok) {
+            if (t.getMaganszemely() == null) continue;
+            Long maganszemelyId = t.getMaganszemely().getId();
+            if (seenMaganszemelyIds.contains(maganszemelyId)) continue; // already included as worker
+            String nev = t.getMaganszemely().getMaganszemelyNeve() != null
+                ? t.getMaganszemely().getMaganszemelyNeve()
+                : "Tulajdonos #" + t.getId();
+            result.add(new PersonRow(nev, null)); // pure owner, no munkavallalo
+            seenMaganszemelyIds.add(maganszemelyId);
         }
-        return sum;
+
+        return result;
+    }
+
+    private static final class PersonRow {
+
+        final String nev;
+        final Long munkavallaloId; // null if owner-only
+
+        PersonRow(String nev, Long munkavallaloId) {
+            this.nev = nev;
+            this.munkavallaloId = munkavallaloId;
+        }
     }
 
     private void createCell(Row row, int col, String value, CellStyle style) {
@@ -281,6 +316,12 @@ public class OsztalekfizetesiKozgyulesekExcelService {
         if (value != null) {
             cell.setCellValue(value.doubleValue());
         }
+        cell.setCellStyle(style);
+    }
+
+    private void createFormulaCell(Row row, int col, String formula, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellFormula(formula);
         cell.setCellStyle(style);
     }
 
