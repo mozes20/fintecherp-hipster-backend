@@ -42,6 +42,7 @@
     <include file="config/liquibase/changelog/20260226110000_added_entity_OsztalekfizetesiKozgyulesekDokumentumTemplate.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260226120000_added_entity_OsztalekfizetesiKozgyulesekDokumentum.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260312000000_update_osztalekfizetesi_kozgyulesek_elszamolas.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260315000000_update_osztalekfizetesi_kozgyulesek_extra_fields.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20250915192424_added_entity_constraints_Timesheetek.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20250915192524_added_entity_constraints_Berek.xml" relativeToChangelogFile="false"/>

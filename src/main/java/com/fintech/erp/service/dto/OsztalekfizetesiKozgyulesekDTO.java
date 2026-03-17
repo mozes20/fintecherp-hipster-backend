@@ -37,6 +37,14 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
 
     private BigDecimal elszamolasNapidijakOsszesen;
 
+    private String kozgyulesHelyszine;
+
+    private String hatarozatSzama;
+
+    private String megjegyzes;
+
+    private String statusz;
+
     private SajatCegAlapadatokDTO sajatCeg;
 
     public Long getId() {
@@ -143,6 +151,18 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
         this.sajatCeg = sajatCeg;
     }
 
+    public String getKozgyulesHelyszine() { return kozgyulesHelyszine; }
+    public void setKozgyulesHelyszine(String kozgyulesHelyszine) { this.kozgyulesHelyszine = kozgyulesHelyszine; }
+
+    public String getHatarozatSzama() { return hatarozatSzama; }
+    public void setHatarozatSzama(String hatarozatSzama) { this.hatarozatSzama = hatarozatSzama; }
+
+    public String getMegjegyzes() { return megjegyzes; }
+    public void setMegjegyzes(String megjegyzes) { this.megjegyzes = megjegyzes; }
+
+    public String getStatusz() { return statusz; }
+    public void setStatusz(String statusz) { this.statusz = statusz; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -180,6 +200,9 @@ public class OsztalekfizetesiKozgyulesekDTO implements Serializable {
             ", alairtDokumentumUrl='" + getAlairtDokumentumUrl() + "'" +
             ", elszamolasGrandTotal=" + getElszamolasGrandTotal() +
             ", elszamolasNapidijakOsszesen=" + getElszamolasNapidijakOsszesen() +
+            ", kozgyulesHelyszine='" + getKozgyulesHelyszine() + "'" +
+            ", hatarozatSzama='" + getHatarozatSzama() + "'" +
+            ", statusz='" + getStatusz() + "'" +
             ", sajatCeg=" + getSajatCeg() +
             "}";
     }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Add helyszin, hatarozat_szama, megjegyzes, statusz columns
+        to osztalekfizetesi_kozgyulesek table.
+        These fields are required by the frontend forms but were missing from the backend entity.
+    -->
+    <changeSet id="20260315000000-1" author="dev">
+        <addColumn tableName="osztalekfizetesi_kozgyulesek">
+            <column name="kozgyules_helyszine" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="hatarozat_szama" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="megjegyzes" type="clob">
+                <constraints nullable="true"/>
+            </column>
+            <column name="statusz" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

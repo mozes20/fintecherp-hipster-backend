@@ -120,9 +120,32 @@ public class OsztalekfizetesiKozgyulesekExcelService {
         // Build merged person list: workers first, then owners not already present as workers
         List<PersonRow> persons = buildPersonRows(munkavallalok, tulajdonosok);
 
-        List<EgyebKoltsegSor> egyebKoltsegek = (request != null && request.getEgyebKoltsegek() != null)
-            ? request.getEgyebKoltsegek()
-            : List.of();
+        BigDecimal korigaltNapdij = (request != null) ? request.getKorigaltNapdij() : BigDecimal.valueOf(100);
+
+        // Automatically include the company's administrative monthly cost as the first overhead row
+        List<EgyebKoltsegSor> egyebKoltsegek = new ArrayList<>();
+        BigDecimal cegAdminKoltseg = kozgyules.getSajatCeg().getCegAdminisztraciosHaviKoltseg();
+        if (cegAdminKoltseg != null && cegAdminKoltseg.compareTo(BigDecimal.ZERO) > 0) {
+            EgyebKoltsegSor adminSor = new EgyebKoltsegSor();
+            adminSor.setMegnevezes("Adminisztrációs havi költség");
+            adminSor.setOsszeg(cegAdminKoltseg);
+            egyebKoltsegek.add(adminSor);
+        }
+        // Always add fixed FinTech Services Kft. osztalék cost row (11 e HUF)
+        EgyebKoltsegSor finTechSor = new EgyebKoltsegSor();
+        finTechSor.setMegnevezes("Osztalék - FinTech Services Kft.");
+        finTechSor.setOsszeg(BigDecimal.valueOf(11));
+        egyebKoltsegek.add(finTechSor);
+
+        if (request != null && request.getEgyebKoltsegek() != null) {
+            egyebKoltsegek.addAll(request.getEgyebKoltsegek());
+        }
+
+        // If the frontend sent per-person row overrides, use them directly; otherwise fetch from DB
+        List<OsztalekfizetesiElszamolasExcelRequest.PersonSor> personSorok =
+            (request != null && request.getPersonSorok() != null && !request.getPersonSorok().isEmpty())
+                ? request.getPersonSorok()
+                : List.of();
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {
             Sheet sheet = wb.createSheet("Elszámolás");
@@ -160,6 +183,27 @@ public class OsztalekfizetesiKozgyulesekExcelService {
             BigDecimal szamlazottTotal = BigDecimal.ZERO;
 
             // ---- Worker/Owner rows ----
+            if (!personSorok.isEmpty()) {
+                // Use frontend-supplied rows directly
+                for (OsztalekfizetesiElszamolasExcelRequest.PersonSor ps : personSorok) {
+                    BigDecimal teljesKoltseg = ps.getTeljesKoltseg() != null ? ps.getTeljesKoltseg() : BigDecimal.ZERO;
+                    int ledolgozottNapok = ps.getLedolgozottNapok() != null ? ps.getLedolgozottNapok() : 0;
+                    BigDecimal rowNapdij = ps.getKorigaltNapdij();
+
+                    Row row = sheet.createRow(rowIdx++);
+                    int excelRow = row.getRowNum() + 1;
+                    createCell(row, COL_NEV, ps.getNev() != null ? ps.getNev() : "", styles.dataStyle);
+                    createNumCell(row, COL_TELJES, teljesKoltseg, styles.dataNumStyle);
+                    createNumCell(row, COL_NAPOK, BigDecimal.valueOf(ledolgozottNapok), styles.dataGreenNumStyle);
+                    createFormulaCell(row, COL_NAPDIJ, "IFERROR(B" + excelRow + "/C" + excelRow + ",0)", styles.dataNumStyle);
+                    createNumCell(row, COL_KORIG, rowNapdij, styles.dataGreenNumStyle);
+                    createFormulaCell(row, COL_SZAMLA, "E" + excelRow + "*C" + excelRow, styles.dataNumStyle);
+
+                    workerTeljesKoltsegSum = workerTeljesKoltsegSum.add(teljesKoltseg);
+                    szamlazottTotal = szamlazottTotal.add(rowNapdij.multiply(BigDecimal.valueOf(ledolgozottNapok)));
+                }
+            } else {
+            // Fetch from DB
             for (PersonRow person : persons) {
                 // Count worked days from Timesheetek for this person and year
                 int ledolgozottNapok = person.munkavallaloId != null
@@ -185,13 +229,14 @@ public class OsztalekfizetesiKozgyulesekExcelService {
                 createNumCell(row, COL_NAPOK, BigDecimal.valueOf(ledolgozottNapok), styles.dataGreenNumStyle);
                 // Napidíj = Teljes költség / Ledolgozott napok (formula)
                 createFormulaCell(row, COL_NAPDIJ, "IFERROR(B" + excelRow + "/C" + excelRow + ",0)", styles.dataNumStyle);
-                createNumCell(row, COL_KORIG, KORIGALT_NAPDIJ, styles.dataGreenNumStyle);
+                createNumCell(row, COL_KORIG, korigaltNapdij, styles.dataGreenNumStyle);
                 // Számlázott összeg = Korrigált napidíj * Ledolgozott napok (formula)
                 createFormulaCell(row, COL_SZAMLA, "E" + excelRow + "*C" + excelRow, styles.dataNumStyle);
 
                 // Accumulate server-side totals for persistence
                 workerTeljesKoltsegSum = workerTeljesKoltsegSum.add(teljesKoltseg);
-                szamlazottTotal = szamlazottTotal.add(KORIGALT_NAPDIJ.multiply(BigDecimal.valueOf(ledolgozottNapok)));
+                szamlazottTotal = szamlazottTotal.add(korigaltNapdij.multiply(BigDecimal.valueOf(ledolgozottNapok)));
+            }
             }
 
             int workerEndRowIdx = rowIdx - 1; // 0-based index of last worker row

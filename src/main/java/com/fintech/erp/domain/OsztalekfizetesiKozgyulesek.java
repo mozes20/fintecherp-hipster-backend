@@ -70,6 +70,18 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
     @Column(name = "elszamolas_szamlazott_total", precision = 21, scale = 2)
     private BigDecimal elszamolasNapidijakOsszesen;
 
+    @Column(name = "kozgyules_helyszine")
+    private String kozgyulesHelyszine;
+
+    @Column(name = "hatarozat_szama")
+    private String hatarozatSzama;
+
+    @Column(name = "megjegyzes", columnDefinition = "TEXT")
+    private String megjegyzes;
+
+    @Column(name = "statusz")
+    private String statusz;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "ceg" }, allowSetters = true)
     private SajatCegAlapadatok sajatCeg;
@@ -247,6 +259,18 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
+    public String getKozgyulesHelyszine() { return this.kozgyulesHelyszine; }
+    public void setKozgyulesHelyszine(String kozgyulesHelyszine) { this.kozgyulesHelyszine = kozgyulesHelyszine; }
+
+    public String getHatarozatSzama() { return this.hatarozatSzama; }
+    public void setHatarozatSzama(String hatarozatSzama) { this.hatarozatSzama = hatarozatSzama; }
+
+    public String getMegjegyzes() { return this.megjegyzes; }
+    public void setMegjegyzes(String megjegyzes) { this.megjegyzes = megjegyzes; }
+
+    public String getStatusz() { return this.statusz; }
+    public void setStatusz(String statusz) { this.statusz = statusz; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -280,6 +304,9 @@ public class OsztalekfizetesiKozgyulesek implements Serializable {
             ", alairtDokumentumUrl='" + getAlairtDokumentumUrl() + "'" +
             ", elszamolasGrandTotal=" + getElszamolasGrandTotal() +
             ", elszamolasNapidijakOsszesen=" + getElszamolasNapidijakOsszesen() +
+            ", kozgyulesHelyszine='" + getKozgyulesHelyszine() + "'" +
+            ", hatarozatSzama='" + getHatarozatSzama() + "'" +
+            ", statusz='" + getStatusz() + "'" +
             "}";
     }
 }

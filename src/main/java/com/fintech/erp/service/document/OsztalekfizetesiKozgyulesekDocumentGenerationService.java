@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,6 +117,10 @@ public class OsztalekfizetesiKozgyulesekDocumentGenerationService {
         }
 
         byte[] filledDocx = docxTemplateEngine.populateTemplate(templatePath, replacements);
+
+        // Auto-insert signature table for {{kozgyules.alairas_blokk}} placeholder
+        List<DocxTemplateEngine.SignaturePerson> signers = placeholderService.buildSigners(kozgyulesId);
+        filledDocx = docxTemplateEngine.insertSignatureBlock(filledDocx, "kozgyules.alairas_blokk", signers);
 
         String baseFileName = sanitizeFileName(request.getDokumentumNev() != null ? request.getDokumentumNev() : template.getTemplateNev());
         DocumentFormat effectiveFormat = request.getFormat() != null ? request.getFormat() : DocumentFormat.DOCX;
