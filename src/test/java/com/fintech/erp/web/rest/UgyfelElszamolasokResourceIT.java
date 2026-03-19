@@ -48,9 +48,9 @@ class UgyfelElszamolasokResourceIT {
     private static final LocalDate UPDATED_TELJESITESI_IDOSZAK_VEGE = LocalDate.now(ZoneId.systemDefault());
     private static final LocalDate SMALLER_TELJESITESI_IDOSZAK_VEGE = LocalDate.ofEpochDay(-1L);
 
-    private static final Integer DEFAULT_NAPOK_SZAMA = 1;
-    private static final Integer UPDATED_NAPOK_SZAMA = 2;
-    private static final Integer SMALLER_NAPOK_SZAMA = 1 - 1;
+    private static final BigDecimal DEFAULT_NAPOK_SZAMA = new BigDecimal(1);
+    private static final BigDecimal UPDATED_NAPOK_SZAMA = new BigDecimal(2);
+    private static final BigDecimal SMALLER_NAPOK_SZAMA = new BigDecimal(1 - 1);
 
     private static final BigDecimal DEFAULT_TELJESITES_IGAZOLASON_SZEREPLO_OSSZEG = new BigDecimal(1);
     private static final BigDecimal UPDATED_TELJESITES_IGAZOLASON_SZEREPLO_OSSZEG = new BigDecimal(2);

@@ -1,5 +1,6 @@
 package com.fintech.erp.domain;
 
+import java.math.BigDecimal;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -11,14 +12,14 @@ public class UgyfelElszamolasokTestSamples {
     private static final AtomicInteger intCount = new AtomicInteger(random.nextInt() + (2 * Short.MAX_VALUE));
 
     public static UgyfelElszamolasok getUgyfelElszamolasokSample1() {
-        return new UgyfelElszamolasok().id(1L).napokSzama(1);
+        return new UgyfelElszamolasok().id(1L).napokSzama(BigDecimal.valueOf(1L));
     }
 
     public static UgyfelElszamolasok getUgyfelElszamolasokSample2() {
-        return new UgyfelElszamolasok().id(2L).napokSzama(2);
+        return new UgyfelElszamolasok().id(2L).napokSzama(BigDecimal.valueOf(2L));
     }
 
     public static UgyfelElszamolasok getUgyfelElszamolasokRandomSampleGenerator() {
-        return new UgyfelElszamolasok().id(longCount.incrementAndGet()).napokSzama(intCount.incrementAndGet());
+        return new UgyfelElszamolasok().id(longCount.incrementAndGet()).napokSzama(BigDecimal.valueOf(intCount.incrementAndGet()));
     }
 }
