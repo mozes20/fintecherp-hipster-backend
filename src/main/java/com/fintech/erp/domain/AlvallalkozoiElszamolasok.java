@@ -9,13 +9,13 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
- * A UgyfelElszamolasok.
+ * A AlvallalkozoiElszamolasok.
  */
 @Entity
-@Table(name = "ugyfel_elszamolasok")
+@Table(name = "alvallalkozoi_elszamolasok")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
-public class UgyfelElszamolasok implements Serializable {
+public class AlvallalkozoiElszamolasok implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -37,23 +37,21 @@ public class UgyfelElszamolasok implements Serializable {
     @Column(name = "teljesites_igazolason_szereplo_osszeg", precision = 21, scale = 2)
     private BigDecimal teljesitesIgazolasonSzereploOsszeg;
 
-    @Column(name = "kapcsolodo_szamla_sorszam_rogzitve")
-    private Boolean kapcsolodoSzamlaSorszamRogzitve;
+    @Column(name = "bejovo_szamla_sorszam_rogzitve")
+    private Boolean bejovoSzamlaSorszamRogzitve;
 
-    @Column(name = "kapcsolodo_szamla_sorszam")
-    private String kapcsolodoSzamlaSorszam;
+    @Column(name = "bejovo_szamla_sorszam")
+    private String bejovoSzamlaSorszam;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "szerzodesesJogviszony", "maganszemely" }, allowSetters = true)
     private Megrendelesek megrendeles;
 
-    // jhipster-needle-entity-add-field - JHipster will add fields here
-
     public Long getId() {
         return this.id;
     }
 
-    public UgyfelElszamolasok id(Long id) {
+    public AlvallalkozoiElszamolasok id(Long id) {
         this.setId(id);
         return this;
     }
@@ -66,7 +64,7 @@ public class UgyfelElszamolasok implements Serializable {
         return this.teljesitesiIdoszakKezdete;
     }
 
-    public UgyfelElszamolasok teljesitesiIdoszakKezdete(LocalDate teljesitesiIdoszakKezdete) {
+    public AlvallalkozoiElszamolasok teljesitesiIdoszakKezdete(LocalDate teljesitesiIdoszakKezdete) {
         this.setTeljesitesiIdoszakKezdete(teljesitesiIdoszakKezdete);
         return this;
     }
@@ -79,7 +77,7 @@ public class UgyfelElszamolasok implements Serializable {
         return this.teljesitesiIdoszakVege;
     }
 
-    public UgyfelElszamolasok teljesitesiIdoszakVege(LocalDate teljesitesiIdoszakVege) {
+    public AlvallalkozoiElszamolasok teljesitesiIdoszakVege(LocalDate teljesitesiIdoszakVege) {
         this.setTeljesitesiIdoszakVege(teljesitesiIdoszakVege);
         return this;
     }
@@ -92,7 +90,7 @@ public class UgyfelElszamolasok implements Serializable {
         return this.napokSzama;
     }
 
-    public UgyfelElszamolasok napokSzama(BigDecimal napokSzama) {
+    public AlvallalkozoiElszamolasok napokSzama(BigDecimal napokSzama) {
         this.setNapokSzama(napokSzama);
         return this;
     }
@@ -101,24 +99,11 @@ public class UgyfelElszamolasok implements Serializable {
         this.napokSzama = napokSzama;
     }
 
-    public String getKapcsolodoSzamlaSorszam() {
-        return this.kapcsolodoSzamlaSorszam;
-    }
-
-    public UgyfelElszamolasok kapcsolodoSzamlaSorszam(String kapcsolodoSzamlaSorszam) {
-        this.setKapcsolodoSzamlaSorszam(kapcsolodoSzamlaSorszam);
-        return this;
-    }
-
-    public void setKapcsolodoSzamlaSorszam(String kapcsolodoSzamlaSorszam) {
-        this.kapcsolodoSzamlaSorszam = kapcsolodoSzamlaSorszam;
-    }
-
     public BigDecimal getTeljesitesIgazolasonSzereploOsszeg() {
         return this.teljesitesIgazolasonSzereploOsszeg;
     }
 
-    public UgyfelElszamolasok teljesitesIgazolasonSzereploOsszeg(BigDecimal teljesitesIgazolasonSzereploOsszeg) {
+    public AlvallalkozoiElszamolasok teljesitesIgazolasonSzereploOsszeg(BigDecimal teljesitesIgazolasonSzereploOsszeg) {
         this.setTeljesitesIgazolasonSzereploOsszeg(teljesitesIgazolasonSzereploOsszeg);
         return this;
     }
@@ -127,17 +112,30 @@ public class UgyfelElszamolasok implements Serializable {
         this.teljesitesIgazolasonSzereploOsszeg = teljesitesIgazolasonSzereploOsszeg;
     }
 
-    public Boolean getKapcsolodoSzamlaSorszamRogzitve() {
-        return this.kapcsolodoSzamlaSorszamRogzitve;
+    public Boolean getBejovoSzamlaSorszamRogzitve() {
+        return this.bejovoSzamlaSorszamRogzitve;
     }
 
-    public UgyfelElszamolasok kapcsolodoSzamlaSorszamRogzitve(Boolean kapcsolodoSzamlaSorszamRogzitve) {
-        this.setKapcsolodoSzamlaSorszamRogzitve(kapcsolodoSzamlaSorszamRogzitve);
+    public AlvallalkozoiElszamolasok bejovoSzamlaSorszamRogzitve(Boolean bejovoSzamlaSorszamRogzitve) {
+        this.setBejovoSzamlaSorszamRogzitve(bejovoSzamlaSorszamRogzitve);
         return this;
     }
 
-    public void setKapcsolodoSzamlaSorszamRogzitve(Boolean kapcsolodoSzamlaSorszamRogzitve) {
-        this.kapcsolodoSzamlaSorszamRogzitve = kapcsolodoSzamlaSorszamRogzitve;
+    public void setBejovoSzamlaSorszamRogzitve(Boolean bejovoSzamlaSorszamRogzitve) {
+        this.bejovoSzamlaSorszamRogzitve = bejovoSzamlaSorszamRogzitve;
+    }
+
+    public String getBejovoSzamlaSorszam() {
+        return this.bejovoSzamlaSorszam;
+    }
+
+    public AlvallalkozoiElszamolasok bejovoSzamlaSorszam(String bejovoSzamlaSorszam) {
+        this.setBejovoSzamlaSorszam(bejovoSzamlaSorszam);
+        return this;
+    }
+
+    public void setBejovoSzamlaSorszam(String bejovoSzamlaSorszam) {
+        this.bejovoSzamlaSorszam = bejovoSzamlaSorszam;
     }
 
     public Megrendelesek getMegrendeles() {
@@ -148,41 +146,32 @@ public class UgyfelElszamolasok implements Serializable {
         this.megrendeles = megrendelesek;
     }
 
-    public UgyfelElszamolasok megrendeles(Megrendelesek megrendelesek) {
+    public AlvallalkozoiElszamolasok megrendeles(Megrendelesek megrendelesek) {
         this.setMegrendeles(megrendelesek);
         return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof UgyfelElszamolasok)) {
-            return false;
-        }
-        return getId() != null && getId().equals(((UgyfelElszamolasok) o).getId());
+        if (this == o) return true;
+        if (!(o instanceof AlvallalkozoiElszamolasok)) return false;
+        return getId() != null && getId().equals(((AlvallalkozoiElszamolasok) o).getId());
     }
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "UgyfelElszamolasok{" +
+        return "AlvallalkozoiElszamolasok{" +
             "id=" + getId() +
             ", teljesitesiIdoszakKezdete='" + getTeljesitesiIdoszakKezdete() + "'" +
             ", teljesitesiIdoszakVege='" + getTeljesitesiIdoszakVege() + "'" +
             ", napokSzama=" + getNapokSzama() +
             ", teljesitesIgazolasonSzereploOsszeg=" + getTeljesitesIgazolasonSzereploOsszeg() +
-            ", kapcsolodoSzamlaSorszamRogzitve='" + getKapcsolodoSzamlaSorszamRogzitve() + "'" +
-            ", kapcsolodoSzamlaSorszam='" + getKapcsolodoSzamlaSorszam() + "'" +
+            ", bejovoSzamlaSorszam='" + getBejovoSzamlaSorszam() + "'" +
             "}";
     }
 }

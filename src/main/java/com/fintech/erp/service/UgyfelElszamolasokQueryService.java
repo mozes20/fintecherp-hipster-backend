@@ -85,6 +85,7 @@ public class UgyfelElszamolasokQueryService extends QueryService<UgyfelElszamola
                     UgyfelElszamolasok_.teljesitesIgazolasonSzereploOsszeg
                 ),
                 buildSpecification(criteria.getKapcsolodoSzamlaSorszamRogzitve(), UgyfelElszamolasok_.kapcsolodoSzamlaSorszamRogzitve),
+                buildStringSpecification(criteria.getKapcsolodoSzamlaSorszam(), UgyfelElszamolasok_.kapcsolodoSzamlaSorszam),
                 buildSpecification(criteria.getMegrendelesId(), root ->
                     root.join(UgyfelElszamolasok_.megrendeles, JoinType.LEFT).get(Megrendelesek_.id)
                 )

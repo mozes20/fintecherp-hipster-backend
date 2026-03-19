@@ -6,17 +6,23 @@ import com.fintech.erp.service.TeljesitesIgazolasDokumentumokService;
 import com.fintech.erp.service.criteria.TeljesitesIgazolasDokumentumokCriteria;
 import com.fintech.erp.service.dto.TeljesitesIgazolasDokumentumokDTO;
 import com.fintech.erp.web.rest.errors.BadRequestAlertException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -278,8 +284,33 @@ public class TeljesitesIgazolasDokumentumokResource {
     }
 
     /**
-     * DELETE /dokumentumok/sync-files : Remove files from disk that are not referenced in the database.
+     * {@code GET /teljesites-igazolas-dokumentumoks/:id/download} : download the document file.
      *
+     * @param id the id of the document to download.
+     * @return the file content as a downloadable response.
+     */
+    @GetMapping("/{id}/download")
+    public ResponseEntity<Resource> downloadDokumentum(@PathVariable("id") Long id) throws IOException {
+        LOG.debug("REST request to download TeljesitesIgazolasDokumentumok : {}", id);
+        TeljesitesIgazolasDokumentumokDTO dto = teljesitesIgazolasDokumentumokService
+            .findOne(id)
+            .orElseThrow(() -> new BadRequestAlertException("Dokumentum nem található", ENTITY_NAME, "idnotfound"));
+        String dokumentumPath = dto.getDokumentum();
+        if (dokumentumPath == null || dokumentumPath.isBlank()) {
+            throw new BadRequestAlertException("A dokumentumhoz nem tartozik fájl", ENTITY_NAME, "nofile");
+        }
+        Path filePath = Path.of(dokumentumPath).normalize();
+        if (!Files.exists(filePath)) {
+            throw new BadRequestAlertException("A dokumentum fájl nem található a szerveren", ENTITY_NAME, "filenotfound");
+        }
+        Resource resource = new FileSystemResource(filePath);
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filePath.getFileName() + "\"")
+            .body(resource);
+    }
+
+    /**
      * @return the number of deleted files
      */
     @DeleteMapping("/dokumentumok/sync-files")

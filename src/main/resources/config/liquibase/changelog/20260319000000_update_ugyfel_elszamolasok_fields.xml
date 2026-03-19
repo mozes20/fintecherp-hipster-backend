@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260319000000-1" author="dev">
+        <!-- Change napok_szama from integer to decimal to support fractional days -->
+        <modifyDataType tableName="ugyfel_elszamolasok"
+                        columnName="napok_szama"
+                        newDataType="decimal(10,2)"/>
+    </changeSet>
+
+    <changeSet id="20260319000000-2" author="dev">
+        <!-- Add kapcsolodo_szamla_sorszam column for storing the linked invoice number -->
+        <addColumn tableName="ugyfel_elszamolasok">
+            <column name="kapcsolodo_szamla_sorszam" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

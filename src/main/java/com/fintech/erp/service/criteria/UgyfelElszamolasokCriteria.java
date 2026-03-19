@@ -28,11 +28,13 @@ public class UgyfelElszamolasokCriteria implements Serializable, Criteria {
 
     private LocalDateFilter teljesitesiIdoszakVege;
 
-    private IntegerFilter napokSzama;
+    private BigDecimalFilter napokSzama;
 
     private BigDecimalFilter teljesitesIgazolasonSzereploOsszeg;
 
     private BooleanFilter kapcsolodoSzamlaSorszamRogzitve;
+
+    private StringFilter kapcsolodoSzamlaSorszam;
 
     private LongFilter megrendelesId;
 
@@ -44,12 +46,13 @@ public class UgyfelElszamolasokCriteria implements Serializable, Criteria {
         this.id = other.optionalId().map(LongFilter::copy).orElse(null);
         this.teljesitesiIdoszakKezdete = other.optionalTeljesitesiIdoszakKezdete().map(LocalDateFilter::copy).orElse(null);
         this.teljesitesiIdoszakVege = other.optionalTeljesitesiIdoszakVege().map(LocalDateFilter::copy).orElse(null);
-        this.napokSzama = other.optionalNapokSzama().map(IntegerFilter::copy).orElse(null);
+        this.napokSzama = other.optionalNapokSzama().map(BigDecimalFilter::copy).orElse(null);
         this.teljesitesIgazolasonSzereploOsszeg = other
             .optionalTeljesitesIgazolasonSzereploOsszeg()
             .map(BigDecimalFilter::copy)
             .orElse(null);
         this.kapcsolodoSzamlaSorszamRogzitve = other.optionalKapcsolodoSzamlaSorszamRogzitve().map(BooleanFilter::copy).orElse(null);
+        this.kapcsolodoSzamlaSorszam = other.optionalKapcsolodoSzamlaSorszam().map(StringFilter::copy).orElse(null);
         this.megrendelesId = other.optionalMegrendelesId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
@@ -116,22 +119,22 @@ public class UgyfelElszamolasokCriteria implements Serializable, Criteria {
         this.teljesitesiIdoszakVege = teljesitesiIdoszakVege;
     }
 
-    public IntegerFilter getNapokSzama() {
+    public BigDecimalFilter getNapokSzama() {
         return napokSzama;
     }
 
-    public Optional<IntegerFilter> optionalNapokSzama() {
+    public Optional<BigDecimalFilter> optionalNapokSzama() {
         return Optional.ofNullable(napokSzama);
     }
 
-    public IntegerFilter napokSzama() {
+    public BigDecimalFilter napokSzama() {
         if (napokSzama == null) {
-            setNapokSzama(new IntegerFilter());
+            setNapokSzama(new BigDecimalFilter());
         }
         return napokSzama;
     }
 
-    public void setNapokSzama(IntegerFilter napokSzama) {
+    public void setNapokSzama(BigDecimalFilter napokSzama) {
         this.napokSzama = napokSzama;
     }
 
@@ -171,6 +174,25 @@ public class UgyfelElszamolasokCriteria implements Serializable, Criteria {
 
     public void setKapcsolodoSzamlaSorszamRogzitve(BooleanFilter kapcsolodoSzamlaSorszamRogzitve) {
         this.kapcsolodoSzamlaSorszamRogzitve = kapcsolodoSzamlaSorszamRogzitve;
+    }
+
+    public StringFilter getKapcsolodoSzamlaSorszam() {
+        return kapcsolodoSzamlaSorszam;
+    }
+
+    public Optional<StringFilter> optionalKapcsolodoSzamlaSorszam() {
+        return Optional.ofNullable(kapcsolodoSzamlaSorszam);
+    }
+
+    public StringFilter kapcsolodoSzamlaSorszam() {
+        if (kapcsolodoSzamlaSorszam == null) {
+            setKapcsolodoSzamlaSorszam(new StringFilter());
+        }
+        return kapcsolodoSzamlaSorszam;
+    }
+
+    public void setKapcsolodoSzamlaSorszam(StringFilter kapcsolodoSzamlaSorszam) {
+        this.kapcsolodoSzamlaSorszam = kapcsolodoSzamlaSorszam;
     }
 
     public LongFilter getMegrendelesId() {
@@ -227,6 +249,7 @@ public class UgyfelElszamolasokCriteria implements Serializable, Criteria {
             Objects.equals(napokSzama, that.napokSzama) &&
             Objects.equals(teljesitesIgazolasonSzereploOsszeg, that.teljesitesIgazolasonSzereploOsszeg) &&
             Objects.equals(kapcsolodoSzamlaSorszamRogzitve, that.kapcsolodoSzamlaSorszamRogzitve) &&
+            Objects.equals(kapcsolodoSzamlaSorszam, that.kapcsolodoSzamlaSorszam) &&
             Objects.equals(megrendelesId, that.megrendelesId) &&
             Objects.equals(distinct, that.distinct)
         );
@@ -241,6 +264,7 @@ public class UgyfelElszamolasokCriteria implements Serializable, Criteria {
             napokSzama,
             teljesitesIgazolasonSzereploOsszeg,
             kapcsolodoSzamlaSorszamRogzitve,
+            kapcsolodoSzamlaSorszam,
             megrendelesId,
             distinct
         );
@@ -256,6 +280,7 @@ public class UgyfelElszamolasokCriteria implements Serializable, Criteria {
             optionalNapokSzama().map(f -> "napokSzama=" + f + ", ").orElse("") +
             optionalTeljesitesIgazolasonSzereploOsszeg().map(f -> "teljesitesIgazolasonSzereploOsszeg=" + f + ", ").orElse("") +
             optionalKapcsolodoSzamlaSorszamRogzitve().map(f -> "kapcsolodoSzamlaSorszamRogzitve=" + f + ", ").orElse("") +
+            optionalKapcsolodoSzamlaSorszam().map(f -> "kapcsolodoSzamlaSorszam=" + f + ", ").orElse("") +
             optionalMegrendelesId().map(f -> "megrendelesId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";

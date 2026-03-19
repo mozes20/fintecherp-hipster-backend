@@ -6,10 +6,10 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 /**
- * A DTO for the {@link com.fintech.erp.domain.UgyfelElszamolasok} entity.
+ * A DTO for the {@link com.fintech.erp.domain.AlvallalkozoiElszamolasok} entity.
  */
 @SuppressWarnings("common-java:DuplicatedBlocks")
-public class UgyfelElszamolasokDTO implements Serializable {
+public class AlvallalkozoiElszamolasokDTO implements Serializable {
 
     private Long id;
 
@@ -21,9 +21,9 @@ public class UgyfelElszamolasokDTO implements Serializable {
 
     private BigDecimal teljesitesIgazolasonSzereploOsszeg;
 
-    private Boolean kapcsolodoSzamlaSorszamRogzitve;
+    private Boolean bejovoSzamlaSorszamRogzitve;
 
-    private String kapcsolodoSzamlaSorszam;
+    private String bejovoSzamlaSorszam;
 
     private MegrendelesekDTO megrendeles;
 
@@ -59,14 +59,6 @@ public class UgyfelElszamolasokDTO implements Serializable {
         this.napokSzama = napokSzama;
     }
 
-    public String getKapcsolodoSzamlaSorszam() {
-        return kapcsolodoSzamlaSorszam;
-    }
-
-    public void setKapcsolodoSzamlaSorszam(String kapcsolodoSzamlaSorszam) {
-        this.kapcsolodoSzamlaSorszam = kapcsolodoSzamlaSorszam;
-    }
-
     public BigDecimal getTeljesitesIgazolasonSzereploOsszeg() {
         return teljesitesIgazolasonSzereploOsszeg;
     }
@@ -75,12 +67,20 @@ public class UgyfelElszamolasokDTO implements Serializable {
         this.teljesitesIgazolasonSzereploOsszeg = teljesitesIgazolasonSzereploOsszeg;
     }
 
-    public Boolean getKapcsolodoSzamlaSorszamRogzitve() {
-        return kapcsolodoSzamlaSorszamRogzitve;
+    public Boolean getBejovoSzamlaSorszamRogzitve() {
+        return bejovoSzamlaSorszamRogzitve;
     }
 
-    public void setKapcsolodoSzamlaSorszamRogzitve(Boolean kapcsolodoSzamlaSorszamRogzitve) {
-        this.kapcsolodoSzamlaSorszamRogzitve = kapcsolodoSzamlaSorszamRogzitve;
+    public void setBejovoSzamlaSorszamRogzitve(Boolean bejovoSzamlaSorszamRogzitve) {
+        this.bejovoSzamlaSorszamRogzitve = bejovoSzamlaSorszamRogzitve;
+    }
+
+    public String getBejovoSzamlaSorszam() {
+        return bejovoSzamlaSorszam;
+    }
+
+    public void setBejovoSzamlaSorszam(String bejovoSzamlaSorszam) {
+        this.bejovoSzamlaSorszam = bejovoSzamlaSorszam;
     }
 
     public MegrendelesekDTO getMegrendeles() {
@@ -93,18 +93,11 @@ public class UgyfelElszamolasokDTO implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof UgyfelElszamolasokDTO)) {
-            return false;
-        }
-
-        UgyfelElszamolasokDTO ugyfelElszamolasokDTO = (UgyfelElszamolasokDTO) o;
-        if (this.id == null) {
-            return false;
-        }
-        return Objects.equals(this.id, ugyfelElszamolasokDTO.id);
+        if (this == o) return true;
+        if (!(o instanceof AlvallalkozoiElszamolasokDTO)) return false;
+        AlvallalkozoiElszamolasokDTO that = (AlvallalkozoiElszamolasokDTO) o;
+        if (this.id == null) return false;
+        return Objects.equals(this.id, that.id);
     }
 
     @Override
@@ -112,17 +105,15 @@ public class UgyfelElszamolasokDTO implements Serializable {
         return Objects.hash(this.id);
     }
 
-    // prettier-ignore
     @Override
     public String toString() {
-        return "UgyfelElszamolasokDTO{" +
+        return "AlvallalkozoiElszamolasokDTO{" +
             "id=" + getId() +
             ", teljesitesiIdoszakKezdete='" + getTeljesitesiIdoszakKezdete() + "'" +
             ", teljesitesiIdoszakVege='" + getTeljesitesiIdoszakVege() + "'" +
             ", napokSzama=" + getNapokSzama() +
             ", teljesitesIgazolasonSzereploOsszeg=" + getTeljesitesIgazolasonSzereploOsszeg() +
-            ", kapcsolodoSzamlaSorszamRogzitve='" + getKapcsolodoSzamlaSorszamRogzitve() + "'" +
-            ", kapcsolodoSzamlaSorszam='" + getKapcsolodoSzamlaSorszam() + "'" +
+            ", bejovoSzamlaSorszam='" + getBejovoSzamlaSorszam() + "'" +
             ", megrendeles=" + getMegrendeles() +
             "}";
     }
